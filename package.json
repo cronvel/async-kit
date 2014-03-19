@@ -1,26 +1,35 @@
 {
   "name": "csk-async",
   "version": "0.2.0",
-  "description": "Wonderful async lib",
+  "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
   "main": "async.js",
-  "scripts": {
-    "test": "mocha test/async.js",
-    "start": "node async.js"
+  "directories": {
+    "test": "test"
   },
-  "keywords": [
-    "csk",
-    "easy",
-    "async",
-    "callback",
-    "event"
-  ],
-  "author": "Cédric Ronvel",
-  "license": "Simplified BSD License",
   "dependencies": {
     "extend": "~1.2.1"
   },
   "devDependencies": {
-    "mocha": "~1.17.1",
-    "expect.js": "~0.3.1"
+    "expect.js": "~0.3.1",
+    "mocha": "~1.17.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cronvel/csk-async.git"
+  },
+  "keywords": [
+    "easy",
+    "async",
+    "callback",
+    "event",
+    "csk"
+  ],
+  "author": "Cédric Ronvel",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/cronvel/csk-async/issues"
   }
 }
