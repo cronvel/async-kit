@@ -2,7 +2,7 @@
 Async
 =====
 
-A simple and powerful abstraction lib for easily writing Node.js code.
+A simple and powerful async abstraction lib for easily writing Node.js code.
 
 
 
