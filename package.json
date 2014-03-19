@@ -1,0 +1,26 @@
+{
+  "name": "csk-async",
+  "version": "0.2.0",
+  "description": "Wonderful async lib",
+  "main": "async.js",
+  "scripts": {
+    "test": "mocha test/async.js",
+    "start": "node async.js"
+  },
+  "keywords": [
+    "csk",
+    "easy",
+    "async",
+    "callback",
+    "event"
+  ],
+  "author": "Cédric Ronvel",
+  "license": "Simplified BSD License",
+  "dependencies": {
+    "extend": "~1.2.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "expect.js": "~0.3.1"
+  }
+}
