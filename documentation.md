@@ -6,11 +6,11 @@ A simple and powerful async abstraction layer lib for easily writing Node.js cod
 * License: BSD
 * Current status: beta
 
-While inspired in some way by [caolan/async](https://github.com/caolan/async), CSK Async use a completely different approach.
+While inspired in some way by [caolan/async](https://github.com/caolan/async), CSK Async uses a completely different approach.
 
-Rather than having a whole bunch of specific function, this lib provide a generic way to solve async code flow.
+Rather than having a whole bunch of specific functions, this lib provides a generic way to solve async code flow.
 
-Using natural syntax really easy to become familiar with, you will be able to code great things effortless, 
+Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
 
 
@@ -35,33 +35,33 @@ async.do.series( [
 } ) ;
 ```
 
-This small example prepare an async job's list and execute it. 
+This small example prepares an async job's list and executes it. 
 
 All jobs are executed in series, one after one.
 
-Each callback work the Node.js way, the first argument is always the *error* argument.
+Each callback works the Node.js way, the first argument is always the *error* argument.
 
-If one job fails (ie call its callback with an error or any truthy value), all remaining jobs are skipped 
-and the exec's callback is instantly called with that error.
+If one job fails (ie it calls its callback with an error or any truthy value), all remaining jobs are skipped 
+and the *exec*'s callback is instantly called with that error.
 
-When every jobs are finished, the exec's callback is called, the *results* argument contains an array of the *arguments* passed by each job to its callback.
+When every jobs are finished, the *exec*'s callback is called, the *results* argument contains an array of the *arguments* passed by each job to its callback.
 
 
 
 # Plan stage & exec stage concept
 
-There is an important concept to understand when using this lib: there are 2 stage to perform an async flow.
+There is an important concept to understand when using this lib: there are 2 stages to perform an async flow.
 
 In the first stage, you define the plan.
-All plan definition return an async.Plan object.
+All plan definition returns an async.Plan object.
 
-Then you can *exec()* your plan as many time as you want. All the exec method family return an execContext object, 
+Then you can *exec()* your plan as many time as you want. All the *exec* method family returns an execContext object.
 The first time an async.Plan is *exec()*, it becomes locked forever: you cannot modify it anymore.
 
-The example above can become:
+The example above becomes:
 
 ```js
-// Plan stage, jobs definition
+// Plan stage, jobs' definition
 var plan = async.do.series( [
 	function( callback ) {
 		letsConnectToDatabase( callback ) ;
@@ -74,7 +74,7 @@ var plan = async.do.series( [
 	}
 ] ) ;
 
-// Change the plan, each jobs should finished in 200ms
+// Change the plan, each job should terminate within 200ms
 plan.timeout( 200 ) ;
 
 // Exec stage
