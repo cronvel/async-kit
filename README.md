@@ -52,7 +52,7 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 
 # Features
 
-## Code flow
+### Code flow
 
 * Series
 * Parallel
@@ -65,7 +65,7 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 
 
 
-## Modifier
+### Modifier
 
 * Set the parallel limit
 * While conditions
