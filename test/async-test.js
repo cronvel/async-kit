@@ -1166,7 +1166,7 @@ describe( "Async logic" , function() {
 	
 	describe( "async.if.and()" , function() {
 		
-		it( "should evaluate async truthly && truthly && truthly to true, and run all jobs" , function( done ) {
+		it( "should evaluate async truthy && truthy && truthy to true, and run all jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1182,7 +1182,7 @@ describe( "Async logic" , function() {
 			} ) ;
 		} ) ;
 		
-		it( "should evaluate async truthly && falsy && truthly to false, and run just the first and second jobs" , function( done ) {
+		it( "should evaluate async truthy && falsy && truthy to false, and run just the first and second jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1217,7 +1217,7 @@ describe( "Async logic" , function() {
 		
 	describe( "async.if.or()" , function() {
 		
-		it( "should evaluate async truthly || truthly || truthly to true, and run only the first jobs" , function( done ) {
+		it( "should evaluate async truthy || truthy || truthy to true, and run only the first jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1233,7 +1233,7 @@ describe( "Async logic" , function() {
 			} ) ;
 		} ) ;
 		
-		it( "should evaluate async falsy || truthly || falsy to true, and run just the first and second jobs" , function( done ) {
+		it( "should evaluate async falsy || truthy || falsy to true, and run just the first and second jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1370,7 +1370,7 @@ describe( "Async logic" , function() {
 		
 	describe( "nested async.or() and async.and() in async.if()" , function() {
 		
-		it( "should evaluate async ( truthly || falsy ) && truthly to true, and run first and third jobs" , function( done ) {
+		it( "should evaluate async ( truthy || falsy ) && truthy to true, and run first and third jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1388,7 +1388,7 @@ describe( "Async logic" , function() {
 			} ) ;
 		} ) ;
 		
-		it( "should evaluate async ( falsy || truthly ) && falsy to false, and run all jobs" , function( done ) {
+		it( "should evaluate async ( falsy || truthy ) && falsy to false, and run all jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1406,7 +1406,7 @@ describe( "Async logic" , function() {
 			} ) ;
 		} ) ;
 		
-		it( "should evaluate async ( truthly && falsy ) || truthly to true, and run all jobs" , function( done ) {
+		it( "should evaluate async ( truthy && falsy ) || truthy to true, and run all jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1424,7 +1424,7 @@ describe( "Async logic" , function() {
 			} ) ;
 		} ) ;
 		
-		it( "should evaluate async ( falsy && truthly ) || falsy to false, and run the first and third jobs" , function( done ) {
+		it( "should evaluate async ( falsy && truthy ) || falsy to false, and run the first and third jobs" , function( done ) {
 			
 			var stats = createStats( 3 ) ;
 			
@@ -1589,7 +1589,7 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		) ;
 	} ) ;
 	
-	it( "should evaluate async truthly && truthly && truthly to true, and trigger in-plan and in-exec then() and finally()" , function( done ) {
+	it( "should evaluate async truthy && truthy && truthy to true, and trigger in-plan and in-exec then() and finally()" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -1645,7 +1645,7 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		) ;
 	} ) ;
 	
-	it( "should evaluate async truthly && falsy && truthly to false, and trigger in-plan and in-exec else() and finally()" , function( done ) {
+	it( "should evaluate async truthy && falsy && truthy to false, and trigger in-plan and in-exec else() and finally()" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -1701,7 +1701,7 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		) ;
 	} ) ;
 	
-	it( "should evaluate async truthly && Error && truthly to Error, and trigger in-plan and in-exec catch() and finally()" , function( done ) {
+	it( "should evaluate async truthy && Error && truthy to Error, and trigger in-plan and in-exec catch() and finally()" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
