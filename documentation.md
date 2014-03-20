@@ -71,11 +71,11 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 * While conditions
 * Repeat jobs a fixed amount of time
 * Iterator
-* Timeout for jobs (avoid pending jobs trouble)
+* Timeout for jobs (avoid pending jobs troubles)
 * Retry jobs on error (useful for managing outgoing connection for example)
-* Async/sync job's sheduling controle (turn sync jobs into async, change the *nice* value of the job's sheduler)
+* Async/sync job's scheduling controle (turn sync jobs into async, change the *nice* value of the job's scheduler)
 * Continue on error or not
-* Transmission of all jobs' results or only results of the last jobs
+* Transmission of all jobs' results or only results of the last job
 * Then callback, if successful
 * Else callback, for *async if*
 * Catch callback, if an error occurs
