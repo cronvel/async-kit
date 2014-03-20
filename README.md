@@ -1,14 +1,16 @@
 
 # CSK Async
 
-A simple and powerful async abstraction layer lib for easily writing Node.js code.
+A simple and powerful async abstraction layer lib to easily write Node.js code.
 
 * License: BSD
 * Current status: beta
+* Platform: Node.js only
 
 While inspired in some way by [caolan/async](https://github.com/caolan/async), CSK Async uses a completely different approach.
 
 Rather than having a whole bunch of specific functions, this lib provides a generic way to solve async code flow.
+So anything that can be done by caolan/async lib can be converted to CSK Async, but the reverse is not always true.
 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
@@ -48,15 +50,58 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 
 
 
+# Features
+
+## Code flow
+
+* Series
+* Parallel
+* Race (parallel, stop when the first job finish without error)
+* Waterfall (series, each jobs transmit its results to the next)
+* While loop, do while loop
+* Async if/and
+* Async if/or
+* Nested async if
+
+
+
+## Modifier
+
+* Set the parallel limit
+* While condition
+* Repeat jobs some fixed amount of time
+* Iterator
+* Timeout for jobs (avoid pending jobs trouble)
+* Retry jobs on error (useful for managing outgoing connection)
+* Async/sync jobs' sheduling controle (turn sync jobs into async, change the *nice* value)
+* Continue on error or not
+* Transmission of all job's results or only the last
+* Then callback, if successful
+* Else callback, for *async if*
+* Catch callback, if some error occurs
+* Finally callback, always executed
+* Define input arguments to transmit to jobs
+* Export a plan as a simple function
+
+
+
+# Install
+
+Use Node Package Manager:
+
+    npm install async
+
+
+
 # Plan stage & exec stage concept
 
-There is an important concept to understand when using this lib: there are 2 stages to perform an async flow.
+There are an important concept to understand when using this lib: there are two stages to perform an async flow.
 
 In the first stage, you define the plan.
-All plan definition returns an async.Plan object.
+All plan definition returns an *async.Plan* object.
 
-Then you can *exec()* your plan as many time as you want. All the *exec* method family returns an execContext object.
-The first time an async.Plan is *exec()*, it becomes locked forever: you cannot modify it anymore.
+Then you can *exec()* your plan as many time as you want. All the *exec* method family returns an *execContext* object.
+The first time an *async.Plan* is *exec()*, it becomes locked forever: you cannot modify it anymore.
 
 The example above becomes:
 
