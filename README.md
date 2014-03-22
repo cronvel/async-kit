@@ -89,7 +89,7 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 
 Use Node Package Manager:
 
-    npm install async
+    npm install csk-async
 
 
 
