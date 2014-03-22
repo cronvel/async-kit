@@ -33,7 +33,6 @@
 	Async.Plan:
 		clone()
 		execAction()
-		execMap() & exec()
 		export()
 	Event:
 		progress
@@ -42,7 +41,7 @@
 
 
 
-var async = require( '../async.js' ) ;
+var async = require( '../lib/async.js' ) ;
 var expect = require( 'expect.js' ) ;
 
 
@@ -129,298 +128,135 @@ function syncJob( stats , id , options , result , callback )
 
 describe( "async.do.series()" , function() {
 	
-	describe( "Basic" , function() {
+	it( "should run the series of job which do not have errors, in the good order, and trigger the callback with the correct result" , function( done ) {
 		
-		it( "should run the series of job which do not have errors, in the good order, and trigger the callback with the correct result" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
+		var stats = createStats( 3 ) ;
 		
-		it( "when a job has error, it should start running a series of job, be interrupted by that error and return it" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.exec( function( error , results ) {
-				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "when a function is given instead of an array of job, it should format the result using the returnLastResultOnly mode" , function( done ) {
-			
-			var stats = createStats( 1 ) ;
-			
-			async.do( function ( callback ) {
-				asyncJob( stats , 0 , 50 , {} , [ undefined , 'my wonderful result' ] , callback ) ;
-			} )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.equal( 'my wonderful result' ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "when a function is given instead of an array of job that transmit error, it should be directly transmited as the global error" , function( done ) {
-			
-			var stats = createStats( 1 ) ;
-			
-			async.do( function ( callback ) {
-				asyncJob( stats , 0 , 50 , {} , [ new Error() , 'my wonderful result' ] , callback ) ;
-			} )
-			.exec( function( error , results ) {
-				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.equal( 'my wonderful result' ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0 ] ) ;
-				done() ;
-			} ) ;
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
 		} ) ;
 	} ) ;
 	
-	describe( "Niceness of scheduling" , function() {
+	it( "when a job has error, it should start running a series of job, be interrupted by that error and return it" , function( done ) {
 		
-		it( "using async.Plan.prototype.nice( -3 ), it should run the series of job with synchonous scheduling, with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -3 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
+		var stats = createStats( 3 ) ;
 		
-		it( "using async.Plan.prototype.nice( -2 ), it should run the series of job with an async scheduling (nextTick), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -2 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "using async.Plan.prototype.nice( -1 ), it should run the series of job with an async scheduling (setImmediate), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -1 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "using async.Plan.prototype.nice( 10 ), it should run the series of job with an async scheduling (setTimeout 100ms), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.series( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( 10 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				done() ;
-			} ) ;
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+			done() ;
 		} ) ;
 	} ) ;
+	
+	it( "when a function is given instead of an array of job, it should format the result using the returnLastResultOnly mode" , function( done ) {
+		
+		var stats = createStats( 1 ) ;
+		
+		async.do( function ( callback ) {
+			asyncJob( stats , 0 , 50 , {} , [ undefined , 'my wonderful result' ] , callback ) ;
+		} )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.equal( 'my wonderful result' ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "when a function is given instead of an array of job that transmit error, it should be directly transmited as the global error" , function( done ) {
+		
+		var stats = createStats( 1 ) ;
+		
+		async.do( function ( callback ) {
+			asyncJob( stats , 0 , 50 , {} , [ new Error() , 'my wonderful result' ] , callback ) ;
+		} )
+		.exec( function( error , results ) {
+			expect( error ).to.be.an( Error ) ;
+			expect( results ).to.be.equal( 'my wonderful result' ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
 } ) ;
 
 
 
 describe( "async.do.parallel()" , function() {
 	
-	describe( "Basic" , function() {
+	it( "should run jobs which do not have errors in parallel, and trigger the callback with the correct result" , function( done ) {
 		
-		it( "should run jobs which do not have errors in parallel, and trigger the callback with the correct result" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
+		var stats = createStats( 3 ) ;
 		
-		it( "when a job has error, it should start running jobs in parallel, be interrupted by that error and trigger callback with it before other pending jobs can complete" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ new Error() , 'result' ] ]
-			] )
-			.exec( function( error , results ) {
-				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ undefined , undefined , [ new Error() , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 0, 0, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "when the slower job has error, it should start running jobs in parallel, all other job complete and it trigger callback with the error" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.exec( function( error , results ) {
-				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
 		} ) ;
 	} ) ;
 	
-	describe( "Niceness of scheduling" , function() {
+	it( "when a job has error, it should start running jobs in parallel, be interrupted by that error and trigger callback with it before other pending jobs can complete" , function( done ) {
 		
-		it( "using async.Plan.prototype.nice( -3 ), it should run the jobs in parallel with synchonous scheduling, with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -3 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ new Error() , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ undefined , undefined , [ new Error() , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 0, 0, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2 ] ) ;
+			done() ;
 		} ) ;
+	} ) ;
+	
+	it( "when the slower job has error, it should start running jobs in parallel, all other job complete and it trigger callback with the error" , function( done ) {
 		
-		it( "using async.Plan.prototype.nice( -2 ), it should run the jobs in parallel with an async scheduling (nextTick), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -2 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
+		var stats = createStats( 3 ) ;
 		
-		it( "using async.Plan.prototype.nice( -1 ), it should run the jobs in parallel with an async scheduling (setImmediate), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( -1 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
-		} ) ;
-		
-		it( "using async.Plan.prototype.nice( 10 ), it should run the jobs in parallel with an async scheduling (setTimeout 100ms), with the same behaviour described in Basic" , function( done ) {
-			
-			var stats = createStats( 3 ) ;
-			
-			async.do.parallel( [
-				[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-				[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-				[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-			] )
-			.nice( 10 )
-			.exec( function( error , results ) {
-				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-				done() ;
-			} ) ;
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
 		} ) ;
 	} ) ;
 } ) ;
-
+	
 
 
 describe( "Jobs" , function() {
@@ -733,7 +569,233 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 
 
 
+describe( "Jobs scheduling with async.prototype.nice()" , function() {
+	
+	it( "using .nice( -3 ), it should run the series of job with synchonous scheduling" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -3 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( -2 ), it should run the series of job with an async scheduling (nextTick)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -2 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( -1 ), it should run the series of job with an async scheduling (setImmediate)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -1 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( 10 ), it should run the series of job with an async scheduling (setTimeout 100ms)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( 10 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( -3 ), it should run the jobs in parallel with synchonous scheduling" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -3 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( -2 ), it should run the jobs in parallel with an async scheduling (nextTick)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -2 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( -1 ), it should run the jobs in parallel with an async scheduling (setImmediate)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( -1 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "using .nice( 10 ), it should run the jobs in parallel with an async scheduling (setTimeout 100ms)" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.nice( 10 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Jobs & async.Plan.prototype.execMap(), adding input arguments to .exec()" , function() {
+	
+	it( "using default exec()'s arguments mapping, called with no argument, it should not throw error" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			function( callback ) {
+				var id = 2 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "result" ) ;
+					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+					done() ;
+				} , 0 ) ;
+			}
+		] )
+		.exec() ;
+	} ) ;
+	
+	it( "using default exec()'s arguments mapping, when a job is a function, it should take the input arguments passed to .exec()" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.parallel( [
+			function( describe , body , callback ) {
+				var id = 0 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "DESCRIPTION: " + describe ) ;
+				} , 20 ) ;
+			} ,
+			function( describe , body , callback ) {
+				var id = 1 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "LENGTH: " + body.length ) ;
+				} , 10 ) ;
+			} ,
+			function( describe , body , callback ) {
+				var id = 2 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "BODY: " + body ) ;
+				} , 0 ) ;
+			}
+		] )
+		.exec( 'some data' , 'blahblihblah' , function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [
+				[ undefined , 'DESCRIPTION: some data' ] ,
+				[ undefined , 'LENGTH: 12' ] ,
+				[ undefined , 'BODY: blahblihblah' ]
+			] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
 	
 	it( "when a job is a function, it should take the input arguments passed to .exec()" , function( done ) {
 		
@@ -885,7 +947,6 @@ describe( "async.waterfall()" , function() {
 				} , 0 ) ;
 			}
 		] )
-		.execMap( [ 'finally' ] , 1 , 1 , [ 'input' ] )
 		.exec( 'oh' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.be.equal( 'oh my wonderful result' ) ;
@@ -915,7 +976,6 @@ describe( "async.waterfall()" , function() {
 			}
 		] )
 		.transmitError()
-		.execMap( [ 'finally' ] , 1 , 1 , [ 'input' ] )
 		.exec( 'oh' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.be.equal( 'oh my wonderful result' ) ;
@@ -1162,7 +1222,7 @@ describe( "async.do().repeat()" , function() {
 
 
 
-describe( "Async logic" , function() {
+describe( "Async conditionnal" , function() {
 	
 	describe( "async.if.and()" , function() {
 		
