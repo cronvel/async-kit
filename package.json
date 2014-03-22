@@ -1,8 +1,8 @@
 {
   "name": "csk-async",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
-  "main": "async.js",
+  "main": "lib/async.js",
   "directories": {
     "test": "test"
   },
@@ -21,11 +21,29 @@
     "url": "https://github.com/cronvel/csk-async.git"
   },
   "keywords": [
-    "easy",
     "async",
+    "asynchronous",
+    "flow",
+    "jobs",
+    "series",
+    "parallel",
+    "conditionnal",
+    "if",
+    "then",
+    "else",
+    "catch",
+    "finally",
+    "waterfall",
+    "race",
+    "while",
+    "loop",
     "callback",
-    "event",
-    "csk"
+    "retry",
+    "events",
+    "scheduler",
+    "progress",
+    "csk" ,
+    "easy"
   ],
   "author": "Cédric Ronvel",
   "license": "BSD",
