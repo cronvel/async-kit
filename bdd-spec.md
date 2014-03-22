@@ -1,27 +1,24 @@
 # TOC
    - [async.do.series()](#asyncdoseries)
-     - [Basic](#asyncdoseries-basic)
-     - [Niceness of scheduling](#asyncdoseries-niceness-of-scheduling)
    - [async.do.parallel()](#asyncdoparallel)
-     - [Basic](#asyncdoparallel-basic)
-     - [Niceness of scheduling](#asyncdoparallel-niceness-of-scheduling)
    - [Jobs](#jobs)
    - [Jobs & async.Plan.prototype.using()](#jobs--asyncplanprototypeusing)
      - [passing a function to .using()](#jobs--asyncplanprototypeusing-passing-a-function-to-using)
      - [passing an array to .using()](#jobs--asyncplanprototypeusing-passing-an-array-to-using)
+   - [Jobs scheduling with async.prototype.nice()](#jobs-scheduling-with-asyncprototypenice)
    - [Jobs & async.Plan.prototype.execMap(), adding input arguments to .exec()](#jobs--asyncplanprototypeexecmap-adding-input-arguments-to-exec)
    - [async.waterfall()](#asyncwaterfall)
    - [async.race()](#asyncrace)
    - [async.while()](#asyncwhile)
    - [async.do().while()](#asyncdowhile)
    - [async.do().repeat()](#asyncdorepeat)
-   - [Async logic](#async-logic)
-     - [async.if.and()](#async-logic-asyncifand)
-     - [async.if.or()](#async-logic-asyncifor)
-     - [async.and()](#async-logic-asyncand)
-     - [async.or()](#async-logic-asyncor)
-     - [nested async.or() and async.and() in async.if()](#async-logic-nested-asyncor-and-asyncand-in-asyncif)
-     - [async.Plan.prototype.boolean()](#async-logic-asyncplanprototypeboolean)
+   - [Async conditionnal](#async-conditionnal)
+     - [async.if.and()](#async-conditionnal-asyncifand)
+     - [async.if.or()](#async-conditionnal-asyncifor)
+     - [async.and()](#async-conditionnal-asyncand)
+     - [async.or()](#async-conditionnal-asyncor)
+     - [nested async.or() and async.and() in async.if()](#async-conditionnal-nested-asyncor-and-asyncand-in-asyncif)
+     - [async.Plan.prototype.boolean()](#async-conditionnal-asyncplanprototypeboolean)
    - [async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThenCatch(), .execThenElse() and .execThenElseCatch()](#asyncplanprototypethen-else-catch-finally-execthencatch-execthenelse-and-execthenelsecatch)
    - [async.Plan.prototype.timeout()](#asyncplanprototypetimeout)
    - [async.Plan.prototype.retry()](#asyncplanprototyperetry)
@@ -33,8 +30,6 @@
  
 <a name="asyncdoseries"></a>
 # async.do.series()
-<a name="asyncdoseries-basic"></a>
-## Basic
 should run the series of job which do not have errors, in the good order, and trigger the callback with the correct result.
 
 ```js
@@ -107,92 +102,8 @@ async.do( function ( callback ) {
 } ) ;
 ```
 
-<a name="asyncdoseries-niceness-of-scheduling"></a>
-## Niceness of scheduling
-using async.Plan.prototype.nice( -3 ), it should run the series of job with synchonous scheduling, with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.series( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -3 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( -2 ), it should run the series of job with an async scheduling (nextTick), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.series( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -2 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( -1 ), it should run the series of job with an async scheduling (setImmediate), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.series( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -1 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( 10 ), it should run the series of job with an async scheduling (setTimeout 100ms), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.series( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( 10 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-	done() ;
-} ) ;
-```
-
 <a name="asyncdoparallel"></a>
 # async.do.parallel()
-<a name="asyncdoparallel-basic"></a>
-## Basic
 should run jobs which do not have errors in parallel, and trigger the callback with the correct result.
 
 ```js
@@ -244,88 +155,6 @@ async.do.parallel( [
 .exec( function( error , results ) {
 	expect( error ).to.be.an( Error ) ;
 	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-	done() ;
-} ) ;
-```
-
-<a name="asyncdoparallel-niceness-of-scheduling"></a>
-## Niceness of scheduling
-using async.Plan.prototype.nice( -3 ), it should run the jobs in parallel with synchonous scheduling, with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.parallel( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -3 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( -2 ), it should run the jobs in parallel with an async scheduling (nextTick), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.parallel( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -2 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( -1 ), it should run the jobs in parallel with an async scheduling (setImmediate), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.parallel( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( -1 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
-	done() ;
-} ) ;
-```
-
-using async.Plan.prototype.nice( 10 ), it should run the jobs in parallel with an async scheduling (setTimeout 100ms), with the same behaviour described in Basic.
-
-```js
-var stats = createStats( 3 ) ;
-
-async.do.parallel( [
-	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-] )
-.nice( 10 )
-.exec( function( error , results ) {
-	expect( error ).not.to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
 	done() ;
@@ -644,8 +473,241 @@ async.do.parallel( [
 } ) ;
 ```
 
+<a name="jobs-scheduling-with-asyncprototypenice"></a>
+# Jobs scheduling with async.prototype.nice()
+using .nice( -3 ), it should run the series of job with synchonous scheduling.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.series( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -3 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( -2 ), it should run the series of job with an async scheduling (nextTick).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.series( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -2 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( -1 ), it should run the series of job with an async scheduling (setImmediate).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.series( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -1 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( 10 ), it should run the series of job with an async scheduling (setTimeout 100ms).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.series( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( 10 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( -3 ), it should run the jobs in parallel with synchonous scheduling.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.parallel( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -3 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( -2 ), it should run the jobs in parallel with an async scheduling (nextTick).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.parallel( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -2 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( -1 ), it should run the jobs in parallel with an async scheduling (setImmediate).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.parallel( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( -1 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+using .nice( 10 ), it should run the jobs in parallel with an async scheduling (setTimeout 100ms).
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.parallel( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.nice( 10 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
 <a name="jobs--asyncplanprototypeexecmap-adding-input-arguments-to-exec"></a>
 # Jobs & async.Plan.prototype.execMap(), adding input arguments to .exec()
+using default exec()'s arguments mapping, called with no argument, it should not throw error.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.series( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	function( callback ) {
+		var id = 2 ;
+		stats.startCounter[ id ] ++ ;
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , "result" ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} , 0 ) ;
+	}
+] )
+.exec() ;
+```
+
+using default exec()'s arguments mapping, when a job is a function, it should take the input arguments passed to .exec().
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do.parallel( [
+	function( describe , body , callback ) {
+		var id = 0 ;
+		stats.startCounter[ id ] ++ ;
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , "DESCRIPTION: " + describe ) ;
+		} , 20 ) ;
+	} ,
+	function( describe , body , callback ) {
+		var id = 1 ;
+		stats.startCounter[ id ] ++ ;
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , "LENGTH: " + body.length ) ;
+		} , 10 ) ;
+	} ,
+	function( describe , body , callback ) {
+		var id = 2 ;
+		stats.startCounter[ id ] ++ ;
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , "BODY: " + body ) ;
+		} , 0 ) ;
+	}
+] )
+.exec( 'some data' , 'blahblihblah' , function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [
+		[ undefined , 'DESCRIPTION: some data' ] ,
+		[ undefined , 'LENGTH: 12' ] ,
+		[ undefined , 'BODY: blahblihblah' ]
+	] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+	done() ;
+} ) ;
+```
+
 when a job is a function, it should take the input arguments passed to .exec().
 
 ```js
@@ -796,7 +858,6 @@ async.waterfall( [
 		} , 0 ) ;
 	}
 ] )
-.execMap( [ 'finally' ] , 1 , 1 , [ 'input' ] )
 .exec( 'oh' , function( error , results ) {
 	expect( error ).not.to.be.an( Error ) ;
 	expect( results ).to.be.equal( 'oh my wonderful result' ) ;
@@ -827,7 +888,6 @@ async.waterfall( [
 	}
 ] )
 .transmitError()
-.execMap( [ 'finally' ] , 1 , 1 , [ 'input' ] )
 .exec( 'oh' , function( error , results ) {
 	expect( error ).not.to.be.an( Error ) ;
 	expect( results ).to.be.equal( 'oh my wonderful result' ) ;
@@ -1069,11 +1129,11 @@ async.do( [
 } ) ;
 ```
 
-<a name="async-logic"></a>
-# Async logic
-<a name="async-logic-asyncifand"></a>
+<a name="async-conditionnal"></a>
+# Async conditionnal
+<a name="async-conditionnal-asyncifand"></a>
 ## async.if.and()
-should evaluate async truthly && truthly && truthly to true, and run all jobs.
+should evaluate async truthy && truthy && truthy to true, and run all jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1090,7 +1150,7 @@ async.if.and( [
 } ) ;
 ```
 
-should evaluate async truthly && falsy && truthly to false, and run just the first and second jobs.
+should evaluate async truthy && falsy && truthy to false, and run just the first and second jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1124,9 +1184,9 @@ async.if.and( [
 } ) ;
 ```
 
-<a name="async-logic-asyncifor"></a>
+<a name="async-conditionnal-asyncifor"></a>
 ## async.if.or()
-should evaluate async truthly || truthly || truthly to true, and run only the first jobs.
+should evaluate async truthy || truthy || truthy to true, and run only the first jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1143,7 +1203,7 @@ async.if.or( [
 } ) ;
 ```
 
-should evaluate async falsy || truthly || falsy to true, and run just the first and second jobs.
+should evaluate async falsy || truthy || falsy to true, and run just the first and second jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1177,7 +1237,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-logic-asyncand"></a>
+<a name="async-conditionnal-asyncand"></a>
 ## async.and()
 should evaluate async true && 7 && 'wonderful' to 'wonderful', and run all jobs.
 
@@ -1230,7 +1290,7 @@ async.and( [
 } ) ;
 ```
 
-<a name="async-logic-asyncor"></a>
+<a name="async-conditionnal-asyncor"></a>
 ## async.or()
 should evaluate async 7 || true || 'wonderful' to 7, and run only the first jobs.
 
@@ -1283,9 +1343,9 @@ async.or( [
 } ) ;
 ```
 
-<a name="async-logic-nested-asyncor-and-asyncand-in-asyncif"></a>
+<a name="async-conditionnal-nested-asyncor-and-asyncand-in-asyncif"></a>
 ## nested async.or() and async.and() in async.if()
-should evaluate async ( truthly || falsy ) && truthly to true, and run first and third jobs.
+should evaluate async ( truthy || falsy ) && truthy to true, and run first and third jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1304,7 +1364,7 @@ async.if.and( [
 } ) ;
 ```
 
-should evaluate async ( falsy || truthly ) && falsy to false, and run all jobs.
+should evaluate async ( falsy || truthy ) && falsy to false, and run all jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1323,7 +1383,7 @@ async.if.and( [
 } ) ;
 ```
 
-should evaluate async ( truthly && falsy ) || truthly to true, and run all jobs.
+should evaluate async ( truthy && falsy ) || truthy to true, and run all jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1342,7 +1402,7 @@ async.if.or( [
 } ) ;
 ```
 
-should evaluate async ( falsy && truthly ) || falsy to false, and run the first and third jobs.
+should evaluate async ( falsy && truthy ) || falsy to false, and run the first and third jobs.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1361,7 +1421,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-logic-asyncplanprototypeboolean"></a>
+<a name="async-conditionnal-asyncplanprototypeboolean"></a>
 ## async.Plan.prototype.boolean()
 should force async.and()'s result to be a boolean, so 'wonderful' && 7 should evaluate to true.
 
@@ -1507,7 +1567,7 @@ async.do( [
 ) ;
 ```
 
-should evaluate async truthly && truthly && truthly to true, and trigger in-plan and in-exec then() and finally().
+should evaluate async truthy && truthy && truthy to true, and trigger in-plan and in-exec then() and finally().
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1564,7 +1624,7 @@ async.if.and( [
 ) ;
 ```
 
-should evaluate async truthly && falsy && truthly to false, and trigger in-plan and in-exec else() and finally().
+should evaluate async truthy && falsy && truthy to false, and trigger in-plan and in-exec else() and finally().
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1621,7 +1681,7 @@ async.if.and( [
 ) ;
 ```
 
-should evaluate async truthly && Error && truthly to Error, and trigger in-plan and in-exec catch() and finally().
+should evaluate async truthy && Error && truthy to Error, and trigger in-plan and in-exec catch() and finally().
 
 ```js
 var stats = createStats( 3 ) ;
