@@ -188,14 +188,15 @@ async.do.waterfall( [
 ```
 
 **Explanation**: 
-- *async.waterfall()* declare a job list in waterfall mode, when one job finish, it pass arguments to the next job
+- *async.waterfall()* declare a job list in *waterfall* mode, when one job finish, it pass arguments to the next job
 - *dbUserCollection.findOne()* & *dbPhotoCollection.findOne* are some kind of MongoDB pseudo-code,
   they return a document from the collection
 - *getUserPhoto()* receive a document of the authenticated user
-- *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we get what we want
-- *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if **ALL** jobs have failed
+- *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we manage to authenticate the user
+  and get its photo
+- *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if a job fails
 - *.execArgs()* is used when you do not want to pass callback to *exec()*-like function, since by default
-  *exec()* assume than its last argument is the *finally callback*, so since we are in waterfall mode, every
+  *exec()* assume than its last argument is the *finally callback*, so since we are in *waterfall* mode, every
   arguments passed to *execArgs()* are passed only to the first job
 
 
