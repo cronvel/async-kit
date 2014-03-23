@@ -174,6 +174,7 @@ async.do.waterfall( [
 		dbPhotoCollection.findOne( { _id: userDocument.photoID } , callback ) ;
 	}
 ] )
+.timeout( 200 )
 .then( function( photoDocument ) {
 	httpResponse.writeHead( 200 , { 'Content-Type' : 'image/png' } ) ;
 	httpResponse.write( photoDocument.rawData ) ;
@@ -192,6 +193,8 @@ async.do.waterfall( [
 - *dbUserCollection.findOne()* & *dbPhotoCollection.findOne* are some kind of MongoDB pseudo-code,
   they return a document from the collection
 - *getUserPhoto()* receive a document of the authenticated user
+- *timeout( 200 )* assume each jobs should perform within 200ms, if a job hit the time limit, it works as if
+  the job itself passed an error to its callback, here *.catch()* is immediately triggered if it happens
 - *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we manage to authenticate the user
   and get its photo
 - *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if a job fails
