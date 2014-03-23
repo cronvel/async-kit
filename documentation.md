@@ -193,7 +193,7 @@ async.do.waterfall( [
 - *dbUserCollection.findOne()* & *dbPhotoCollection.findOne* are some kind of MongoDB pseudo-code,
   they return a document from the collection
 - *getUserPhoto()* receive a document of the authenticated user
-- *timeout( 200 )* assume each jobs should perform within 200ms, if a job hit the time limit, it works as if
+- *timeout( 200 )* assume each job should perform within 200ms, if a job hit the time limit, it works as if
   the job itself passed an error to its callback, here *.catch()* is immediately triggered if it happens
 - *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we manage to authenticate the user
   and get its photo
