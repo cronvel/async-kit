@@ -95,7 +95,7 @@ Use Node Package Manager:
 
 # Plan stage & exec stage concept
 
-There are an important concept to understand when using this lib: there are two stages to perform an async flow.
+This is an important concept to understand when using this lib: there are two stages to perform an async flow.
 
 In the first stage, you define the plan.
 All plan definition returns an *async.Plan* object.
@@ -139,9 +139,105 @@ plan.timeout( 200 ) ;
 
 
 
+# Callbacks & the error argument
+
+In most case, callbacks work in the node.js fashion, except explicitly expressed otherwise.
+The callback should always be called with arguments in this order:
+
+```js
+callback( [error] , [argument1] , [argument2] , ... ) ;
+```
+
+That's it: the first argument, if present, is always assumed to be the error argument.
+
+CSK Async will assume that something is wrong with a job if it get **ANY** truthy value as the error argument,
+weither it is an instanceof of *Error*, *true*, *'my error message'*, or any expression evaluated to true.
+If you are unsure what are *truthy* and *falsy* values, 
+[check this out](http://docs.nodejitsu.com/articles/javascript-conventions/what-are-truthy-and-falsy-values).
+
+
+
+# Common use cases
+
+### Perform asynchronous database queries
+
+**Use case**: this is probably the most common use case for any website, we have to perform
+a series of async query, each query should be sent after the previous one succeed.
+
+```js
+async.do.waterfall( [
+	function getUserByLoginAndPassword( login , password , callback ) {
+		dbUserCollection.findOne( { login: login, password: password } , callback ) ;
+	} ,
+	
+	function getUserPhoto( userDocument , callback ) {
+		dbPhotoCollection.findOne( { _id: userDocument.photoID } , callback ) ;
+	}
+] )
+.then( function( photoDocument ) {
+	httpResponse.writeHead( 200 , { 'Content-Type' : 'image/png' } ) ;
+	httpResponse.write( photoDocument.rawData ) ;
+	httpResponse.end() ;
+} )
+.catch( function( error ) {
+	httpResponse.writeHead( 404 , { 'Content-Type' : 'text/plain' } ) ;
+	httpResponse.write( '404 - Not found.' ) ;
+	httpResponse.end() ;
+} )
+.execArgs( 'john@example.com' , 'god' ) ;
+```
+
+**Explanation**: 
+- *async.waterfall()* declare a job list in waterfall mode, when one job finish, it pass arguments to the next job
+- *dbUserCollection.findOne()* & *dbPhotoCollection.findOne* are some kind of MongoDB pseudo-code,
+  they return a document from the collection
+- *getUserPhoto()* receive a document of the authenticated user
+- *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we get what we want
+- *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if **ALL** jobs have failed
+- *.execArgs()* is used when you do not want to pass callback to *exec()*-like function, since by default
+  *exec()* assume than its last argument is the *finally callback*, so since we are in waterfall mode, every
+  arguments passed to *execArgs()* are passed only to the first job
+
+
+
+### Get informations on various mirror URL as fast as possible
+
+**Use case**: we want to get some contents (JSON, HTML, RSS, etc), many mirrors are available 
+but we don't want to try them one at a time, we want to try them all at once and finish 
+as soon as possible, when the first non-error response is received.
+
+```js
+async.race( [ url1 , url2 , url3 , url4 ] )
+.using( function( url , callback ) {
+	getContentFromUrl( url , callback ) ;
+} )
+.then( function( contents ) {
+	doSomethingWithContent( contents ) ;
+} )
+.catch( function( error ) {
+	console.log( "Cannot get contents from any mirror" ) ;
+} )
+.exec() ;
+```
+
+**Explanation**: 
+- *async.race()* declare a job list of four racing elements to process, in parallel mode, 
+  triggering callback when the first non-error job finished
+- *.using()* declare the function used to process them (iterator-like, if it means anything in a parallel context)
+- *getContentFromUrl()* is a user-defined function that take an URL and a callback, try to get contents from
+  that URL and call its callback the node.js way: `callback( error , contents )`
+- *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we get what we want
+- *doSomethingWithContent()* is a user-defined function, that process the contents
+- *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if **ALL** jobs have failed
+- here *.exec()* is called without argument, so it executes the *Plan* with no callback of its own: 
+  if we do not want to re-use the *Plan* it improves readability to use *.then()* and *.catch()* directly
+  in the *Plan* definition part.
+
+
+
 # Reference
 
-TODO.
+*Work in progress...*
 
 
 
