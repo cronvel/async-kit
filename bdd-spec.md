@@ -2,6 +2,7 @@
    - [async.do.series()](#asyncdoseries)
    - [async.do.parallel()](#asyncdoparallel)
    - [Jobs](#jobs)
+   - [async.foreach()](#asyncforeach)
    - [Jobs & async.Plan.prototype.using()](#jobs--asyncplanprototypeusing)
      - [passing a function to .using()](#jobs--asyncplanprototypeusing-passing-a-function-to-using)
      - [passing an array to .using()](#jobs--asyncplanprototypeusing-passing-an-array-to-using)
@@ -372,6 +373,38 @@ async.do.parallel( {
 	expect( Object.keys( results ) ).to.be.eql( [ 'one' , 'two' , 'three' ] ) ;	// Check the keys order
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+	done() ;
+} ) ;
+```
+
+<a name="asyncforeach"></a>
+# async.foreach()
+should take each job as an element to pass to the iterator function.
+
+```js
+var stats = createStats( 3 ) ;
+
+var myArray = [
+	{ id: 0 , timeout: 0 , result: [ undefined , 'my' ] } ,
+	{ id: 1 , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+	{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+] ;
+
+async.foreach( myArray , function( element , callback ) {
+	
+	stats.startCounter[ element.id ] ++ ;
+	
+	setTimeout( function() {
+		stats.endCounter[ element.id ] ++ ;
+		stats.order.push( element.id ) ;
+		callback.apply( undefined , element.result ) ;
+	} , element.delay ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
 	done() ;
 } ) ;
 ```

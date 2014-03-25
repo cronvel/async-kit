@@ -202,6 +202,8 @@ async.do.waterfall( [
   *exec()* assume than its last argument is the *finally callback*, so since we are in *waterfall* mode, every
   arguments passed to *execArgs()* are passed only to the first job
 
+You can chain as many queries as you want, without burying them deeper and deeper in nested callback hell.
+
 
 
 ### Get informations on various mirror URL as fast as possible
@@ -236,6 +238,31 @@ async.race( [ url1 , url2 , url3 , url4 ] )
 - here *.exec()* is called without argument, so it executes the *Plan* with no callback of its own: 
   if we do not want to re-use the *Plan* it improves readability to use *.then()* and *.catch()* directly
   in the *Plan* definition part.
+
+
+
+### Async foreach
+
+**Use case**: we have an array, we want to iterate it but there are some async code in the iterator, 
+and we really want that each element to be processed one at a time. The native javascript *myArray.forEach()*
+would parallelize the async part even if we don't want.
+
+```js
+async.foreach( myArray , function( element , callback ) {
+	doSomethingAsyncWithElement( element , callback ) ;
+} )
+.exec( function( error ) {
+	console.log( "Finished!" ) ;
+} ) ;
+```
+
+**Explanation**: 
+- *async.foreach( myArray , function )* define a job list with myArray, and specify an iterator function
+- *doSomethingAsyncWithElement()* should trigger its callback when the job is finished
+- When all element have been processed, the *exec()*'s callback is triggered, as usual
+
+You can as well add a ```.parallel()``` before *exec()*, you still have the advantage versus native forEach()
+of having a general callback triggered when everything is asynchronously done.
 
 
 

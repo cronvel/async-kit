@@ -34,6 +34,10 @@
 		clone()
 		execAction()
 		export()
+		while( condition , true )
+		race()
+		waterfall()
+		iterator() & usingIterator() -- should be mostly covered by foreach
 	Exec:
 		execArgs()
 	Event:
@@ -464,6 +468,40 @@ describe( "Jobs" , function() {
 			expect( Object.keys( results ) ).to.be.eql( [ 'one' , 'two' , 'three' ] ) ;	// Check the keys order
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "async.foreach()" , function() {
+	
+	it( "should take each job as an element to pass to the iterator function" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		var myArray = [
+			{ id: 0 , timeout: 0 , result: [ undefined , 'my' ] } ,
+			{ id: 1 , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+			{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+		] ;
+		
+		async.foreach( myArray , function( element , callback ) {
+			
+			stats.startCounter[ element.id ] ++ ;
+			
+			setTimeout( function() {
+				stats.endCounter[ element.id ] ++ ;
+				stats.order.push( element.id ) ;
+				callback.apply( undefined , element.result ) ;
+			} , element.delay ) ;
+		} )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
