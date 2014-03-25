@@ -926,6 +926,106 @@ describe( "Jobs & async.Plan.prototype.execMap(), adding input arguments to .exe
 
 
 
+describe( "*this*" , function() {
+	
+	it( "each job function should have *this* set to the current execContext" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			function( callback ) {
+				var id = 0 ;
+				expect( this ).to.be.an( async.ExecContext ) ;
+				expect( this.results ).to.be.eql( [ undefined ] ) ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'my' ) ;
+				} , 0 ) ;
+			} ,
+			function( callback ) {
+				var id = 1 ;
+				expect( this ).to.be.an( async.ExecContext ) ;
+				expect( this.results ).to.be.eql( [ [ undefined , 'my' ] , undefined ] ) ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'wonderful' ) ;
+				} , 0 ) ;
+			} ,
+			function( callback ) {
+				var id = 2 ;
+				expect( this ).to.be.an( async.ExecContext ) ;
+				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'result' ) ;
+				} , 0 ) ;
+			}
+		] )
+		.exec( done ) ;
+	} ) ;
+	
+	it( "using()'s function should have *this* set to the current execContext" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ 0 , 'my' , [ undefined ] ] ,
+			[ 1 , 'wonderful' , [ [ undefined , 'my' ] , undefined ] ] ,
+			[ 2 , 'result' , [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ]
+		] )
+		.using( function( id , result , expectedThisResults , callback ) {
+			expect( this ).to.be.an( async.ExecContext ) ;
+			expect( this.results ).to.be.eql( expectedThisResults ) ;
+			stats.startCounter[ id ] ++ ;
+			setTimeout( function() {
+				stats.endCounter[ id ] ++ ;
+				stats.order.push( id ) ;
+				callback( undefined , result ) ;
+			} , 0 ) ;
+		} )
+		.exec( done ) ;
+	} ) ;
+	
+	it( "every user provided callback should have *this* set to the current execContext" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 0 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.then( function( results ) {
+			expect( this ).to.be.an( async.ExecContext ) ;
+			expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+		} )
+		.finally( function( error , results ) {
+			expect( this ).to.be.an( async.ExecContext ) ;
+			expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+		} )
+		.execThenCatch(
+			function( results ) {
+				expect( this ).to.be.an( async.ExecContext ) ;
+				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			} ,
+			function( error ) {} ,
+			function( error , results ) {
+				expect( this ).to.be.an( async.ExecContext ) ;
+				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				done() ;
+			}
+		) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "async.waterfall()" , function() {
 	
 	it( "should run the series of job in waterfall mode: each job received the result of the previous, the final result is the result of the last job, the first job receive arguments from exec(), if any" , function( done ) {
