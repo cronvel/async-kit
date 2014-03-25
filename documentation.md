@@ -59,6 +59,7 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 * Race (parallel, stop when the first job finish without error)
 * Waterfall (series, each job transmits its results to the next)
 * While loop, do while loop
+* Foreach
 * Async if/and
 * Async if/or
 * Nested async if
@@ -264,7 +265,7 @@ async.foreach( myArray , function( element , callback ) {
 You can as well add a ```.parallel()``` before *exec()*, you still have the advantage versus native forEach()
 of having a general callback triggered when everything is asynchronously done.
 
-
+	
 
 # Reference
 
