@@ -75,7 +75,7 @@ function createStats( n )
 		}
 	} ;
 	
-	for ( i = 0 ; i < n ; i ++ )  stats.startCounter[ i ] = stats.endCounter[ i ] = 0 ;
+	for ( i = 0 ; i < n ; i ++ ) { stats.startCounter[ i ] = stats.endCounter[ i ] = 0 ; }
 	
 	return stats ;
 }
