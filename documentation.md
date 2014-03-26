@@ -60,6 +60,8 @@ When every jobs are finished, the *exec*'s callback is called, the *results* arg
 * Waterfall (series, each job transmits its results to the next)
 * While loop, do while loop
 * Foreach
+* Map
+* Reduce
 * Async if/and
 * Async if/or
 * Nested async if
