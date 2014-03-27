@@ -5,8 +5,9 @@ test: lib/async.js test/async-test.js
 doc: README.md
 
 publish: package.json
+	git checkout master
 	npm publish
-
+	git push
 
 
 README.md: documentation.md bdd-spec.md
