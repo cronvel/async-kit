@@ -734,7 +734,7 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 
 
 
-describe( "Jobs & async.Plan.prototype.execMap(), adding input arguments to .exec()" , function() {
+describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to .exec()" , function() {
 	
 	it( "using default exec()'s arguments mapping, called with no argument, it should not throw error" , function( done ) {
 		
@@ -838,7 +838,7 @@ describe( "Jobs & async.Plan.prototype.execMap(), adding input arguments to .exe
 				} , 0 ) ;
 			}
 		] )
-		.execMap( [ 'finally' ] , 2 , 2 , [ 'describe' , 'body' ] )
+		.execMapping( { callbacks: [ 'finally' ] , minInputs: 2 , maxInputs: 2 , inputsName: [ 'describe' , 'body' ] } )
 		.exec( 'some data' , 'blahblihblah' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.be.eql( [
@@ -886,7 +886,7 @@ describe( "Jobs & async.Plan.prototype.execMap(), adding input arguments to .exe
 			}
 		] )
 		.using( [ "<insert .using()'s description here>" , "<insert .using()'s body here>" ] )
-		.execMap( [ 'finally' ] , 0 , 2 , [ 'describe' , 'body' ] ) ;
+		.execMapping( { callbacks: [ 'finally' ] , minInputs: 0 , maxInputs: 2 , inputsName: [ 'describe' , 'body' ] } ) ;
 		
 		stats = createStats( 3 ) ;
 		
@@ -1120,6 +1120,23 @@ describe( "async.reduce()" , function() {
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.be.eql( 22 ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "if a default initial aggregate value is not supplied to async.reduce(), this initial value should be supplied as exec()'s first argument by default" , function( done ) {
+		
+		var myArray = [ 'my' , 'wonderful' , 'result' ] ;
+		
+		var plan = async.reduce( myArray , function( aggregate , element , callback ) {
+			
+			setTimeout( function() {
+				callback( undefined , aggregate + element.length ) ;
+			} , 0 ) ;
+		} )
+		.exec( 7 , function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( 24 ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2347,6 +2364,126 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
 			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "async.Plan.prototype.execKV()" , function() {
+	
+	it( "should pass an object with inputs arguments in 'inputs' property and 'then' & 'finally' callback in properties of the same name" , function() {
+		
+		var stats = createStats( 3 ) ;
+		var then ;
+		
+		async.do.parallel( [
+			function( describe , body , callback ) {
+				var id = 0 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "DESCRIPTION: " + describe ) ;
+				} , 20 ) ;
+			} ,
+			function( describe , body , callback ) {
+				var id = 1 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "LENGTH: " + body.length ) ;
+				} , 10 ) ;
+			} ,
+			function( describe , body , callback ) {
+				var id = 2 ;
+				stats.startCounter[ id ] ++ ;
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , "BODY: " + body ) ;
+				} , 0 ) ;
+			}
+		] )
+		.execKV( {
+			inputs: [ 'some data' , 'blahblihblah' ],
+			then: function( results ) {
+				then = true ;
+				expect( results ).to.be.eql( [
+					[ undefined , 'DESCRIPTION: some data' ] ,
+					[ undefined , 'LENGTH: 12' ] ,
+					[ undefined , 'BODY: blahblihblah' ]
+				] ) ;
+			} ,
+			'finally': function( error , results ) {
+				expect( error ).not.to.be.an( Error ) ;
+				expect( then ).to.be.equal( true ) ;
+				expect( results ).to.be.eql( [
+					[ undefined , 'DESCRIPTION: some data' ] ,
+					[ undefined , 'LENGTH: 12' ] ,
+					[ undefined , 'BODY: blahblihblah' ]
+				] ) ;
+				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+				done() ;
+			}
+		} ) ;
+	} ) ;
+	
+	it( "should accept 'catch' callback in the 'catch' property" , function() {
+		
+		var stats = createStats( 3 ) ;
+		var then , catch_ ;
+		
+		async.do.series( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.execKV( {
+			inputs: [ 'some data' , 'blahblihblah' ],
+			then: function( results ) {
+				then = true ;
+			} ,
+			'catch': function( results ) {
+				catch_ = true ;
+			} ,
+			'finally': function( error , results ) {
+				expect( error ).to.be.an( Error ) ;
+				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+				expect( then ).to.not.be.equal( true ) ;
+				expect( catch_ ).to.be.equal( true ) ;
+				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+				done() ;
+			}
+		} ) ;
+	} ) ;
+	
+	it( "should accept the aggegate property as well" , function( done ) {
+		
+		var myArray = [ 'my' , 'wonderful' , 'result' ] ;
+		var then ;
+		
+		async.reduce( myArray , 5 , function( aggregate , element , callback ) {
+			
+			setTimeout( function() {
+				callback( undefined , aggregate + element.length ) ;
+			} , 0 ) ;
+		} )
+		.execKV( {
+			aggregate: 11,
+			'then': function( results ) {
+				then = true ;
+				expect( results ).to.be.eql( 28 ) ;
+			} ,
+			'finally': function( error , results ) {
+				expect( error ).not.to.be.an( Error ) ;
+				expect( then ).to.be.equal( true ) ;
+				expect( results ).to.be.eql( 28 ) ;
+				done() ;
+			}
 		} ) ;
 	} ) ;
 } ) ;
