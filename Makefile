@@ -23,7 +23,7 @@ clean: clean-all
 # Real files rules
 
 # Mocha BDD STDOUT test
-log/mocha.log: lib/async.js test/async-test.js
+log/mocha.log: log/npm-install.log lib/async.js test/async-test.js
 	mocha test/async-test.js | tee log/mocha.log
 
 # README
@@ -31,7 +31,7 @@ README.md: documentation.md bdd-spec.md
 	cat documentation.md bdd-spec.md > README.md
 
 # Mocha Markdown BDD spec
-bdd-spec.md: lib/async.js test/async-test.js
+bdd-spec.md: log/npm-install.log lib/async.js test/async-test.js
 	mocha test/async-test.js -R markdown > bdd-spec.md
 
 # Upgrade version in package.json
@@ -56,9 +56,9 @@ log/npm-install.log: package.json
 
 .PHONY: clean-all check-if-master-branch
 
-# Delete files, mostly log and not versioned files
+# Delete files, mostly log and non-versioned files
 clean-all:
-	rm -f log/*.log README.md bdd-spec.md
+	rm -rf log/*.log README.md bdd-spec.md node_modules
 
 # This will fail if we are not on master branch (grep exit 1 if nothing found)
 check-if-master-branch:
