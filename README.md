@@ -269,6 +269,30 @@ of having a general callback triggered when everything is asynchronously done.
 
 	
 
+# Make
+
+To make it work:
+
+    make install
+
+To build any buildable things:
+
+    make
+
+To run tests:
+
+    make test
+
+To rebuild documentation:
+
+    make doc
+
+To clean everything that can be automatically regenerated:
+
+    make clean
+
+
+
 # Reference
 
 *Work in progress...*
