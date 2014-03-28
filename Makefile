@@ -4,7 +4,14 @@
 # User rules
 
 # The first rule is the default rule, when invoking "make" without argument...
-all: log/npm-install.log doc package.json
+# Build every buildable things
+all: install doc package.json
+
+# Just install things so it works, basicaly: it just performs a "npm install --production" ATM
+install: log/npm-install.log
+
+# Just install things so it works, basicaly: it just performs a "npm install" ATM
+dev-install: log/npm-dev-install.log
 
 # This run the Mocha BDD test, display it to STDOUT & save it to log/mocha.log
 test: log/mocha.log
@@ -23,7 +30,7 @@ clean: clean-all
 # Real files rules
 
 # Mocha BDD STDOUT test
-log/mocha.log: log/npm-install.log lib/async.js test/async-test.js
+log/mocha.log: log/npm-dev-install.log lib/async.js test/async-test.js
 	mocha test/async-test.js | tee log/mocha.log
 
 # README
@@ -31,7 +38,7 @@ README.md: documentation.md bdd-spec.md
 	cat documentation.md bdd-spec.md > README.md
 
 # Mocha Markdown BDD spec
-bdd-spec.md: log/npm-install.log lib/async.js test/async-test.js
+bdd-spec.md: log/npm-dev-install.log lib/async.js test/async-test.js
 	mocha test/async-test.js -R markdown > bdd-spec.md
 
 # Upgrade version in package.json
@@ -48,7 +55,11 @@ log/github-push.log: lib/async.js test/async-test.js package.json
 
 # NPM install
 log/npm-install.log: package.json
-	npm install | tee log/npm-install.log
+	npm install --production | tee log/npm-install.log
+
+# NPM install for developpement usage
+log/npm-dev-install.log: package.json
+	npm install | tee log/npm-dev-install.log
 
 
 
