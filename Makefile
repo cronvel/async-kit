@@ -27,7 +27,7 @@ clean: clean-all
 
 
 
-# Real files rules
+# Files rules
 
 # Mocha BDD STDOUT test
 log/mocha.log: log/npm-dev-install.log lib/async.js test/async-test.js
