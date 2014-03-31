@@ -271,31 +271,78 @@ of having a general callback triggered when everything is asynchronously done.
 
 # Make
 
-To make it work:
+To make it work: `make install`
 
-    make install
+To build any buildable things: `make`
 
-To build any buildable things:
+To run tests: `make test`
 
-    make
+To rebuild documentation: `make doc`
 
-To run tests:
-
-    make test
-
-To rebuild documentation:
-
-    make doc
-
-To clean everything that can be automatically regenerated:
-
-    make clean
+To clean everything that can be automatically regenerated: `make clean`
 
 
 
 # Reference
 
-*Work in progress...*
+* /!\ Work in progress /!\ *
+
+
+
+## Factories
+
+Unless specified otherwise, they all return an async.Plan object, and set the jobs list.
+
+
+### async.do( jobsList )
+
+* jobsList `Array`
+
+This is the most generic factory.
+It creates an async.Plan object, set up the job's list, and almost everything remain possible.
+
+Note that an async.Plan do not perform anything until `.exec()` is called on it (see Class async.Plan for details).
+The following informations describe what happend when the plan is executed.
+
+By default, jobs are processed one at a time.
+
+If an error occurs, no new jobs will be processed.
+
+Note: **all others factories are described relative to this one as a point of reference.**
+Only differences will be put.
+
+
+
+### async.do.series( jobsList ) , async.doSeries( jobsList )
+
+* jobsList `Array`
+
+Set up a job's list to be processed in series.
+**Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
+
+
+
+### async.do.parallel( jobsList ) , async.doParallel( jobsList )
+
+* jobsList `Array`
+
+Set up a job's list to be processed in parallel.
+The parallel limit is set to `Infinity` by default.
+
+
+
+### async.do.race( jobsList )
+
+* jobsList `Array`
+
+Set up a job's list to be processed in parallel.
+The parallel limit is set to `Infinity` by default.
+
+
+
+## Class
+
+### async.Plan
 
 
 
