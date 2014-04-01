@@ -1259,6 +1259,26 @@ describe( "async.race()" , function() {
 			done() ;
 		} ) ;
 	} ) ;
+	
+	it( "when using a parallel limit, no new jobs should be processed after a job complete without error" , function( done ) {
+		
+		var stats = createStats( 4 ) ;
+		
+		async.race( [
+			[ asyncJob , stats , 0 , 150 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ] ,
+			[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'again' ] ]
+		] )
+		.parallel( 3 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.equal( 'wonderful' ) ;
+			expect( stats.startCounter ).to.be.eql( [ 1, 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 0, 1, 0, 0 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
 } ) ;
 
 

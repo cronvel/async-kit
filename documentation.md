@@ -296,17 +296,19 @@ Unless specified otherwise, they all return an async.Plan object, and set the jo
 
 ### async.do( jobsList )
 
-* jobsList `Array`
+* jobsList `Array` or `Object`
 
 This is the most generic factory.
 It creates an async.Plan object, set up the job's list, and almost everything remain possible.
 
-Note that an async.Plan do not perform anything until `.exec()` is called on it (see Class async.Plan for details).
+Note that an async.Plan do not perform anything until its `.exec()` method is called (see Class async.Plan for details).
 The following informations describe what happend when the plan is executed.
 
 By default, jobs are processed one at a time.
 
 If an error occurs, no new jobs will be processed.
+
+The `finally` callback (see below) is triggered when the first error occurs or when all jobs are done.
 
 Note: **all others factories are described relative to this one as a point of reference.**
 Only differences will be put.
@@ -315,16 +317,17 @@ Only differences will be put.
 
 ### async.do.series( jobsList ) , async.doSeries( jobsList )
 
-* jobsList `Array`
+* jobsList `Array` or `Object`
 
 Set up a job's list to be processed in series.
+
 **Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
 
 
 
 ### async.do.parallel( jobsList ) , async.doParallel( jobsList )
 
-* jobsList `Array`
+* jobsList `Array` or `Object`
 
 Set up a job's list to be processed in parallel.
 The parallel limit is set to `Infinity` by default.
@@ -333,11 +336,62 @@ The parallel limit is set to `Infinity` by default.
 
 ### async.do.race( jobsList )
 
-* jobsList `Array`
+* jobsList `Array` or `Object`
 
 Set up a job's list to be processed in parallel.
 The parallel limit is set to `Infinity` by default.
 
+The `finally` callback is triggered when the first job finish without error, or when all jobs have failed.
+Jobs processing continue on error, but no new jobs will be processed when one job succeed.
+
+
+
+### async.do.waterfall( jobsList ) , async.doSeries( jobsList )
+
+* jobsList `Array` or `Object`
+
+Set up a job's list to be processed in series, in waterfall mode.
+Each job is called with the previous job output as arguments.
+
+By default, the `exec()` method accept arguments to pass to the first job.
+
+**Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
+
+```js
+async.waterfall( [
+	function( str , callback ) {
+		callback( undefined , str + ' my' ) ;
+	} ,
+	function( str , callback ) {
+		callback( undefined , str + ' wonderful' ) ;
+	} ,
+	function( str , callback ) {
+		callback( undefined , str + ' result' ) ;
+	}
+] )
+.exec( 'oh' , function( error , results ) {
+	// produce 'oh my wonderful result'
+	console.log( results ) ;
+} ) ;
+```
+
+
+
+### async.do.foreach( container , iterator ) , async.doSeries( jobsList )
+
+* container `Array` or `Object` to iterate
+* iterator `Function( element , callback )` where:
+	* element `mixed` the current array element or object's property value
+	* callback `Function` to be called on completion
+
+```js
+async.foreach( myArray , function( element , callback ) {
+	doSomethingAsyncWithElement( element , callback ) ;
+} )
+.exec( function() {
+	console.log( "Finished!" ) ;
+} ) ;
+```
 
 
 ## Class
