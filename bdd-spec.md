@@ -971,6 +971,98 @@ async.foreach( myArray , function( element , callback ) {
 } ) ;
 ```
 
+when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument.
+
+```js
+var stats = createStats( 3 ) ;
+
+var myArray = [
+	{ id: 0 , timeout: 10 , result: [ undefined , 'my' ] } ,
+	{ id: 1 , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+	{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+] ;
+
+async.foreach( myArray , function( key , element , callback ) {
+	
+	stats.startCounter[ element.id ] ++ ;
+	expect( key ).to.be.equal( element.id ) ;
+	
+	setTimeout( function() {
+		stats.endCounter[ element.id ] ++ ;
+		stats.order.push( element.id ) ;
+		callback.apply( undefined , element.result ) ;
+	} , element.delay ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+if the container to iterate is an object, the current key (property name) is passed to it as the first argument.
+
+```js
+var stats = createStats( 3 ) ;
+
+var myObject = {
+	one: { id: 0 , name: 'one' , timeout: 10 , result: [ undefined , 'my' ] } ,
+	two: { id: 1 , name: 'two' , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+	three: { id: 2 , name: 'three' , timeout: 0 , result: [ undefined , 'result' ] }
+} ;
+
+async.foreach( myObject , function( key , element , callback ) {
+	
+	stats.startCounter[ element.id ] ++ ;
+	expect( key ).to.be.equal( element.name ) ;
+	
+	setTimeout( function() {
+		stats.endCounter[ element.id ] ++ ;
+		stats.order.push( element.id ) ;
+		callback.apply( undefined , element.result ) ;
+	} , element.delay ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+if a job fails, it should continue anyway processing others.
+
+```js
+var stats = createStats( 3 ) ;
+
+var myArray = [
+	{ id: 0 , timeout: 10 , result: [ undefined , 'my' ] } ,
+	{ id: 1 , timeout: 0 , result: [ new Error() , 'wonderful' ] } ,
+	{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+] ;
+
+async.foreach( myArray , function( element , callback ) {
+	
+	stats.startCounter[ element.id ] ++ ;
+	
+	setTimeout( function() {
+		stats.endCounter[ element.id ] ++ ;
+		stats.order.push( element.id ) ;
+		callback.apply( undefined , element.result ) ;
+	} , element.delay ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
 <a name="asyncmap"></a>
 # async.map()
 should take each job as an element to pass to the iterator function, and create a new array with computed values and 1:1 mapping.
@@ -1005,6 +1097,48 @@ async.map( myObject , function( element , callback ) {
 .exec( function( error , results ) {
 	expect( error ).not.to.be.an( Error ) ;
 	expect( results ).to.be.eql( { one: 2, two: 9, three: 6 } ) ;
+	done() ;
+} ) ;
+```
+
+when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument.
+
+```js
+var myArray = [ 'my' , 'wonderful' , 'result' ] ;
+var count = 0 ;
+
+async.map( myArray , function( key , element , callback ) {
+	
+	expect( key ).to.be.equal( count ) ;
+	count ++ ;
+	
+	setTimeout( function() {
+		callback( undefined , element.length ) ;
+	} , 0 ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ 2, 9, 6 ] ) ;
+	done() ;
+} ) ;
+```
+
+if the container to iterate is an object, the current key (property name) is passed to it as the first argument.
+
+```js
+var myObject = { my: 'my' , wonderful: 'wonderful' , result: 'result' } ;
+
+async.map( myObject , function( key , element , callback ) {
+	
+	expect( key ).to.be.equal( element ) ;
+	
+	setTimeout( function() {
+		callback( undefined , element.length ) ;
+	} , 0 ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( { my: 2, wonderful: 9, result: 6 } ) ;
 	done() ;
 } ) ;
 ```
@@ -1161,6 +1295,27 @@ async.race( [
 	expect( error ).to.be.an( Error ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 1, 2, 0 ] ) ;
+	done() ;
+} ) ;
+```
+
+when using a parallel limit, no new jobs should be processed after a job complete without error.
+
+```js
+var stats = createStats( 4 ) ;
+
+async.race( [
+	[ asyncJob , stats , 0 , 150 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ] ,
+	[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'again' ] ]
+] )
+.parallel( 3 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.equal( 'wonderful' ) ;
+	expect( stats.startCounter ).to.be.eql( [ 1, 1, 1, 0 ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 0, 1, 0, 0 ] ) ;
 	done() ;
 } ) ;
 ```
