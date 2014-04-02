@@ -334,7 +334,7 @@ The parallel limit is set to `Infinity` by default.
 
 
 
-### async.do.race( jobsList )
+### async.race( jobsList )
 
 * jobsList `Array` or `Object`
 
@@ -346,7 +346,7 @@ Jobs processing continue on error, but no new jobs will be processed when one jo
 
 
 
-### async.do.waterfall( jobsList ) , async.doSeries( jobsList )
+### async.waterfall( jobsList )
 
 * jobsList `Array` or `Object`
 
@@ -370,28 +370,140 @@ async.waterfall( [
 	}
 ] )
 .exec( 'oh' , function( error , results ) {
-	// produce 'oh my wonderful result'
+	// output 'oh my wonderful result'
 	console.log( results ) ;
 } ) ;
 ```
 
 
 
-### async.do.foreach( container , iterator ) , async.doSeries( jobsList )
+### async.foreach( container , iterator )
 
 * container `Array` or `Object` to iterate
-* iterator `Function( element , callback )` where:
+* iterator `Function( [key] , element , callback )` where:
+	* key `Number` or `String` the current key (index for array, property name for object)
 	* element `mixed` the current array element or object's property value
-	* callback `Function` to be called on completion
+	* callback `Function( error , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion
 
+It performs an async foreach, iterating *container*, using *iterator*. 
+
+Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
+will be either *( element , callback )* or *( key , element , callback )*, where *key* is the current key
+(the current index if *container* is an Array, or the current property's name if *container* is an object)
+*element* is the current element, and *callback* is the completion's callback.
+
+By default, *element*s are performed one at a time, in series.
+
+If the *iterator* fails for one element, it will continue processing others elements anyway.
+
+Note that `async.foreach( container , iterator )` is equal to `async.do( container ).iterator( iterator )`.
+
+Example:
 ```js
-async.foreach( myArray , function( element , callback ) {
+var myArray = [ 'one' , 'two' , 'three' ] ;
+
+async.foreach( myArray , function( key , element , callback ) {
+	// Called three time, with element's value: 'one', then 'two', then 'three'
 	doSomethingAsyncWithElement( element , callback ) ;
 } )
-.exec( function() {
-	console.log( "Finished!" ) ;
+.exec( function( error , results ) {
+	thingsToDoWhenFinished() ;
 } ) ;
 ```
+
+
+
+### async.map( container , iterator )
+
+* container `Array` or `Object` to iterate
+* iterator `Function( [key] , element , callback )` where:
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* element `mixed` the current array element or object's property value
+	* callback `Function( error , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion
+
+It performs an async map, iterating *container*, using *iterator*.
+An async map takes an array and produces a new array, each value in the input array is mapped into the output array, preserving indexes.
+If an object is provided instead of an array, it produces a new object, preserving keys.
+
+Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
+will be either *( element , callback )* or *( key , element , callback )*, where *key* is the current key
+(the current index if *container* is an Array, or the current property's name if *container* is an object)
+*element* is the current element, and *callback* is the completion's callback.
+
+By default, *element*s are performed in parallel mode.
+
+If the *iterator* fails for one element, it will continue processing others elements anyway.
+
+Note that `async.map( container , iterator )` is equal to `async.do( container ).iterator( iterator ).mapping1to1()`.
+
+Example:
+```js
+var myArray = [ 'my' , 'wonderful' , 'result' ] ;
+
+async.map( myArray , function( element , callback ) {
+	
+	setTimeout( function() {
+		callback( undefined , element.length ) ;
+	} , 0 ) ;
+} )
+.exec( function( error , results ) {
+	// we expect results to be equal to [ 2, 9, 6 ]
+	expect( results ).to.be.eql( [ 2, 9, 6 ] ) ;
+} ) ;
+```
+
+
+
+### async.reduce( container , [aggregatedValue] , iterator )
+
+* container `Array` or `Object` to iterate
+* aggregatedValue `mixed` the initial default reduced (aggregated) value
+* iterator `Function( aggregatedValue , [key] , element , callback )` where:
+	* aggregatedValue `mixed` the current reduced value
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* element `mixed` the current array element or object's property value
+	* callback `Function( error , newAggregatedValue , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion, where:
+		* newAggregatedValue `mixed` is the new reduced value that will be passed to the next iteration
+
+It performs an async reduce, iterating *container*, using *iterator*.
+An async reduce takes an array (or an object), iterate it to produce a single reduced value (though actually this single *value*
+can be anything we like, even an array or object).
+
+Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
+will be either *( aggregatedValue , element , callback )* or *( aggregatedValue , key , element , callback )*,
+where *aggregatedValue* is the current reduced value, *key* is the current key
+(the current index if *container* is an Array, or the current property's name if *container* is an object)
+*element* is the current element, and *callback* is the completion's callback.
+
+Each *element*s is processed one at a time, in series.
+**Calling `.parallel()` on this `async.Plan` has no effect, it will process jobs one at a time anyway.**
+
+If the *iterator* fails for one element, the whole process *aborts and fails*.
+
+**If you do \*NOT\* provide a default aggregatedValue in the `async.Plan`, then `.exec()` method require an initial aggregatedValue as its first argument.**
+
+Note that `async.reduce( initialAggregatedValue , container , iterator )` is equal to
+`async.do( container ).iterator( iterator ).aggregator( true , true , initialAggregatedValue )`.
+
+Example:
+```js
+var myArray = [ 'my' , 'wonderful' , 'result' ] ;
+
+var plan = async.reduce( myArray , function( aggregate , element , callback ) {
+	
+	setTimeout( function() {
+		// Asyncly calculate the sum of the length
+		callback( undefined , aggregate + element.length ) ;
+	} , 0 ) ;
+} )
+// No aggregateValue is provided in the async.Plan creation,
+// so the first argument of exec() is the initial aggregateValue
+.exec( 0 , function( error , results ) {
+	// we expect results to be equal to 17
+	expect( results ).to.be.eql( 17 ) ;
+} ) ;
+```
+
 
 
 ## Class

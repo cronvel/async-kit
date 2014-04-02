@@ -42,11 +42,11 @@ bdd-spec.md: log/npm-dev-install.log lib/async.js test/async-test.js
 	mocha test/async-test.js -R markdown > bdd-spec.md
 
 # Upgrade version in package.json
-package.json: lib/async.js test/async-test.js documentation.md
-	npm version patch -m "Upgrade package.json version to %s"
+log/upgrade-package.log: lib/async.js test/async-test.js documentation.md
+	npm version patch -m "Upgrade package.json version to %s" | tee log/upgrade-package.log
 
 # Publish to NPM
-log/npm-publish.log: check-if-master-branch package.json
+log/npm-publish.log: check-if-master-branch log/upgrade-package.log
 	npm publish | tee log/npm-publish.log
 
 # Push to Github/master
