@@ -285,7 +285,11 @@ To clean everything that can be automatically regenerated: `make clean`
 
 # Reference
 
-* /!\ Work in progress /!\ *
+**/!\ Work in progress /!\\**
+
+#### Factories
+
+[async.map()](#ref.async.map)
 
 
 
@@ -311,7 +315,7 @@ If an error occurs, no new jobs will be processed.
 The `finally` callback (see below) is triggered when the first error occurs or when all jobs are done.
 
 Note: **all others factories are described relative to this one as a point of reference.**
-Only differences will be put.
+Only differences will be reported.
 
 
 
@@ -357,6 +361,7 @@ By default, the `exec()` method accept arguments to pass to the first job.
 
 **Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
 
+Example:
 ```js
 async.waterfall( [
 	function( str , callback ) {
@@ -413,6 +418,7 @@ async.foreach( myArray , function( key , element , callback ) {
 
 
 
+<a name="ref.async.map"></a>
 ### async.map( container , iterator )
 
 * container `Array` or `Object` to iterate
@@ -466,7 +472,7 @@ async.map( myArray , function( element , callback ) {
 		* newAggregatedValue `mixed` is the new reduced value that will be passed to the next iteration
 
 It performs an async reduce, iterating *container*, using *iterator*.
-An async reduce takes an array (or an object), iterate it to produce a single reduced value (though actually this single *value*
+An async reduce takes an array (or an object), and iterate it to produce a single reduced value (though actually this single *value*
 can be anything we like, even an array or object).
 
 Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
@@ -475,12 +481,12 @@ where *aggregatedValue* is the current reduced value, *key* is the current key
 (the current index if *container* is an Array, or the current property's name if *container* is an object)
 *element* is the current element, and *callback* is the completion's callback.
 
-Each *element*s is processed one at a time, in series.
+Each *element* is processed one at a time, in series.
 **Calling `.parallel()` on this `async.Plan` has no effect, it will process jobs one at a time anyway.**
 
 If the *iterator* fails for one element, the whole process *aborts and fails*.
 
-**If you do \*NOT\* provide a default aggregatedValue in the `async.Plan`, then `.exec()` method require an initial aggregatedValue as its first argument.**
+**If you do \*NOT\* provide a default aggregatedValue in the `async.Plan`, then the `.exec()` method require an initial *aggregatedValue* as its first argument.**
 
 Note that `async.reduce( initialAggregatedValue , container , iterator )` is equal to
 `async.do( container ).iterator( iterator ).aggregator( true , true , initialAggregatedValue )`.
@@ -496,8 +502,8 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 		callback( undefined , aggregate + element.length ) ;
 	} , 0 ) ;
 } )
-// No aggregateValue is provided in the async.Plan creation,
-// so the first argument of exec() is the initial aggregateValue
+// No aggregatedValue is provided in the async.Plan creation,
+// so the first argument of exec() must be the initial aggregatedValue.
 .exec( 0 , function( error , results ) {
 	// we expect results to be equal to 17
 	expect( results ).to.be.eql( 17 ) ;
@@ -509,6 +515,8 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 ## Class
 
 ### async.Plan
+
+**/!\ Work in progress /!\\**
 
 
 
