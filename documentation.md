@@ -287,7 +287,7 @@ To clean everything that can be automatically regenerated: `make clean`
 
 **/!\ Work in progress /!\\**
 
-* [Do family factories](#ref.do.factories)
+* [*Do* family factories](#ref.do.factories)
 	* [async.do()](#ref.async.do)
 	* [async.do.series(), async.doSeries()](#ref.async.do.series)
 	* [async.do.parallel(), async.doParallel()](#ref.async.do.parallel)
@@ -297,6 +297,11 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.map()](#ref.async.map)
 	* [async.reduce()](#ref.async.reduce)
 	* [async.while().do()](#ref.async.while)
+* [*Conditionnal* family factories](#ref.conditionnal.factories)
+	* [async.and()](#ref.async.and)
+	* [async.or()](#ref.async.or)
+	* [async.if.and()](#ref.async.if.and)
+	* [async.if.or()](#ref.async.if.or)
 
 
 
@@ -532,7 +537,21 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 
 
 <a name="ref.async.while"></a>
-### async.while( conditionCallback )
+### async.while( conditionCallback ).do( jobsList )
+
+It performs an async while loop.
+
+Unlike other factory, in order to mimic native language syntax, this factory accepts a *conditionCallback* rather than a job's list.
+So you have to use the `async.Plan`'s `.do()` method to pass the job's list.
+
+Async while loops behave diffently than other `async.Plan` in various way:
+* it first performs an async conditionnal check, if the outcome is falsy, then the execution is immediately aborted
+* it performs jobs, just the way other `async.Plan` do, but:
+* when everything is done, it performs again a conditionnal check, and if its outcome is truthy, it loops again (and again, etc...)
+* when the outcome of the conditionnal check is falsy, callback (*finally, then, catch, else*) are triggered 
+with the outcome of the last iteration only (if any), so older iteration's outcome are lost unless used in the *conditionCallback*.
+
+/!\ Work in progress /!\
 
 
 
