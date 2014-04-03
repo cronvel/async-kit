@@ -287,9 +287,15 @@ To clean everything that can be automatically regenerated: `make clean`
 
 **/!\ Work in progress /!\\**
 
-#### Factories
-
-[async.map()](#ref.async.map)
+* Factories
+	* [async.do()](#ref.async.do)
+	* [async.do.series(), async.doSeries()](#ref.async.do.series)
+	* [async.do.parallel(), async.doParallel()](#ref.async.do.parallel)
+	* [async.race()](#ref.async.race)
+	* [async.waterfall()](#ref.async.waterfall)
+	* [async.foreach()](#ref.async.foreach)
+	* [async.map()](#ref.async.map)
+	* [async.reduce()](#ref.async.reduce)
 
 
 
@@ -298,6 +304,7 @@ To clean everything that can be automatically regenerated: `make clean`
 Unless specified otherwise, they all return an async.Plan object, and set the jobs list.
 
 
+<a name="ref.async.do"></a>
 ### async.do( jobsList )
 
 * jobsList `Array` or `Object`
@@ -319,6 +326,7 @@ Only differences will be reported.
 
 
 
+<a name="ref.async.do.series"></a>
 ### async.do.series( jobsList ) , async.doSeries( jobsList )
 
 * jobsList `Array` or `Object`
@@ -329,6 +337,7 @@ Set up a job's list to be processed in series.
 
 
 
+<a name="ref.async.do.parallel"></a>
 ### async.do.parallel( jobsList ) , async.doParallel( jobsList )
 
 * jobsList `Array` or `Object`
@@ -338,6 +347,7 @@ The parallel limit is set to `Infinity` by default.
 
 
 
+<a name="ref.async.race"></a>
 ### async.race( jobsList )
 
 * jobsList `Array` or `Object`
@@ -350,6 +360,7 @@ Jobs processing continue on error, but no new jobs will be processed when one jo
 
 
 
+<a name="ref.async.waterfall"></a>
 ### async.waterfall( jobsList )
 
 * jobsList `Array` or `Object`
@@ -382,6 +393,7 @@ async.waterfall( [
 
 
 
+<a name="ref.async.foreach"></a>
 ### async.foreach( container , iterator )
 
 * container `Array` or `Object` to iterate
@@ -460,6 +472,7 @@ async.map( myArray , function( element , callback ) {
 
 
 
+<a name="ref.async.reduce"></a>
 ### async.reduce( container , [aggregatedValue] , iterator )
 
 * container `Array` or `Object` to iterate
