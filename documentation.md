@@ -287,7 +287,7 @@ To clean everything that can be automatically regenerated: `make clean`
 
 **/!\ Work in progress /!\\**
 
-* Factories
+* [Do family factories](#ref.do.factories)
 	* [async.do()](#ref.async.do)
 	* [async.do.series(), async.doSeries()](#ref.async.do.series)
 	* [async.do.parallel(), async.doParallel()](#ref.async.do.parallel)
@@ -296,12 +296,29 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.foreach()](#ref.async.foreach)
 	* [async.map()](#ref.async.map)
 	* [async.reduce()](#ref.async.reduce)
+	* [async.while().do()](#ref.async.while)
 
 
 
-## Factories
+<a name="ref.do.factories"></a>
+## *Do* family factories
 
-Unless specified otherwise, they all return an async.Plan object, and set the jobs list.
+They create `async.Plan` object and set up the job's list.
+
+Note that an `async.Plan` do not perform anything until its `.exec()` method is called (see Class async.Plan for details).
+The following informations describe what happend when the plan is executed.
+
+By default, jobs are processed one at a time.
+
+If an error occurs, no new jobs will be processed.
+
+Jobs should trigger their callback the node.js way: `callback( error , [arg1] , [arg2] , ... )`.
+
+The `finally` callbacks (see below) are triggered when the first error occurs or when all jobs are done.
+
+Note: **all factories below are described relative to this point of reference.**
+Only differences will be reported.
+
 
 
 <a name="ref.async.do"></a>
@@ -309,20 +326,9 @@ Unless specified otherwise, they all return an async.Plan object, and set the jo
 
 * jobsList `Array` or `Object`
 
-This is the most generic factory.
-It creates an async.Plan object, set up the job's list, and almost everything remain possible.
+This is the most generic factory, with default behaviour, with no further limitation.
 
-Note that an async.Plan do not perform anything until its `.exec()` method is called (see Class async.Plan for details).
-The following informations describe what happend when the plan is executed.
-
-By default, jobs are processed one at a time.
-
-If an error occurs, no new jobs will be processed.
-
-The `finally` callback (see below) is triggered when the first error occurs or when all jobs are done.
-
-Note: **all others factories are described relative to this one as a point of reference.**
-Only differences will be reported.
+See *Do* family factories above.
 
 
 
@@ -522,6 +528,82 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 	expect( results ).to.be.eql( 17 ) ;
 } ) ;
 ```
+
+
+
+<a name="ref.async.while"></a>
+### async.while( conditionCallback )
+
+
+
+<a name="ref.factories.conditionnal"></a>
+## *Conditionnal* family factories
+
+The following factories instanciate `async.Plan` of the *conditionnal* family.
+There are few differencies with `async.Plan` of the *do* family.
+
+Jobs have three type of outcome: true, false and error.
+
+Jobs should trigger their callback this way: `callback( [error] , result )`.
+In this case, you are not forced to pass the error argument first.
+However, if you pass only one argument, it will be assumed to be an error only if it is an instance of `Error`.
+
+If an error occurs, it will stop processing any new jobs by default.
+If *true* or *false* is the outcome, then it all depends on the type of conditionnal.
+
+There are two mode: boolean or not.
+When boolean mode is used, any non-error outcome are cast to a boolean value.
+In non-boolean mode, the final outcome is simply the outcome of the last processed job.
+The non-boolean mode is in line with the way javascript handle expression like `myVar1 && myVar2`
+(it will produce *myVar1* if *myVar1* is falsy, else *myVar2*).
+
+By default, jobs are performed in series, one at a time.
+It is possible to parallelize jobs processing, but it can change the final outcome in non-boolean mode,
+though the truthness of that outcome remains unchanged.
+
+
+
+<a name="ref.async.and"></a>
+### async.and( jobsList )
+
+* jobsList `Array` or `Object`
+
+It performs an async conditionnal *AND*, so it keeps processing jobs as long as the outcome is truthy.
+
+By default, it uses the non-boolean mode, so the final outcome is the outcome of the last job.
+
+
+
+<a name="ref.async.or"></a>
+### async.or( jobsList )
+
+* jobsList `Array` or `Object`
+
+It performs an async conditionnal *OR*, so it keeps processing jobs as long as the outcome is falsy.
+
+By default, it uses the non-boolean mode, so the final outcome is the outcome of the last job.
+
+
+
+<a name="ref.async.if.and"></a>
+### async.if.and( jobsList )
+
+* jobsList `Array` or `Object`
+
+It performs an async conditionnal *AND*, so it keeps processing jobs as long as the outcome is truthy.
+
+By default, it uses the boolean mode, so the final outcome is a boolean.
+
+
+
+<a name="ref.async.if.or"></a>
+### async.if.or( jobsList )
+
+* jobsList `Array` or `Object`
+
+It performs an async conditionnal *OR*, so it keeps processing jobs as long as the outcome is falsy.
+
+By default, it uses the boolean mode, so the final outcome is a boolean.
 
 
 
