@@ -1414,7 +1414,7 @@ describe( "async.race()" , function() {
 
 describe( "async.while()" , function() {
 	
-	it( "while the while()'s callback's result is true, it should run jobs in series (by default), and do it again and again, the final result contain only the last iteration" , function( done ) {
+	it( "while the while()'s callback's result is true, it should run jobs in series (by default), and do it again and again, the final result contains only the last iteration" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		var whileCount = 0 ;

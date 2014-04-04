@@ -43,10 +43,10 @@ All jobs are executed in series, one after one.
 
 Each callback works the Node.js way, the first argument is always the *error* argument.
 
-If one job fails (ie it calls its callback with an error or any truthy value), all remaining jobs are skipped 
-and the *exec*'s callback is instantly called with that error.
+If one job fails (ie it triggers its callback with an error or any *truthy* value), all remaining jobs are skipped 
+and the `exec()`'s callback is instantly called with that error.
 
-When every jobs are finished, the *exec*'s callback is called, the *results* argument contains an array of the *arguments* passed by each job to its callback.
+When every jobs are finished, the `exec()`'s callback is called, the *results* argument contains an array of the *arguments* passed by each job to its callback.
 
 
 
@@ -144,7 +144,7 @@ plan.timeout( 200 ) ;
 
 # Callbacks & the error argument
 
-In most case, callbacks work in the node.js fashion, except explicitly expressed otherwise.
+In most case, callbacks work in the Node.js fashion, except explicitly expressed otherwise.
 The callback should always be called with arguments in this order:
 
 ```js
@@ -234,7 +234,7 @@ async.race( [ url1 , url2 , url3 , url4 ] )
   triggering callback when the first non-error job finished
 - *.using()* declare the function used to process them (iterator-like, if it means anything in a parallel context)
 - *getContentFromUrl()* is a user-defined function that take an URL and a callback, try to get contents from
-  that URL and call its callback the node.js way: `callback( error , contents )`
+  that URL and call its callback the Node.js way: `callback( error , contents )`
 - *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we get what we want
 - *doSomethingWithContent()* is a user-defined function, that process the contents
 - *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if **ALL** jobs have failed
@@ -317,7 +317,7 @@ By default, jobs are processed one at a time.
 
 If an error occurs, no new jobs will be processed.
 
-Jobs should trigger their callback the node.js way: `callback( error , [arg1] , [arg2] , ... )`.
+Jobs should trigger their callback the Node.js way: `callback( error , [arg1] , [arg2] , ... )`.
 
 The `finally` callbacks (see below) are triggered when the first error occurs or when all jobs are done.
 
@@ -537,21 +537,46 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 
 
 <a name="ref.async.while"></a>
-### async.while( conditionCallback ).do( jobsList )
+### async.while( whileCallback ).do( jobsList )
+
+* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+	* error `mixed` any truthy means error
+	* results `Array` or `Object` that maps the *jobsList*
+	* logicCallback `Function( [error] , result )` where:
+		* error `mixed` any truthy means error
+		* result `mixed`
+* jobsList `Array` or `Object`
 
 It performs an async while loop.
 
-Unlike other factory, in order to mimic native language syntax, this factory accepts a *conditionCallback* rather than a job's list.
+Unlike others factories, in order to mimic native language syntax, this factory accepts a *conditionCallback* 
+rather than a job's list. 
 So you have to use the `async.Plan`'s `.do()` method to pass the job's list.
 
 Async while loops behave diffently than other `async.Plan` in various way:
 * it first performs an async conditionnal check, if the outcome is falsy, then the execution is immediately aborted
 * it performs jobs, just the way other `async.Plan` do, but:
 * when everything is done, it performs again a conditionnal check, and if its outcome is truthy, it loops again (and again, etc...)
-* when the outcome of the conditionnal check is falsy, callback (*finally, then, catch, else*) are triggered 
-with the outcome of the last iteration only (if any), so older iteration's outcome are lost unless used in the *conditionCallback*.
+* when the outcome of the conditionnal check is falsy, callbacks (*finally, then, catch, else*) are triggered 
+with the results of the last iteration only (if any), so older iteration's results are lost unless checked and used
+in the *conditionCallback*.
 
-/!\ Work in progress /!\
+Example:
+```js
+async.while( function( error , results , logicCallback ) {
+	// If doMoreWorksFunction() triggers its callback demanding another loop...
+	logicCallback( results.moreWorks[ 1 ] === 'loop' ) ;
+} )
+.do( {
+	preliminaries: doPreliminariesFunction ,
+	works: doWorksFunction ,
+	moreWorks: doMoreWorksFunction
+} ) 
+.exec( function( error , results ) {
+	// 'results' contains only the results of the last loop
+	thingsToDoWhenFinished() ;
+} ) ;
+```
 
 
 
