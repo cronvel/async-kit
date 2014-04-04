@@ -1063,7 +1063,7 @@ describe( "async.foreach()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument" , function( done ) {
+	it( "when the *iterator* accepts three arguments, the current key (array's index) is passed to it as the second argument" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -1073,7 +1073,7 @@ describe( "async.foreach()" , function() {
 			{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
 		] ;
 		
-		async.foreach( myArray , function( key , element , callback ) {
+		async.foreach( myArray , function( element , key , callback ) {
 			
 			stats.startCounter[ element.id ] ++ ;
 			expect( key ).to.be.equal( element.id ) ;
@@ -1093,7 +1093,7 @@ describe( "async.foreach()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "if the container to iterate is an object, the current key (property name) is passed to it as the first argument" , function( done ) {
+	it( "if the container to iterate is an object, the current key (property name) is passed to it as the second argument" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -1103,7 +1103,7 @@ describe( "async.foreach()" , function() {
 			three: { id: 2 , name: 'three' , timeout: 0 , result: [ undefined , 'result' ] }
 		} ;
 		
-		async.foreach( myObject , function( key , element , callback ) {
+		async.foreach( myObject , function( element , key , callback ) {
 			
 			stats.startCounter[ element.id ] ++ ;
 			expect( key ).to.be.equal( element.name ) ;
@@ -1117,6 +1117,37 @@ describe( "async.foreach()" , function() {
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.be.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "when the *iterator* accepts (at least) four arguments, the whole job's array or object is passed to it as the third argument" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		var myArray = [
+			{ id: 0 , timeout: 10 , result: [ undefined , 'my' ] } ,
+			{ id: 1 , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+			{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+		] ;
+		
+		async.foreach( myArray , function( element , key , array , callback ) {
+			
+			stats.startCounter[ element.id ] ++ ;
+			expect( key ).to.be.equal( element.id ) ;
+			expect( array ).to.be.equal( myArray ) ;
+			
+			setTimeout( function() {
+				stats.endCounter[ element.id ] ++ ;
+				stats.order.push( element.id ) ;
+				callback.apply( undefined , element.result ) ;
+			} , element.delay ) ;
+		} )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
 			done() ;
@@ -1191,12 +1222,12 @@ describe( "async.map()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument" , function( done ) {
+	it( "when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the second argument" , function( done ) {
 		
 		var myArray = [ 'my' , 'wonderful' , 'result' ] ;
 		var count = 0 ;
 		
-		async.map( myArray , function( key , element , callback ) {
+		async.map( myArray , function( element , key , callback ) {
 			
 			expect( key ).to.be.equal( count ) ;
 			count ++ ;
@@ -1212,11 +1243,11 @@ describe( "async.map()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "if the container to iterate is an object, the current key (property name) is passed to it as the first argument" , function( done ) {
+	it( "if the container to iterate is an object, the current key (property name) is passed to it as the second argument" , function( done ) {
 		
 		var myObject = { my: 'my' , wonderful: 'wonderful' , result: 'result' } ;
 		
-		async.map( myObject , function( key , element , callback ) {
+		async.map( myObject , function( element , key , callback ) {
 			
 			expect( key ).to.be.equal( element ) ;
 			

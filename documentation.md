@@ -408,17 +408,19 @@ async.waterfall( [
 ### async.foreach( container , iterator )
 
 * container `Array` or `Object` to iterate
-* iterator `Function( [key] , element , callback )` where:
-	* key `Number` or `String` the current key (index for array, property name for object)
+* iterator `Function( element , [key] , [container] , callback )` where:
 	* element `mixed` the current array element or object's property value
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* container `Array` or `Object`, this is the original container
 	* callback `Function( error , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion
 
 It performs an async foreach, iterating *container*, using *iterator*. 
 
 Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
-will be either *( element , callback )* or *( key , element , callback )*, where *key* is the current key
-(the current index if *container* is an Array, or the current property's name if *container* is an object)
-*element* is the current element, and *callback* is the completion's callback.
+will be `( element , callback )`, `( element , key , callback )`, or `( element , key , container , callback )`
+where *element* is the current element, *key* is the current key (the current index if *container* is an Array,
+or the current property's name if *container* is an object), *container* is the original container,
+and *callback* is the completion's callback.
 
 By default, *element*s are performed one at a time, in series.
 
@@ -445,9 +447,10 @@ async.foreach( myArray , function( key , element , callback ) {
 ### async.map( container , iterator )
 
 * container `Array` or `Object` to iterate
-* iterator `Function( [key] , element , callback )` where:
-	* key `Number` or `String` the current key (index for array, property name for object)
+* iterator `Function( element , [key] , [container] , callback )` where:
 	* element `mixed` the current array element or object's property value
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* container `Array` or `Object`, this is the original container
 	* callback `Function( error , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion
 
 It performs an async map, iterating *container*, using *iterator*.
@@ -455,9 +458,10 @@ An async map takes an array and produces a new array, each value in the input ar
 If an object is provided instead of an array, it produces a new object, preserving keys.
 
 Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
-will be either *( element , callback )* or *( key , element , callback )*, where *key* is the current key
-(the current index if *container* is an Array, or the current property's name if *container* is an object)
-*element* is the current element, and *callback* is the completion's callback.
+will be `( element , callback )`, `( element , key , callback )`, or `( element , key , container , callback )`
+where *element* is the current element, *key* is the current key (the current index if *container* is an Array,
+or the current property's name if *container* is an object), *container* is the original container,
+and *callback* is the completion's callback.
 
 By default, *element*s are performed in parallel mode.
 
@@ -488,10 +492,11 @@ async.map( myArray , function( element , callback ) {
 
 * container `Array` or `Object` to iterate
 * aggregatedValue `mixed` the initial default reduced (aggregated) value
-* iterator `Function( aggregatedValue , [key] , element , callback )` where:
+* iterator `Function( aggregatedValue , element , [key] , [container] , callback )` where:
 	* aggregatedValue `mixed` the current reduced value
-	* key `Number` or `String` the current key (index for array, property name for object)
 	* element `mixed` the current array element or object's property value
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* container `Array` or `Object`, this is the original container
 	* callback `Function( error , newAggregatedValue , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion, where:
 		* newAggregatedValue `mixed` is the new reduced value that will be passed to the next iteration
 
@@ -500,10 +505,11 @@ An async reduce takes an array (or an object), and iterate it to produce a singl
 can be anything we like, even an array or object).
 
 Depending on `iterator.length` (the number of arguments the user-provided function accept), the arguments passed to *iterator*
-will be either *( aggregatedValue , element , callback )* or *( aggregatedValue , key , element , callback )*,
-where *aggregatedValue* is the current reduced value, *key* is the current key
-(the current index if *container* is an Array, or the current property's name if *container* is an object)
-*element* is the current element, and *callback* is the completion's callback.
+will be `( aggregatedValue , element , callback )`, `( aggregatedValue , element , key , callback )`,
+or `( aggregatedValue , element , key , container , callback )`, where *aggregatedValue* is the current reduced value,
+*element* is the current element, *key* is the current key (the current index if *container* is an Array,
+or the current property's name if *container* is an object), *container* is the original container,
+and *callback* is the completion's callback.
 
 Each *element* is processed one at a time, in series.
 **Calling `.parallel()` on this `async.Plan` has no effect, it will process jobs one at a time anyway.**
