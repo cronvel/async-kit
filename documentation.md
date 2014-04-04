@@ -20,7 +20,7 @@ without cumbersome callback hell, and without coding again and again the same as
 # Quick example
 
 ```js
-async.do.series( [
+async.series( [
 	function( callback ) {
 		letsConnectToDatabase( callback ) ;
 	} ,
@@ -110,7 +110,7 @@ The example above becomes:
 
 ```js
 // Plan stage, jobs' definition
-var plan = async.do.series( [
+var plan = async.series( [
 	function( callback ) {
 		letsConnectToDatabase( callback ) ;
 	} ,
@@ -168,7 +168,7 @@ If you are unsure what are *truthy* and *falsy* values,
 a series of async query, each query should be sent after the previous one succeed.
 
 ```js
-async.do.waterfall( [
+async.waterfall( [
 	function getUserByLoginAndPassword( login , password , callback ) {
 		dbUserCollection.findOne( { login: login, password: password } , callback ) ;
 	} ,
@@ -289,8 +289,8 @@ To clean everything that can be automatically regenerated: `make clean`
 
 * [*Do* family factories](#ref.do.factories)
 	* [async.do()](#ref.async.do)
-	* [async.do.series(), async.doSeries()](#ref.async.do.series)
-	* [async.do.parallel(), async.doParallel()](#ref.async.do.parallel)
+	* [async.series()](#ref.async.series)
+	* [async.parallel()](#ref.async.parallel)
 	* [async.race()](#ref.async.race)
 	* [async.waterfall()](#ref.async.waterfall)
 	* [async.foreach()](#ref.async.foreach)
@@ -337,8 +337,8 @@ See *Do* family factories above.
 
 
 
-<a name="ref.async.do.series"></a>
-### async.do.series( jobsList ) , async.doSeries( jobsList )
+<a name="ref.async.series"></a>
+### async.series( jobsList )
 
 * jobsList `Array` or `Object`
 
@@ -348,8 +348,8 @@ Set up a job's list to be processed in series.
 
 
 
-<a name="ref.async.do.parallel"></a>
-### async.do.parallel( jobsList ) , async.doParallel( jobsList )
+<a name="ref.async.parallel"></a>
+### async.parallel( jobsList )
 
 * jobsList `Array` or `Object`
 

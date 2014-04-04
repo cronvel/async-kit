@@ -1,6 +1,6 @@
 # TOC
-   - [async.do.series()](#asyncdoseries)
-   - [async.do.parallel()](#asyncdoparallel)
+   - [async.series()](#asyncseries)
+   - [async.parallel()](#asyncparallel)
    - [Jobs](#jobs)
    - [Jobs & async.Plan.prototype.using()](#jobs--asyncplanprototypeusing)
      - [passing a function to .using()](#jobs--asyncplanprototypeusing-passing-a-function-to-using)
@@ -33,14 +33,14 @@
    - [async.Plan.prototype.execKV()](#asyncplanprototypeexeckv)
 <a name=""></a>
  
-<a name="asyncdoseries"></a>
-# async.do.series()
+<a name="asyncseries"></a>
+# async.series()
 should run the series of job which do not have errors, in the good order, and trigger the callback with the correct result.
 
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -59,7 +59,7 @@ when a job has error, it should start running a series of job, be interrupted by
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -78,7 +78,7 @@ when a function is given instead of an array of job, it should format the result
 ```js
 var stats = createStats( 1 ) ;
 
-async.do( function ( callback ) {
+async.series( function ( callback ) {
 	asyncJob( stats , 0 , 50 , {} , [ undefined , 'my wonderful result' ] , callback ) ;
 } )
 .exec( function( error , results ) {
@@ -107,14 +107,14 @@ async.do( function ( callback ) {
 } ) ;
 ```
 
-<a name="asyncdoparallel"></a>
-# async.do.parallel()
+<a name="asyncparallel"></a>
+# async.parallel()
 should run jobs which do not have errors in parallel, and trigger the callback with the correct result.
 
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -133,7 +133,7 @@ when a job has error, it should start running jobs in parallel, be interrupted b
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ new Error() , 'result' ] ]
@@ -152,7 +152,7 @@ when the slower job has error, it should start running jobs in parallel, all oth
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -173,7 +173,7 @@ can be an array of async function accepting a completion callback.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	function( callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -216,7 +216,7 @@ can be an array of synchronous function, if it still accept and use the completi
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	function( callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -291,13 +291,13 @@ can be an array of async.Plan, each of them will be used by calling their .exec(
 ```js
 var stats = createStats( 6 ) ;
 
-async.do.parallel( [
-	async.do.series( [
+async.parallel( [
+	async.series( [
 		[ asyncJob , stats , 0 , 10 , {} , [ undefined , 'a' ] ] ,
 		[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'nice' ] ] ,
 		[ asyncJob , stats , 2 , 10 , {} , [ undefined , 'output' ] ]
 	] ) ,
-	async.do.series( [
+	async.series( [
 		[ asyncJob , stats , 3 , 10 , {} , [ undefined , 'my' ] ] ,
 		[ asyncJob , stats , 4 , 10 , {} , [ undefined , 'wonderful' ] ] ,
 		[ asyncJob , stats , 5 , 10 , {} , [ undefined , 'result' ] ]
@@ -320,7 +320,7 @@ can be an array that mix all those type of jobs.
 ```js
 var stats = createStats( 7 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	function( callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -337,7 +337,7 @@ async.do.parallel( [
 		stats.order.push( id ) ;
 		callback( undefined , "I'm a synchronous anonymous function" ) ;
 	} ,
-	async.do.series( [
+	async.series( [
 		[ asyncJob , stats , 2 , 20 , {} , [ undefined , 'nested' ] ] ,
 		[ asyncJob , stats , 3 , 20 , {} , [ undefined , 'async.Plan' ] ] ,
 		[ asyncJob , stats , 4 , 20 , {} , [ undefined , 'results' ] ]
@@ -365,7 +365,7 @@ objects can be used instead of array as the top container, the results should be
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( {
+async.parallel( {
 	one: [ asyncJob , stats , 0 , 40 , {} , [ undefined , 'my' ] ] ,
 	two: [ asyncJob , stats , 1 , 20 , {} , [ undefined , 'wonderful' ] ] ,
 	three: [ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -435,7 +435,7 @@ when a job is a function, it should take the .using()'s array as argument.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	function( data , callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -485,7 +485,7 @@ using .nice( -3 ), it should run the series of job with synchonous scheduling.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -505,7 +505,7 @@ using .nice( -2 ), it should run the series of job with an async scheduling (nex
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -525,7 +525,7 @@ using .nice( -1 ), it should run the series of job with an async scheduling (set
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -545,7 +545,7 @@ using .nice( 10 ), it should run the series of job with an async scheduling (set
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -565,7 +565,7 @@ using .nice( -3 ), it should run the jobs in parallel with synchonous scheduling
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -585,7 +585,7 @@ using .nice( -2 ), it should run the jobs in parallel with an async scheduling (
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -605,7 +605,7 @@ using .nice( -1 ), it should run the jobs in parallel with an async scheduling (
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -625,7 +625,7 @@ using .nice( 10 ), it should run the jobs in parallel with an async scheduling (
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -647,7 +647,7 @@ using default exec()'s arguments mapping, called with no argument, it should not
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	function( callback ) {
@@ -671,7 +671,7 @@ using default exec()'s arguments mapping, when a job is a function, it should ta
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	function( describe , body , callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -718,7 +718,7 @@ when a job is a function, it should take the input arguments passed to .exec().
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	function( describe , body , callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -766,7 +766,7 @@ when mixing arguments passed to .exec() and .using(), .exec()'s arguments overla
 ```js
 var stats ;
 
-var asyncPlan = async.do.parallel( [
+var asyncPlan = async.parallel( [
 	function( describe , body , callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -846,7 +846,7 @@ each job function should have *this* set to the current execContext.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	function( callback ) {
 		var id = 0 ;
 		expect( this ).to.be.an( async.ExecContext ) ;
@@ -889,7 +889,7 @@ using()'s function should have *this* set to the current execContext.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ 0 , 'my' , [ undefined ] ] ,
 	[ 1 , 'wonderful' , [ [ undefined , 'my' ] , undefined ] ] ,
 	[ 2 , 'result' , [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ]
@@ -912,7 +912,7 @@ every user provided callback should have *this* set to the current execContext.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 0 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -971,7 +971,7 @@ async.foreach( myArray , function( element , callback ) {
 } ) ;
 ```
 
-when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument.
+when the *iterator* accepts three arguments, the current key (array's index) is passed to it as the second argument.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -982,7 +982,7 @@ var myArray = [
 	{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
 ] ;
 
-async.foreach( myArray , function( key , element , callback ) {
+async.foreach( myArray , function( element , key , callback ) {
 	
 	stats.startCounter[ element.id ] ++ ;
 	expect( key ).to.be.equal( element.id ) ;
@@ -1002,7 +1002,7 @@ async.foreach( myArray , function( key , element , callback ) {
 } ) ;
 ```
 
-if the container to iterate is an object, the current key (property name) is passed to it as the first argument.
+if the container to iterate is an object, the current key (property name) is passed to it as the second argument.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -1013,7 +1013,7 @@ var myObject = {
 	three: { id: 2 , name: 'three' , timeout: 0 , result: [ undefined , 'result' ] }
 } ;
 
-async.foreach( myObject , function( key , element , callback ) {
+async.foreach( myObject , function( element , key , callback ) {
 	
 	stats.startCounter[ element.id ] ++ ;
 	expect( key ).to.be.equal( element.name ) ;
@@ -1027,6 +1027,38 @@ async.foreach( myObject , function( key , element , callback ) {
 .exec( function( error , results ) {
 	expect( error ).not.to.be.an( Error ) ;
 	expect( results ).to.be.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+when the *iterator* accepts (at least) four arguments, the whole job's array or object is passed to it as the third argument.
+
+```js
+var stats = createStats( 3 ) ;
+
+var myArray = [
+	{ id: 0 , timeout: 10 , result: [ undefined , 'my' ] } ,
+	{ id: 1 , timeout: 0 , result: [ undefined , 'wonderful' ] } ,
+	{ id: 2 , timeout: 0 , result: [ undefined , 'result' ] }
+] ;
+
+async.foreach( myArray , function( element , key , array , callback ) {
+	
+	stats.startCounter[ element.id ] ++ ;
+	expect( key ).to.be.equal( element.id ) ;
+	expect( array ).to.be.equal( myArray ) ;
+	
+	setTimeout( function() {
+		stats.endCounter[ element.id ] ++ ;
+		stats.order.push( element.id ) ;
+		callback.apply( undefined , element.result ) ;
+	} , element.delay ) ;
+} )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
 	done() ;
@@ -1101,13 +1133,13 @@ async.map( myObject , function( element , callback ) {
 } ) ;
 ```
 
-when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the first argument.
+when the *iterator* accepts (at least) three arguments, the current key (array's index) is passed to it as the second argument.
 
 ```js
 var myArray = [ 'my' , 'wonderful' , 'result' ] ;
 var count = 0 ;
 
-async.map( myArray , function( key , element , callback ) {
+async.map( myArray , function( element , key , callback ) {
 	
 	expect( key ).to.be.equal( count ) ;
 	count ++ ;
@@ -1123,12 +1155,12 @@ async.map( myArray , function( key , element , callback ) {
 } ) ;
 ```
 
-if the container to iterate is an object, the current key (property name) is passed to it as the first argument.
+if the container to iterate is an object, the current key (property name) is passed to it as the second argument.
 
 ```js
 var myObject = { my: 'my' , wonderful: 'wonderful' , result: 'result' } ;
 
-async.map( myObject , function( key , element , callback ) {
+async.map( myObject , function( element , key , callback ) {
 	
 	expect( key ).to.be.equal( element ) ;
 	
@@ -1322,7 +1354,7 @@ async.race( [
 
 <a name="asyncwhile"></a>
 # async.while()
-while the while()'s callback's result is true, it should run jobs in series (by default), and do it again and again, the final result contain only the last iteration.
+while the while()'s callback's result is true, it should run jobs in series (by default), and do it again and again, the final result contains only the last iteration.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -2160,7 +2192,7 @@ should abort job in a series that take too much time to complete, its result sho
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 50 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -2180,7 +2212,7 @@ should abort job in a parallel flow that take too much time to complete, its res
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 50 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -2222,7 +2254,7 @@ should retry parallel jobs with failure the good amount of time, then succeed an
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 20 , { failCount: 3 } , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 10 , { failCount: 5 } , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 5 , { failCount: 2 } , [ undefined , 'result' ] ]
@@ -2328,7 +2360,7 @@ should run parallel jobs, with a limit of jobs running at a time.
 ```js
 var stats = createStats( 6 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 60 , {} , [ undefined , 'one' ] ] ,	// @60
 	[ asyncJob , stats , 1 , 20 , {} , [ undefined , 'two' ] ] ,	// @20
 	[ asyncJob , stats , 2 , 40 , {} , [ undefined , 'three' ] ] ,	// @40
@@ -2373,7 +2405,7 @@ should run parallel jobs and continue on error.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 0 , {} , [ new Error() , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 10 , {} , [ undefined , 'result' ] ]
@@ -2395,7 +2427,7 @@ should run the series of job and pass only the results of the last job.
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -2415,7 +2447,7 @@ should run jobs in parallel and pass only the results of the last job - can prod
 ```js
 var stats = createStats( 3 ) ;
 
-async.do.parallel( [
+async.parallel( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
@@ -2438,7 +2470,7 @@ should pass an object with inputs arguments in 'inputs' property and 'then' & 'f
 var stats = createStats( 3 ) ;
 var then ;
 
-async.do.parallel( [
+async.parallel( [
 	function( describe , body , callback ) {
 		var id = 0 ;
 		stats.startCounter[ id ] ++ ;
@@ -2498,7 +2530,7 @@ should accept 'catch' callback in the 'catch' property.
 var stats = createStats( 3 ) ;
 var then , catch_ ;
 
-async.do.series( [
+async.series( [
 	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 	[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
 	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
