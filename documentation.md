@@ -304,11 +304,14 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.if.or()](#ref.async.if.or)
 	* [Nested condition()](#ref.nested)
 * [Class async.Plan](#ref.async.Plan)
+	* [.do()](#ref..do)
+	* [.parallel()](#ref..parallel)
 	* [.fatal()](#ref..fatal)
 	* [.boolean()](#ref..boolean)
 	* [.transmitError()](#ref..transmitError)
 	* [.timeout()](#ref..timeout)
 	* [.lastJobOnly()](#ref..lastJobOnly)
+	* [.mapping1to1()](#ref..mapping1to1)
 
 
 
@@ -510,6 +513,8 @@ and *callback* is the completion's callback.
 By default, *element*s are performed in parallel mode.
 
 If the *iterator* fails for one element, it will continue processing others elements anyway.
+
+The *results* (see example below) directly map the *container*, like [`.mapping1to1()`](#ref...mapping1to1) do.
 
 Note that `async.map( container , iterator )` is equal to `async.do( container ).iterator( iterator ).mapping1to1()`.
 
@@ -741,10 +746,41 @@ However, modifier methods have no effect as soon as an `.exec()` family method i
 
 
 
+<a name="ref..do"></a>
+### .do( jobsList )
+
+* jobsList `Array` or `Object`
+
+It set the job's list.
+Most of time, the job's list is already passed as the first argument of a factory, so we don't have to use this method.
+
+However, it is used in the [`async.while().do()`](#ref.async.while) scheme, to mimic common programming language syntax.
+
+
+
+<a name="ref..parallel"></a>
+### .parallel( [parallelLimit] )
+
+* parallelLimit `Number`, if omited: `Infinity`
+
+It set the parallel limit or concurrency limit.
+This is the number of async jobs that can be running/pending at a time.
+
+Using a parallel limit value of 1, jobs are processed one at a time, like `async.series()` factory does.
+
+Using a parallel limit value of Infinity, jobs are processed all at once (if they are async),
+like `async.parallel()` factory does.
+
+Using a parellel limit value of 3, for example, the first three jobs will start at once, when one jobs
+triggers its callback the fourth job starts, when another job triggers its callback then the fifth job starts,
+and so on...
+
+
+
 <a name="ref..fatal"></a>
 ### .fatal( [errorsAreFatal] )
 
-* errorsAreFatal `Boolean`, if omitted: true.
+* errorsAreFatal `Boolean`, if omitted: true
 
 If errors are fatal (the default in most factories), then whenever a job fails the whole process is aborted immediately.
 
@@ -755,7 +791,7 @@ If error are not fatal, others jobs will be processed even if some errors occurs
 <a name="ref..boolean"></a>
 ### .boolean( [castToBoolean] )
 
-* castToBoolean `Boolean`, if omitted: true.
+* castToBoolean `Boolean`, if omitted: true
 
 This only have effects in *Conditionnal* family `async.Plan`.
 
@@ -770,7 +806,7 @@ the outcome of the last job: this is what happens with `async.and()` and `async.
 <a name="ref..transmitError"></a>
 ### .transmitError( [transmit] )
 
-* transmit `Boolean`, if omitted: true.
+* transmit `Boolean`, if omitted: true
 
 This only have effects in waterfall mode, using `async.waterfall()` factory.
 
@@ -824,7 +860,7 @@ It comes in handy in any network or service dependant async jobs, like database 
 <a name="ref..lastJobOnly"></a>
 ### .lastJobOnly( [returnLastJobOnly] )
 
-* returnLastJobOnly `boolean`, if omited: `true`.
+* returnLastJobOnly `boolean`, if omited: `true`
 
 If set to `true`, only the last job pass its result to *finallyCallback*, *thenCallback* etc...
 
@@ -857,6 +893,45 @@ async.series( [
 This is **\*NOT\* necessarly** the last job in the job's list.
 Note that `.lastJobOnly()` is used in `async.race()` factory, but here the whole process abort when the first job finish
 without error, so the first job and the last job are the same.
+
+
+
+<a name="ref..mapping1to1"></a>
+### .mapping1to1( [returnMapping1to1] )
+
+* returnMapping1to1 `Boolean`, if omited: `true`
+
+If set to `true`, the *results* directly map the *jobsList*.
+It is used (and locked) in `async.map()` factory.
+
+If set to `false`, the *results* contains for each entry, the whole argument's list
+passed by the job's callback.
+
+Without `.mapping1to1()` (the default in most factories):
+```js
+async.parallel( [
+	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'result' ) ; }
+] )
+.exec( function( error , results ) {
+	// results equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
+} ) ;
+```
+
+With `.mapping1to1()` (the default in `async.map()` factory):
+```js
+async.parallel( [
+	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'result' , 'extra argument that will be dropped' ) ; }
+] )
+.exec( function( error , results ) {
+	// results equals `[ 'my' , 'wonderful' , 'result' ]`
+} ) ;
+```
+
+**Note:** when using `.mapping1to1()`, any extra arguments passed to the job's callback are ignored.
 
 
 

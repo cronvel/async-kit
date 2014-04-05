@@ -38,7 +38,6 @@
 		race()
 		waterfall()
 		iterator() & usingIterator() -- should be mostly covered by foreach
-		mapping1to1()
 		aggregator()
 	Exec:
 		execArgs()
@@ -2507,6 +2506,7 @@ describe( "async.Plan.prototype.fatal()" , function() {
 } ) ;
 
 
+
 describe( "async.Plan.prototype.lastJobOnly()" , function() {
 	
 	it( "should run the series of job and pass only the results of the last job" , function( done ) {
@@ -2541,6 +2541,47 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 		.exec( function() {
 			var args = Array.prototype.slice.call( arguments ) ;
 			expect( args ).to.be.eql( [ undefined , 'wonderful' ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "async.Plan.prototype.mapping1to1()" , function() {
+	
+	it( "the results should map one to one the job's list, any extra arguments passed to the job's callback should be ignored" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.parallel( [
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
+		] )
+		.mapping1to1()
+		.exec( function( error , results ) {
+			expect( results ).to.be.eql( [ 'my' , 'wonderful' , 'result' ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "when using an object as the job's list, the result is an object mapping one to one the job's list" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.parallel( {
+			one: [ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+			two: [ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			three: [ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
+		} )
+		.mapping1to1()
+		.exec( function( error , results ) {
+			expect( results ).to.be.eql( { one: 'my' , two: 'wonderful' , three: 'result' } ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
 			done() ;

@@ -30,6 +30,7 @@
    - [async.Plan.prototype.parallel()](#asyncplanprototypeparallel)
    - [async.Plan.prototype.fatal()](#asyncplanprototypefatal)
    - [async.Plan.prototype.lastJobOnly()](#asyncplanprototypelastjobonly)
+   - [async.Plan.prototype.mapping1to1()](#asyncplanprototypemapping1to1)
    - [async.Plan.prototype.execKV()](#asyncplanprototypeexeckv)
 <a name=""></a>
  
@@ -2456,6 +2457,46 @@ async.parallel( [
 .exec( function() {
 	var args = Array.prototype.slice.call( arguments ) ;
 	expect( args ).to.be.eql( [ undefined , 'wonderful' ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+<a name="asyncplanprototypemapping1to1"></a>
+# async.Plan.prototype.mapping1to1()
+the results should map one to one the job's list, any extra arguments passed to the job's callback should be ignored.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.parallel( [
+	[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
+] )
+.mapping1to1()
+.exec( function( error , results ) {
+	expect( results ).to.be.eql( [ 'my' , 'wonderful' , 'result' ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+when using an object as the job's list, the result is an object mapping one to one the job's list.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.parallel( {
+	one: [ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
+	two: [ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	three: [ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
+} )
+.mapping1to1()
+.exec( function( error , results ) {
+	expect( results ).to.be.eql( { one: 'my' , two: 'wonderful' , three: 'result' } ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
 	done() ;
