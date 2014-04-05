@@ -306,6 +306,8 @@ To clean everything that can be automatically regenerated: `make clean`
 * [Class async.Plan](#ref.async.Plan)
 	* [.do()](#ref..do)
 	* [.parallel()](#ref..parallel)
+	* [.race()](#ref..race)
+	* [.waterfall()](#ref..waterfall)
 	* [.fatal()](#ref..fatal)
 	* [.boolean()](#ref..boolean)
 	* [.transmitError()](#ref..transmitError)
@@ -376,8 +378,11 @@ The parallel limit is set to `Infinity` by default.
 Set up a job's list to be processed in parallel.
 The parallel limit is set to `Infinity` by default.
 
-The `finally` callback is triggered when the first job finish without error, or when all jobs have failed.
-Jobs processing continue on error, but no new jobs will be processed when one job succeed.
+The whole jobs processing aborts when the first job finish without error.
+
+Jobs processing continues on error.
+
+Note that `async.race( jobsList )` is the same than `async.parallel( jobsList ).fatal( false ).race()`.
 
 
 
@@ -387,6 +392,7 @@ Jobs processing continue on error, but no new jobs will be processed when one jo
 * jobsList `Array` or `Object`
 
 Set up a job's list to be processed in series, in waterfall mode.
+
 Each job is called with the previous job output as arguments.
 
 By default, the `.exec()` method accept arguments to pass to the first job.
@@ -774,6 +780,33 @@ like `async.parallel()` factory does.
 Using a parellel limit value of 3, for example, the first three jobs will start at once, when one jobs
 triggers its callback the fourth job starts, when another job triggers its callback then the fifth job starts,
 and so on...
+
+
+
+<a name="ref..race"></a>
+### .race( raceMode )
+
+* raceMode `Boolean`, if omited: `true`
+
+Set the *race* mode.
+
+In *race* mode, the whole jobs processing aborts when the first job finish without error.
+
+See [`async.race()`](#ref.async.race) factory.
+
+
+
+<a name="ref..waterfall"></a>
+### .waterfall( waterfallMode )
+
+* waterfallMode `Boolean`, if omited: `true`
+
+Set the *waterfall* mode.
+
+In *waterfall* mode, each job is called with the previous job output as arguments,
+and the first job receives arguments directly from `.exec()`.
+
+See [`async.waterfall()`](#ref.async.waterfall) factory.
 
 
 
