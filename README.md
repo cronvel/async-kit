@@ -305,6 +305,10 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [Nested condition()](#ref.nested)
 * [Class async.Plan](#ref.async.Plan)
 	* [.fatal()](#ref..fatal)
+	* [.boolean()](#ref..boolean)
+	* [.transmitError()](#ref..transmitError)
+	* [.timeout()](#ref..timeout)
+	* [.lastJobOnly()](#ref..lastJobOnly)
 
 
 
@@ -727,7 +731,7 @@ We can use as many nested async conditionnal as we want.
 
 
 
-<a name="ref.async.plan"></a>
+<a name="ref.async.Plan"></a>
 ## Class async.Plan
 
 Each factory come with a default set of behaviour. 
@@ -846,6 +850,7 @@ async.series( [
 .exec( function( error , result ) {
 	// result equals `'result'`
 } ) ;
+```
 
 **BE CAREFUL:** when using `.lastJobOnly()` in parallel mode, this is the job that finish last which transmit its results.
 This is **\*NOT\* necessarly** the last job in the job's list.
