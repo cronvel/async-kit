@@ -302,6 +302,9 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.or()](#ref.async.or)
 	* [async.if.and()](#ref.async.if.and)
 	* [async.if.or()](#ref.async.if.or)
+	* [Nested condition()](#ref.nested)
+* [Class async.Plan](#ref.async.Plan)
+	* [.fatal()](#ref..fatal)
 
 
 
@@ -379,7 +382,12 @@ Jobs processing continue on error, but no new jobs will be processed when one jo
 Set up a job's list to be processed in series, in waterfall mode.
 Each job is called with the previous job output as arguments.
 
-By default, the `exec()` method accept arguments to pass to the first job.
+By default, the `.exec()` method accept arguments to pass to the first job.
+
+By default, the *error* argument is not transmitted, see [.transmitError()](#ref..transmitError) for details.
+
+Only the last job pass its result to *finallyCallback*, *thenCallback* etc...
+See [.lastJobOnly()](#ref..lastJobOnly) for details.
 
 **Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
 
@@ -387,17 +395,49 @@ Example:
 ```js
 async.waterfall( [
 	function( str , callback ) {
+		// str equals 'oh', passed by .exec()'s first argument
 		callback( undefined , str + ' my' ) ;
+		// undefined is the error argument, it is not transmitted to the next job by default
 	} ,
 	function( str , callback ) {
+		// str equals 'oh my', passed by the previous job
 		callback( undefined , str + ' wonderful' ) ;
+		// undefined is the error argument, it is not transmitted to the next job by default
 	} ,
 	function( str , callback ) {
+		// str equals 'oh my wonderful', passed by the previous job
 		callback( undefined , str + ' result' ) ;
 	}
 ] )
 .exec( 'oh' , function( error , results ) {
 	// output 'oh my wonderful result'
+	console.log( results ) ;
+} ) ;
+```
+
+Any number of arguments can be used.
+The previous example can become something like this:
+
+```js
+async.waterfall( [
+	function( str1 , str2 , str3 , callback ) {
+		// str1 equals 'Hello', passed by .exec()'s first argument
+		// str2 equals 'world', passed by .exec()'s second argument
+		// str3 equals 'this', passed by .exec()'s third argument
+		callback( undefined , str1 + ' ' + str2 + ' ' + str3 + ' is' ) ;
+	} ,
+	function( str , callback ) {
+		// str equals 'Hello world, this is', passed by the previous job
+		callback( undefined , str + ' my' , 'wonderful' ) ;
+	} ,
+	function( str1 , str2 , callback ) {
+		// str1 equals 'Hello world, this is my', passed by the previous job
+		// str2 equals 'wonderful', passed by the previous job
+		callback( undefined , str1 + ' ' + str2 + ' result' ) ;
+	}
+] )
+.exec( 'Hello' , 'world,' , 'this' , function( error , results ) {
+	// output 'Hello world, this is my wonderful result'
 	console.log( results ) ;
 } ) ;
 ```
@@ -657,9 +697,164 @@ By default, it uses the boolean mode, so the final outcome is a boolean.
 
 
 
-## Class
+<a name="ref.nested"></a>
+### Nested condition
 
-### async.Plan
+We can create nested conditionnal statement just like in native language. See the following example:
+
+```js
+async.if.and( [
+	ifSomeConditionAreMetAnd
+	async.or( [
+		ifSomeMoreConditionAreMet
+		orIfSomeAlternativeConditionAreMet
+	] )
+] )
+.then( function() {
+	// Do something if the async conditionnal statement is true
+} )
+.else( function() {
+	// Do something if the async conditionnal statement is false
+} )
+.exec() ;
+```
+`ifSomeConditionAreMetAnd`, `ifSomeMoreConditionAreMet` and `orIfSomeAlternativeConditionAreMet` 
+are user functions asyncly checking if some condition are met or not.
+
+This works because if a job is an instance of `async.Plan`, the `.exec()` method will be used as a callback.
+
+We can use as many nested async conditionnal as we want.
+
+
+
+<a name="ref.async.plan"></a>
+## Class async.Plan
+
+Each factory come with a default set of behaviour. 
+Almost all behaviours can be modified by methods.
+
+However, modifier methods have no effect as soon as an `.exec()` family method is used on the current `async.Plan`.
+
+
+
+<a name="ref..fatal"></a>
+### .fatal( [errorsAreFatal] )
+
+* errorsAreFatal `Boolean`, if omitted: true.
+
+If errors are fatal (the default in most factories), then whenever a job fails the whole process is aborted immediately.
+
+If error are not fatal, others jobs will be processed even if some errors occurs.
+
+
+
+<a name="ref..boolean"></a>
+### .boolean( [castToBoolean] )
+
+* castToBoolean `Boolean`, if omitted: true.
+
+This only have effects in *Conditionnal* family `async.Plan`.
+
+If *castToBoolean* is true, the outcome of jobs and the final outcome is always `true` or `false`:
+this is what happens with `async.if.and()` and `async.if.or()` factories by default.
+
+If *castToBoolean* is false, the outcome of each job remains unchanged, and the final outcome is 
+the outcome of the last job: this is what happens with `async.and()` and `async.or()` factories by default.
+
+
+
+<a name="ref..transmitError"></a>
+### .transmitError( [transmit] )
+
+* transmit `Boolean`, if omitted: true.
+
+This only have effects in waterfall mode, using `async.waterfall()` factory.
+
+If *transmit* is true, each job received the *error* argument of the previous job.
+
+If *transmit* is false, the *error* argument pass by the previous job is not transmitted.
+
+Example with `.transmitError`:
+```js
+async.waterfall( [
+	function( str , callback ) {
+		// str equals 'oh', passed by .exec()'s first argument
+		callback( undefined , str + ' my' ) ;
+	} ,
+	function( lastError , str , callback ) {
+		// lastError equals undefined
+		// str equals 'oh my', passed by the previous job
+		callback( new Error() , str + ' wonderful' ) ;
+	} ,
+	function( lastError , str , callback ) {
+		// lastError is now an instance of Error
+		// str equals 'oh my wonderful', passed by the previous job
+		callback( undefined , str + ' result' ) ;
+	}
+] )
+.transmitError( true )
+.fatal( false )
+.exec( 'oh' , function( error , results ) {
+	// output 'oh my wonderful result'
+	console.log( results ) ;
+} ) ;
+```
+
+
+
+<a name="ref..timeout"></a>
+### .timeout( [jobsTimeout] )
+
+* jobsTimeout `undefined` or `Number` (in ms), if omited: `undefined`
+
+Set up a time limit for each job.
+If a job doesn't trigger its callback within this time, its callback is triggered anyway automatically with an error:
+`new Error( 'Timeout' )`.
+
+If the job trigger its callback later, it will be ignored.
+
+It comes in handy in any network or service dependant async jobs, like database queries, HTTP request, and so on.
+
+
+
+<a name="ref..lastJobOnly"></a>
+### .lastJobOnly( [returnLastJobOnly] )
+
+* returnLastJobOnly `boolean`, if omited: `true`.
+
+If set to `true`, only the last job pass its result to *finallyCallback*, *thenCallback* etc...
+
+Without `.lastJobOnly()` (the default in most factories):
+```js
+async.series( [
+	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'result' ) ; }
+] )
+.exec( function( error , result ) {
+	// result equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
+} ) ;
+
+With `.lastJobOnly()` (default in `async.waterfall()` and `async.race()` factories):
+```js
+async.series( [
+	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
+	function( callback ) { callback( 'undefined' , 'result' ) ; }
+] )
+.lastJobOnly()
+.exec( function( error , result ) {
+	// result equals `'result'`
+} ) ;
+
+**BE CAREFUL:** when using `.lastJobOnly()` in parallel mode, this is the job that finish last which transmit its results.
+This is **\*NOT\* necessarly** the last job in the job's list.
+Note that `.lastJobOnly()` is used in `async.race()` factory, but here the whole process abort when the first job finish
+without error, so the first job and the last job are the same.
+
+
+
+
 
 **/!\ Work in progress /!\\**
 
