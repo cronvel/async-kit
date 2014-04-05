@@ -838,6 +838,7 @@ async.series( [
 .exec( function( error , result ) {
 	// result equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
 } ) ;
+```
 
 With `.lastJobOnly()` (default in `async.waterfall()` and `async.race()` factories):
 ```js
@@ -852,7 +853,7 @@ async.series( [
 } ) ;
 ```
 
-**BE CAREFUL:** when using `.lastJobOnly()` in parallel mode, this is the job that finish last which transmit its results.
+**BE CAREFUL:** when using `.lastJobOnly()` in parallel mode, this is the job that finish last which transmits its results.
 This is **\*NOT\* necessarly** the last job in the job's list.
 Note that `.lastJobOnly()` is used in `async.race()` factory, but here the whole process abort when the first job finish
 without error, so the first job and the last job are the same.
