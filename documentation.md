@@ -312,6 +312,8 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.boolean()](#ref..boolean)
 	* [.transmitError()](#ref..transmitError)
 	* [.timeout()](#ref..timeout)
+	* [.retry()](#ref..retry)
+	* [Mixing .timeout() & .retry()](#ref.mixing.timeout.retry)
 	* [.lastJobOnly()](#ref..lastJobOnly)
 	* [.mapping1to1()](#ref..mapping1to1)
 
@@ -888,6 +890,126 @@ If the job trigger its callback later, it will be ignored.
 
 It comes in handy in any network or service dependant async jobs, like database queries, HTTP request, and so on.
 
+Also this is **IMPORTANT** to understand that this is the csk-async lib who is responsible for the timeout to kick in:
+the user code is still in execution, it may be pending, waiting for I/O to perform some other tasks.
+The timeout feature give us the chance to be sure that our callback get triggered within some time limit, **it doesn't
+interupt the job in any way**.
+
+
+
+<a name="ref..retry"></a>
+### .retry( [maxRetry] , [baseTimeout] , [multiply] , [maxTimeout] )
+
+* maxRetry `Number`, it doesn't update if omited
+* baseTimeout `Number` in **ms**, it doesn't update if omited
+* multiply `Number`, it doesn't update if omited
+* maxTimeout `Number`, in **ms** it doesn't update if omited
+
+This modifier allows jobs in error to be retried.
+
+This is a very nice feature when dealing with other servers or external services, because they could be unavailable any time,
+but we don't want important tasks to fail.
+
+It allows fine tuning:
+* maxRetry: the maximum number of times a job should be retried, before giving up with the error
+* baseTimeout: the base timeout in **ms** before retrying, this is the timeout before the first retry
+* multiply: the timeout before retrying is multiplied by this value for each new retry
+* maxTimeout: the maximum timeout in **ms**, it will never be more despite the increasing retries with a multiply value > 1.
+
+For example, assuming `maxRetry: 6, baseTimeout: 100, multiply: 1.5, maxTimeout: 500`, we will get for each retry the timeout value:
+* 1st - 100ms
+* 2nd - 150ms (=100*1.5)
+* 3rd - 225ms (=150*1.5)
+* 4th - 338ms (=225*1.5)
+* 5th - 500ms (capped by maxTimeout)
+* 6th - 500ms (capped by maxTimeout)
+
+A good practice is to specify a low *baseTimeout*, around 10ms, and a high *multiply* value, at least 2.
+This way, things keep reactive when a sporadic error occurs, but if something is really wrong with some of our servers,
+we didn't flood them to death, we give them a chance to recover.
+
+If *maxRetry* is high, we may consider using a *maxTimeout* value, between 10 seconds and 2 minutes.
+This could be really bad if some actions are retried few hours or few days later, totally out of context.
+
+By the way, those are general guidance, it all depends on the criticy of the tasks, wheither it involves local, lan, vlan
+or internet networks, and more importantly: if those actions take place behind the scene or if some end-user are currently
+expecting results quickly.
+
+Example, with some *behind the scene* *cron*-like tasks, involving third-party services:
+```js
+async.parallel( [
+	retrieveSomeRSS ,
+	querySomeThirdPartyAPI ,
+	queryMoreThirdPartyAPI
+] )
+// At most 100 retries, starting with a 100 ms timeout before retrying,
+// multiplying timeout by 2 at each new try but capped at 10 minutes timeout
+.retry( 100 , 100 , 2 , 60000 )
+.exec( function( error , results ) {
+	// update your local database or cache
+} ) ;
+```
+
+
+
+<a name="ref.mixing.timeout.retry"></a>
+### Mixing .timeout() & .retry()
+
+Mixing `.timeout()` and `.retry()` can be extremely powerful.
+
+Sometime a task can end up pending a long time, because some bugs occurs, but a retry can eventually succeed immediately: 
+probably we sent a request on some third-party, we get load-balanced to a server that do not respond anymore, but issuing
+a new request may end up to a server that still works well.
+
+This is exactly what can achieve a mix of `.timeout()` and `.retry()`: when the *timeout* is reached for a job,
+it triggers its callback with a failed status (`new Error( 'Timeout' )`), then *retry* kick in and the job start over,
+it may hit the time limit again and be restarted again, until it succeeds or the retry countdown abort the whole process.
+
+Also there is an **IMPORTANT** drawback we need to be aware of:
+* when a timeout occurs, the job is **\*NOT\*** interupted in any way (see [`.timeout()`](#ref..timeout) for details)
+* so when successive retries kick in, the same job can run multiple times: our job's code should support that without
+  messing our database for example
+* also if a job timeout and is retried, the first try *may* finally succeed before the second try complete: our job's
+  code should support that case too
+
+As a rule of thumb, if we plan to mix `.timeout()` and `.retry()`, we must isolate as much as possible critical code,
+creating more jobs that perform small tasks is better.
+
+For example, this is a **\*VERY\* bad** practice:
+```js
+async.do( [
+	queryMultipleExternalServicesAndThenUpdateOurLocalDatabaseAccordingly
+] )
+.timeout( 100 )
+.retry( 100 , 100 , 2 , 60000 )
+.exec( function( error , results ) {
+	console.log( 'Done!' ) ;
+} ) ;
+```
+
+We have to consider rewriting it this way:
+```js
+async.parallel( [
+	queryExternalService1 ,
+	queryExternalService2 ,
+	queryExternalService3
+] )
+.timeout( 100 )
+.retry( 100 , 100 , 2 , 60000 )
+.exec( function( error , results ) {
+	if ( ! error ) {
+		updateOurLocalDatabaseAccordingly( results ) ;
+	}
+} ) ;
+```
+
+In the last snippet, we have isolated jobs that can timeout due to things that are out of our control.
+If one query failed, we don't have do restart from scratch, re-doing queries that have already succeed.
+Finally, moving `updateOurLocalDatabaseAccordingly()` into the *finallyCallback* of `.exec()` allows
+us to use the parallel mode, so the whole process perform faster. If we have chosen to put this function
+into a job, we would have been constrained to use an `async.series()` factory.
+More important: we are sure that the code that update our database will run once.
+
 
 
 <a name="ref..lastJobOnly"></a>
@@ -965,8 +1087,6 @@ async.parallel( [
 ```
 
 **Note:** when using `.mapping1to1()`, any extra arguments passed to the job's callback are ignored.
-
-
 
 
 

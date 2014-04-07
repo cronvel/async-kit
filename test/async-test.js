@@ -2433,6 +2433,8 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			done() ; 
 		} ) ;
 	} ) ;
+	
+	it( "what happens if a job is retried, and then the first try fails before the second try complete?" ) ;
 } ) ;
 
 
