@@ -886,7 +886,7 @@ Set up a time limit for each job.
 If a job doesn't trigger its callback within this time, its callback is triggered anyway automatically with an error:
 `new Error( 'Timeout' )`.
 
-If the job trigger its callback later, it will be ignored.
+If the job triggers its callback later, it will be ignored.
 
 It comes in handy in any network or service dependant async jobs, like database queries, HTTP request, and so on.
 
@@ -911,7 +911,7 @@ This is a very nice feature when dealing with other servers or external services
 but we don't want important tasks to fail.
 
 It allows fine tuning:
-* maxRetry: the maximum number of times a job should be retried, before giving up with the error
+* maxRetry: the maximum number of times a job should be retried, before giving up with the last error
 * baseTimeout: the base timeout in **ms** before retrying, this is the timeout before the first retry
 * multiply: the timeout before retrying is multiplied by this value for each new retry
 * maxTimeout: the maximum timeout in **ms**, it will never be more despite the increasing retries with a multiply value > 1.
@@ -1004,7 +1004,7 @@ async.parallel( [
 ```
 
 In the last snippet, we have isolated jobs that can timeout due to things that are out of our control.
-If one query failed, we don't have do restart from scratch, re-doing queries that have already succeed.
+If one query failed, we don't have do restart from scratch, re-doing queries that have already succeeded.
 Finally, moving `updateOurLocalDatabaseAccordingly()` into the *finallyCallback* of `.exec()` allows
 us to use the parallel mode, so the whole process perform faster. If we have chosen to put this function
 into a job, we would have been constrained to use an `async.series()` factory.
