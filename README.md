@@ -296,7 +296,8 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.foreach()](#ref.async.foreach)
 	* [async.map()](#ref.async.map)
 	* [async.reduce()](#ref.async.reduce)
-	* [async.while().do()](#ref.async.while)
+	* [async.while().do()](#ref.async.while.do)
+	* [async.do().while()](#ref.async.do.while)
 * [*Conditionnal* family factories](#ref.conditionnal.factories)
 	* [async.and()](#ref.async.and)
 	* [async.or()](#ref.async.or)
@@ -316,6 +317,9 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [Mixing .timeout() & .retry()](#ref.mixing.timeout.retry)
 	* [.lastJobOnly()](#ref..lastJobOnly)
 	* [.mapping1to1()](#ref..mapping1to1)
+	* [.using()](#ref..using)
+	* [.iterator()](#ref..iterator)
+	* [.aggregator()](#ref..aggregator)
 
 
 
@@ -599,8 +603,8 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 
 
 
-<a name="ref.async.while"></a>
-### async.while( whileCallback ).do( jobsList )
+<a name="ref.async.while.do"></a>
+### async.while( conditionCallback ).do( jobsList )
 
 * conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
 	* error `mixed` any truthy means error
@@ -611,6 +615,12 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 * jobsList `Array` or `Object`
 
 It performs an async while loop.
+This is equivalent to javascript code:
+```js
+while ( expression ) {
+	// do something
+}
+```
 
 Unlike others factories, in order to mimic native language syntax, this factory accepts a *conditionCallback* 
 rather than a job's list. 
@@ -639,6 +649,30 @@ async.while( function( error , results , logicCallback ) {
 	// 'results' contains only the results of the last loop
 	thingsToDoWhenFinished() ;
 } ) ;
+```
+
+
+
+<a name="ref.async.do.while"></a>
+### async.do( jobsList ).while( conditionCallback )
+
+* jobsList `Array` or `Object`
+* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+	* error `mixed` any truthy means error
+	* results `Array` or `Object` that maps the *jobsList*
+	* logicCallback `Function( [error] , result )` where:
+		* error `mixed` any truthy means error
+		* result `mixed`
+
+It performs an async do-while loop.
+
+It works exactly the same as [async.while().do()](#ref.async.while.do), except that, by default, the *conditionCallback*
+is triggered at the end of the process rather than at the beginning.
+This is equivalent to javascript code:
+```js
+do {
+	// do something
+} while ( expression )
 ```
 
 
@@ -721,10 +755,10 @@ We can create nested conditionnal statement just like in native language. See th
 
 ```js
 async.if.and( [
-	ifSomeConditionAreMetAnd
+	ifSomeConditionsAreMetAnd
 	async.or( [
-		ifSomeMoreConditionAreMet
-		orIfSomeAlternativeConditionAreMet
+		ifSomeMoreConditionsAreMet
+		orIfSomeAlternativeConditionsAreMet
 	] )
 ] )
 .then( function() {
@@ -735,8 +769,8 @@ async.if.and( [
 } )
 .exec() ;
 ```
-`ifSomeConditionAreMetAnd`, `ifSomeMoreConditionAreMet` and `orIfSomeAlternativeConditionAreMet` 
-are user functions asyncly checking if some condition are met or not.
+`ifSomeConditionsAreMetAnd`, `ifSomeMoreConditionsAreMet` and `orIfSomeAlternativeConditionsAreMet` 
+are user functions asyncly checking if some conditions are met or not.
 
 This works because if a job is an instance of `async.Plan`, the `.exec()` method will be used as a callback.
 
@@ -903,11 +937,11 @@ interupt the job in any way**.
 * maxRetry `Number`, it doesn't update if omited
 * baseTimeout `Number` in **ms**, it doesn't update if omited
 * multiply `Number`, it doesn't update if omited
-* maxTimeout `Number`, in **ms** it doesn't update if omited
+* maxTimeout `Number`, in **ms**, it doesn't update if omited
 
 This modifier allows jobs in error to be retried.
 
-This is a very nice feature when dealing with other servers or external services, because they could be unavailable any time,
+This is a very nice feature when dealing with other servers or external services, because they could be unavailable at any time,
 but we don't want important tasks to fail.
 
 It allows fine tuning:
@@ -916,7 +950,8 @@ It allows fine tuning:
 * multiply: the timeout before retrying is multiplied by this value for each new retry
 * maxTimeout: the maximum timeout in **ms**, it will never be more despite the increasing retries with a multiply value > 1.
 
-For example, assuming `maxRetry: 6, baseTimeout: 100, multiply: 1.5, maxTimeout: 500`, we will get for each retry the timeout value:
+For example, assuming `maxRetry: 6, baseTimeout: 100, multiply: 1.5, maxTimeout: 500`, we will get for each retry 
+the timeout value:
 * 1st - 100ms
 * 2nd - 150ms (=100*1.5)
 * 3rd - 225ms (=150*1.5)
@@ -965,7 +1000,7 @@ This is exactly what can achieve a mix of `.timeout()` and `.retry()`: when the 
 it triggers its callback with a failed status (`new Error( 'Timeout' )`), then *retry* kick in and the job start over,
 it may hit the time limit again and be restarted again, until it succeeds or the retry countdown abort the whole process.
 
-Also there is an **IMPORTANT** drawback we need to be aware of:
+Also there are **IMPORTANT** drawback we need to be aware of:
 * when a timeout occurs, the job is **\*NOT\*** interupted in any way (see [`.timeout()`](#ref..timeout) for details)
 * so when successive retries kick in, the same job can run multiple times: our job's code should support that without
   messing our database for example
@@ -973,7 +1008,7 @@ Also there is an **IMPORTANT** drawback we need to be aware of:
   code should support that case too
 
 As a rule of thumb, if we plan to mix `.timeout()` and `.retry()`, we must isolate as much as possible critical code,
-creating more jobs that perform small tasks is better.
+creating more jobs that perform small task is better.
 
 For example, this is a **\*VERY\* bad** practice:
 ```js
@@ -1004,9 +1039,9 @@ async.parallel( [
 ```
 
 In the last snippet, we have isolated jobs that can timeout due to things that are out of our control.
-If one query failed, we don't have do restart from scratch, re-doing queries that have already succeeded.
+If one query failed, we don't have to restart from scratch, re-doing queries that have already succeeded.
 Finally, moving `updateOurLocalDatabaseAccordingly()` into the *finallyCallback* of `.exec()` allows
-us to use the parallel mode, so the whole process perform faster. If we have chosen to put this function
+us to use the parallel mode, so the whole process perform faster. If we had chosen to put this function
 into a job, we would have been constrained to use an `async.series()` factory.
 More important: we are sure that the code that update our database will run once.
 
@@ -1087,6 +1122,122 @@ async.parallel( [
 ```
 
 **Note:** when using `.mapping1to1()`, any extra arguments passed to the job's callback are ignored.
+
+
+
+<a name="ref..using"></a>
+### .using( various )
+
+* various `Function`, `Array` or `Object`
+
+Argument passed to `.using()` is used in combination with the job's list.
+Behaviours all depend on the type of the arguments.
+
+In the following `.using()` variation, `async.do()` can be replaced by any `async.Plan`'s factory.
+
+#### async.do( jobsData ).using( workerFunction )
+
+* jobsData `Array` (or `Object`) of `Array`
+* workerFunction `Function`
+
+When combining `.do()` and `.using()` this way, each job contains an array of arguments to pass to *workerFunction*.
+
+```js
+async.do( [
+	[ 'http://example.com/' , 500 ] ,
+	[ 'http://example.com/forum/' , 800 ] ,
+	[ 'http://example.com/blog/' , 200 ]
+] )
+.using( function( url , timeout ) {
+	// Async check of url, with some timeout
+} )
+.exec( function( error , results ) {
+	if ( ! error )  { console.log( "Success!" ) ; }
+} ) ;
+```
+
+Also, if your *workerFunction* only accepts one argument, you can avoid *Array of Array* construct:
+
+```js
+async.do( [ 'http://example.com/' , 'http://example.com/forum/' , 'http://example.com/blog/' ] )
+.using( function( url ) {
+	// Async check of url
+} )
+.exec( function( error , results ) {
+	if ( ! error )  { console.log( "Success!" ) ; }
+} ) ;
+```
+
+#### async.do( jobsList ).using( args )
+
+* jobsList `Array` (or `Object`) of `Function`
+* args `Array`
+
+This is the opposite.
+Here we have a list of different function, but they take the same argument's list.
+
+
+Example:
+```js
+async.do( [
+	dnsResolve ,
+	ping ,
+	httpGet
+] )
+.using( 'http://example.com/' )
+.exec( function( error , results ) {
+	if ( ! error )  { console.log( "Success!" ) ; }
+} ) ;
+```
+
+In the previous snippet, `.using()` provide the data, and `.do()` provide the actions, where *dnsResolve*, *ping*
+and *httpGet* are three functions that take an URL as their first arguments. The *dnsResolve* function will convert
+the URL into an IP addresse, then *ping* will er... ping this IP, and finally *httpGet* will forge an HTTP request
+and get the page content.
+
+
+
+<a name="ref..iterator"></a>
+### .iterator( iteratorFunction )
+
+* iteratorFunction `Function( element , [key] , [container] , callback )` where:
+	* element `mixed` the current array element or object's property value
+	* key `Number` or `String` the current key (index for array, property name for object)
+	* container `Array` or `Object`, this is the original container
+	* callback `Function( error , [arg1] , [arg2] , ... )` a node-style callback to trigger on completion
+
+With `.iterator( iteratorFunction )` our jobs become data for *iteratorFunction*. 
+This is close to the behaviour of `.using( workerFunction )`, except that an iterator function is not called the same way.
+
+Rather than processing each element of the Array as an array of arguments, here the whole element is passed as the
+first argument of the iterator.
+
+In fact, `async.do( container ).iterator( iteratorFunction )` is equal to `async.foreach( container , iteratorFunction )`.
+
+See [async.foreach()](#ref.async.foreach) for details.
+
+
+
+<a name="ref..aggregator"></a>
+### .aggregator( transmitAggregate , returnAggregate , defaultAggregate )
+
+* transmitAggregate `Boolean`, if omited: `true`
+* returnAggregate `Boolean`, if omited: `true`
+* defaultAggregate `mixed`, this is the default value
+
+This set or unset the current `async.Plan` as an aggregator.
+
+Note that `async.do( container ).iterator( iterator ).aggregator( true , true , initialAggregatedValue )`
+is equal to `async.reduce( initialAggregatedValue , container , iterator )`.
+For more details, see [async.reduce()](#ref.async.reduce).
+
+If *transmitAggregate* is set, then the *iterator* (or job's function) receive the current *aggregatedValue*
+as its first argument, all other arguments being shifted to the right.
+
+If *returnAggregate* is set, then the *results* passed to callback (*then*, *catch* and *finally* callback)
+only contains the *aggregatedValue*.
+
+If *defaultAggregate* is set, this is what will be used as the starting value for *aggregatedValue*.
 
 
 
