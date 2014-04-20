@@ -1,6 +1,6 @@
 {
   "name": "csk-async",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
   "main": "lib/async.js",
   "directories": {
