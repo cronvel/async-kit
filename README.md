@@ -1142,6 +1142,8 @@ In the following `.using()` variation, `async.do()` can be replaced by any `asyn
 
 When combining `.do()` and `.using()` this way, each job contains an array of arguments to pass to *workerFunction*.
 
+Example:
+
 ```js
 async.do( [
 	[ 'http://example.com/' , 500 ] ,
@@ -1159,7 +1161,11 @@ async.do( [
 Also, if your *workerFunction* only accepts one argument, you can avoid *Array of Array* construct:
 
 ```js
-async.do( [ 'http://example.com/' , 'http://example.com/forum/' , 'http://example.com/blog/' ] )
+async.do( [
+	'http://example.com/' ,
+	'http://example.com/forum/' ,
+	'http://example.com/blog/'
+] )
 .using( function( url ) {
 	// Async check of url
 } )
@@ -1174,7 +1180,7 @@ async.do( [ 'http://example.com/' , 'http://example.com/forum/' , 'http://exampl
 * args `Array`
 
 This is the opposite.
-Here we have a list of different function, but they take the same argument's list.
+Here we have a list of different function, but they take the same arguments.
 
 
 Example:
@@ -1209,7 +1215,7 @@ and get the page content.
 With `.iterator( iteratorFunction )` our jobs become data for *iteratorFunction*. 
 This is close to the behaviour of `.using( workerFunction )`, except that an iterator function is not called the same way.
 
-Rather than processing each element of the Array as an array of arguments, here the whole element is passed as the
+Rather than processing each element of the `Array` as an array of arguments, here the whole element is passed as the
 first argument of the iterator.
 
 In fact, `async.do( container ).iterator( iteratorFunction )` is equal to `async.foreach( container , iteratorFunction )`.
