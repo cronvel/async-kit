@@ -309,6 +309,8 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.parallel()](#ref..parallel)
 	* [.race()](#ref..race)
 	* [.waterfall()](#ref..waterfall)
+	* [.while()](#ref..while)
+	* [.repeat()](#ref..repeat)
 	* [.fatal()](#ref..fatal)
 	* [.boolean()](#ref..boolean)
 	* [.transmitError()](#ref..transmitError)
@@ -320,6 +322,7 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.using()](#ref..using)
 	* [.iterator()](#ref..iterator)
 	* [.aggregator()](#ref..aggregator)
+	* [.nice()](#ref..nice)
 
 
 
@@ -846,6 +849,41 @@ See [`async.waterfall()`](#ref.async.waterfall) factory.
 
 
 
+<a name="ref..while"></a>
+### .while( conditionCallback , whileActionBefore )
+
+* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+	* error `mixed` any truthy means error
+	* results `Array` or `Object` that maps the *jobsList*
+	* logicCallback `Function( [error] , result )` where:
+		* error `mixed` any truthy means error
+		* result `mixed`
+* whileActionBefore `Boolean`, if omited: `false`
+
+Set a *while* loop mode.
+
+The argument *whileActionBefore* is used to define if the condition should be evaluated at the begining of the loop
+or at the end of the loop.
+
+See [async.while().do()](#ref.async.while.do) (if *whileActionBefore* is true) or
+[async.do().while()](#ref.async.do.while) (if *whileActionBefore* is false) for details.
+
+
+
+<a name="ref..repeat"></a>
+### .repeat( n )
+
+* n `Number`
+
+Set loop mode, the jobs list will run *n* times.
+
+Actually this is a shortcut, it simply set up a *while* loop with a trivial callback.
+Avoid to reinvent the wheel again and again.
+
+See [.while()](#ref..while) for details.
+
+
+
 <a name="ref..fatal"></a>
 ### .fatal( [errorsAreFatal] )
 
@@ -1244,6 +1282,46 @@ If *returnAggregate* is set, then the *results* passed to callback (*then*, *cat
 only contains the *aggregatedValue*.
 
 If *defaultAggregate* is set, this is what will be used as the starting value for *aggregatedValue*.
+
+
+
+<a name="ref..nice"></a>
+### .nice( niceness )
+
+* niceness `Number` between *-3* and `Infinity`
+
+This try to mimic the unix command `nice` and `renice`.
+This set up how the job scheduler behaves.
+
+It depends on the *niceness* value:
+* *-3* is for synchonous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
+  everything will be synchronous and will be executed in one code flow, in that particular case, there will be no difference
+  between `async.series()` or `async.parallel()`. 
+* *-2* is for asynchronous scheduling, it uses `process.nextTick()` internally. Basicly, it will run almost as fast as
+  synchronous, but in another code execution flow. This still let us time to define things after `.exec()` that will be run
+  before any synchronous or asynchronous jobs. Also it will run before I/O most of times
+  (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
+* *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
+  (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
+* *>=0* is for asynchronous scheduling, it uses `setTimeout()` internally. This scheduling allows I/O to be performed
+  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
+  means that the scheduler will delay further action for 100ms
+  (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
+
+By default, if `.nice()` is not called, the scheduler is synchronous.
+
+Synchronous scheduling is just fine in usual case.
+However, we may have stack overflow issues if loop, `.retry()` or just an huge job's list is involved, because everything
+use nested callback the way we would have done it, those nested callback are just abstracted away by the lib,
+but still remains behind the scene.
+
+Asynchronous scheduling uses the javascript's *event loop*, so there is no more infinite nested callback possible.
+It can scale better for big job's list, loop and `.retry()`...
+
+If we have a big synchronous task to do, we can divide it into many jobs, then use `async.series( jobsList ).nice( 0 )`
+(for example) to *asyncify* it a bit. This can be very important for services: our application must keep accepting
+new request during the big task processing. Also if the task is really that big, it is usually good practice 
+to spawn a process or create a new specific service for this particular task.
 
 
 
