@@ -875,7 +875,7 @@ See [async.while().do()](#ref.async.while.do) (if *whileActionBefore* is true) o
 
 * n `Number`
 
-Set loop mode, the jobs list will run *n* times.
+Set loop mode, the job's list will run *n* times.
 
 Actually this is a shortcut, it simply set up a *while* loop with a trivial callback.
 Avoid to reinvent the wheel again and again.
@@ -1291,15 +1291,16 @@ If *defaultAggregate* is set, this is what will be used as the starting value fo
 * niceness `Number` between *-3* and `Infinity`
 
 This try to mimic the unix command `nice` and `renice`.
-This set up how the job scheduler behaves.
+This set up how the job's scheduler behaves.
 
 It depends on the *niceness* value:
 * *-3* is for synchonous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
   everything will be synchronous and will be executed in one code flow, in that particular case, there will be no difference
   between `async.series()` or `async.parallel()`. 
 * *-2* is for asynchronous scheduling, it uses `process.nextTick()` internally. Basicly, it will run almost as fast as
-  synchronous, but in another code execution flow. This still let us time to define things after `.exec()` that will be run
-  before any synchronous or asynchronous jobs. Also it will run before I/O most of times
+  synchronous mode, but each time the scheduler kick in, it will run new jobs in another code execution flow.
+  This still let us time to define things after `.exec()` that will be run before any synchronous or asynchronous jobs.
+  Also it will schedule before I/O most of times
   (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
 * *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
   (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
@@ -1311,17 +1312,20 @@ It depends on the *niceness* value:
 By default, if `.nice()` is not called, the scheduler is synchronous.
 
 Synchronous scheduling is just fine in usual case.
-However, we may have stack overflow issues if loop, `.retry()` or just an huge job's list is involved, because everything
+However, we may have **stack overflow** issues if loop, `.retry()` or just an huge job's list is involved, because everything
 use nested callback the way we would have done it, those nested callback are just abstracted away by the lib,
 but still remains behind the scene.
 
 Asynchronous scheduling uses the javascript's *event loop*, so there is no more infinite nested callback possible.
 It can scale better for big job's list, loop and `.retry()`...
 
-If we have a big synchronous task to do, we can divide it into many jobs, then use `async.series( jobsList ).nice( 0 )`
-(for example) to *asyncify* it a bit. This can be very important for services: our application must keep accepting
-new request during the big task processing. Also if the task is really that big, it is usually good practice 
-to spawn a process or create a new specific service for this particular task.
+If we have a big synchronous task to do, we can divide it into many jobs, then use for example:
+```js
+async.series( jobsList ).nice( 0 )
+```
+... to *asyncify* it a bit. This can be very important for services: our application must keep accepting
+new request during the big task processing. Also if the task is really that big, it is usually a good practice 
+to spawn a process or create a new specific service for this particular task anyway.
 
 
 
