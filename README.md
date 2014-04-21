@@ -1321,7 +1321,7 @@ It can scale better for big job's list, loop and `.retry()`...
 
 If we have a big synchronous task to do, we can divide it into many jobs, then use for example:
 ```js
-async.series( jobsList ).nice( 0 )
+async.series( jobsList ).nice( 0 ).exec() ;
 ```
 ... to *asyncify* it a bit. This can be very important for services: our application must keep accepting
 new request during the big task processing. Also if the task is really that big, it is usually a good practice 
