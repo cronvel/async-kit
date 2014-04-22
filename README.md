@@ -323,6 +323,16 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.iterator()](#ref..iterator)
 	* [.aggregator()](#ref..aggregator)
 	* [.nice()](#ref..nice)
+	* [.then()](#ref..then)
+	* [.else()](#ref..else)
+	* [.catch()](#ref..catch)
+	* [.finally()](#ref..finally)
+* [Callbacks](#ref.callback)
+	* [thenCallback](#ref.callback.thenCallback)
+	* [elseCallback()](#ref.callback.elseCallback)
+	* [catchCallback()](#ref.callback.catchCallback)
+	* [finallyCallback()](#ref.callback.finallyCallback)
+
 
 
 
@@ -1326,6 +1336,138 @@ async.series( jobsList ).nice( 0 ).exec() ;
 ... to *asyncify* it a bit. This can be very important for services: our application must keep accepting
 new request during the big task processing. Also if the task is really that big, it is usually a good practice 
 to spawn a process or create a new specific service for this particular task anyway.
+
+
+
+<a name="ref..then"></a>
+### .then( thenCallback )
+
+* thenCallback `Function`
+
+This set up a *then* callback part of the `async.Plan` itself.
+See [thenCallback](#ref.callback.thenCallback) for details.
+
+
+
+<a name="ref..else"></a>
+### .else( elseCallback )
+
+* elseCallback `Function`
+
+This set up an *else* callback part of the `async.Plan` itself.
+See [elseCallback](#ref.callback.elseCallback) for details.
+
+This has no effect for *Do* family `async.Plan`.
+
+
+
+<a name="ref..catch"></a>
+### .catch( catchCallback )
+
+* catchCallback `Function`
+
+This set up a *catch* callback part of the `async.Plan` itself.
+See [catchCallback](#ref.callback.catchCallback) for details.
+
+
+
+<a name="ref..finally"></a>
+### .finally( finallyCallback )
+
+* finallyCallback `Function`
+
+This set up a *finally* callback part of the `async.Plan` itself.
+See [finallyCallback](#ref.callback.finallyCallback) for details.
+
+
+
+<a name="ref..clone"></a>
+### .clone()
+
+This method is used to clone and return an `async.Plan`.
+
+The cloned `async.Plan` is **unlocked**: we can use its modifier methods even if the original `async.Plan` is locked
+or is currently under execution.
+
+
+
+<a name="ref..export"></a>
+### .export()
+
+This export and return an `async.Plan` as a function.
+The exported function behaves exactly like the `.exec()` method of the `async.Plan`.
+
+Since the `async.Plan` is internally cloned, changes made on the original `async.Plan` do **not** change how the exported function behaves.
+
+
+
+<a name="ref.callbacks"></a>
+## Callbacks
+
+Those callbacks are triggered (if conditions are met) when the `async.Plan` is resolved.
+Note that if we don't use [`.timeout()`](#ref..timeout) and a job is pending forever, the `async.Plan` will never being resolved,
+thus no callback will be ever triggered.
+
+There are two stages of callback.
+
+* The first stage are callbacks defined in the `async.Plan` itself. Those callback are **\*ALWAYS\*** triggered before the second stage.
+
+* The second stage are callbacks of the `.exec()`-like method.
+
+
+
+<a name="ref.callback.thenCallback"></a>
+### thenCallback
+
+* thenCallback `Function( results )`
+	* results `mixed`, depends on options
+
+For *Do* family, this callback is triggered if `async.Plan` succeed. The *success* depends on factory and options used.
+Usually, an `async.Plan` succeed if no error happened. But job on error can be retried if [`.retry()`](#ref..retry) is used, and finally succeed,
+[`async.race`](#ref.async.race) succeed as long as one job succeed, and so on.
+
+Furthermore, for *Conditionnal* family, the final result should be `true` or *truthy* for this callback to be triggered.
+
+The *results* argument format passed to this callback depends on many factor.
+See related factories and modifier.
+
+
+
+<a name="ref.callback.elseCallback"></a>
+### elseCallback
+
+* elseCallback `Function( results )`
+	* results `mixed`, depends on options
+
+It never triggers for *Do* family `async.Plan`.
+
+For *Conditionnal* family, it will trigger if the final result is `false` or *falsy*.
+However, if no [*catchCallback*](#ref.callback.catchCallback) exists for this stage (see [callbacks introduction](#ref.callbacks) for what a callback stage is),
+**it will trigger if the final outcome is an error too**.
+
+
+
+<a name="ref.callback.catchCallback"></a>
+### catchCallback
+
+* catchCallback `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This callback is triggered when the final outcome is an error.
+
+
+
+<a name="ref.callback.finallyCallback"></a>
+### finallyCallback
+
+* finallyCallback `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This callback is **\*ALWAYS\*** triggered.
+This is the last callback of a stage to be triggered.
+
 
 
 
