@@ -1392,7 +1392,7 @@ See [finallyCallback](#ref.callback.finallyCallback) for details.
 <a name="ref..clone"></a>
 ### .clone()
 
-This method is used to clone and return an `async.Plan`.
+This method is used to clone an `async.Plan` and return it.
 
 The cloned `async.Plan` is **unlocked**: we can use its modifier methods even if the original `async.Plan` is locked
 or is currently under execution.
@@ -1420,7 +1420,7 @@ There are two stages of callback.
 
 * The first stage are callbacks defined in the `async.Plan` itself. Those callback are **\*ALWAYS\*** triggered before the second stage.
 
-* The second stage are callbacks of the `.exec()`-like method.
+* The second stage are callbacks of the `.exec()`-like methods.
 
 
 
@@ -1430,13 +1430,13 @@ There are two stages of callback.
 * thenCallback `Function( results )`
 	* results `mixed`, depends on options
 
-For *Do* family, this callback is triggered if `async.Plan` succeed. The *success* depends on factory and options used.
-Usually, an `async.Plan` succeed if no error happened. But job on error can be retried if [`.retry()`](#ref..retry) is used, and finally succeed,
+For *Do* family, this callback is triggered if the `async.Plan`'s execution succeed. The *success* depends on factory and options used.
+Usually, an `async.Plan` succeed if no error happened. But jobs on error can be retried if [`.retry()`](#ref..retry) is used, and finally succeed,
 [`async.race`](#ref.async.race) succeed as long as one job succeed, and so on.
 
 Furthermore, for *Conditionnal* family, the final result should be `true` or *truthy* for this callback to be triggered.
 
-The *results* argument format passed to this callback depends on many factor.
+The *results* argument's format passed to this callback depends on many factor.
 See related factories and modifier.
 
 
@@ -1450,7 +1450,7 @@ See related factories and modifier.
 It never triggers for *Do* family `async.Plan`.
 
 For *Conditionnal* family, it will trigger if the final result is `false` or *falsy*.
-However, if no [*catchCallback*](#ref.callback.catchCallback) exists for this stage (see [callbacks introduction](#ref.callbacks) for what a callback stage is),
+However, if **no** [*catchCallback*](#ref.callback.catchCallback) exists for this stage (see [callbacks introduction](#ref.callbacks) for what a callback stage is),
 **it will trigger if the final outcome is an error too**.
 
 
@@ -1474,7 +1474,7 @@ This callback is triggered when the final outcome is an error.
 	* results `mixed`, depends on options
 
 This callback is **\*ALWAYS\*** triggered.
-This is the last callback of a stage to be triggered.
+This is the **last** callback of a stage to be triggered.
 
 
 
