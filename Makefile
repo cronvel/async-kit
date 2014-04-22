@@ -51,7 +51,8 @@ log/npm-publish.log: check-if-master-branch log/upgrade-package.log
 
 # Push to Github/master
 log/github-push.log: lib/async.js test/async-test.js package.json
-	git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
+	#'npm version patch' create the git tag by itself... 
+	#git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
 	git push origin master --tags | tee log/github-push.log
 
 # NPM install
