@@ -327,6 +327,8 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.else()](#ref..else)
 	* [.catch()](#ref..catch)
 	* [.finally()](#ref..finally)
+	* [.clone()](#ref..clone)
+	* [.export()](#ref..export)
 * [Callbacks](#ref.callback)
 	* [thenCallback](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
@@ -1342,7 +1344,8 @@ to spawn a process or create a new specific service for this particular task any
 <a name="ref..then"></a>
 ### .then( thenCallback )
 
-* thenCallback `Function`
+* thenCallback `Function( results )`
+	* results `mixed`, depends on options
 
 This set up a *then* callback part of the `async.Plan` itself.
 See [thenCallback](#ref.callback.thenCallback) for details.
@@ -1352,7 +1355,8 @@ See [thenCallback](#ref.callback.thenCallback) for details.
 <a name="ref..else"></a>
 ### .else( elseCallback )
 
-* elseCallback `Function`
+* elseCallback `Function( results )`
+	* results `mixed`, depends on options
 
 This set up an *else* callback part of the `async.Plan` itself.
 See [elseCallback](#ref.callback.elseCallback) for details.
@@ -1364,7 +1368,9 @@ This has no effect for *Do* family `async.Plan`.
 <a name="ref..catch"></a>
 ### .catch( catchCallback )
 
-* catchCallback `Function`
+* catchCallback `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
 
 This set up a *catch* callback part of the `async.Plan` itself.
 See [catchCallback](#ref.callback.catchCallback) for details.
@@ -1374,7 +1380,9 @@ See [catchCallback](#ref.callback.catchCallback) for details.
 <a name="ref..finally"></a>
 ### .finally( finallyCallback )
 
-* finallyCallback `Function`
+* finallyCallback `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
 
 This set up a *finally* callback part of the `async.Plan` itself.
 See [finallyCallback](#ref.callback.finallyCallback) for details.
