@@ -83,7 +83,7 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 * Else callback, for *async if*
 * Catch callback, if an error occurs
 * Finally callback, always executed
-* Define input arguments to invoke *exec()* with, that are transmitted to jobs
+* Define input arguments to invoke `.exec()` with, that are transmitted to jobs
 * Export a plan as a simple function
 
 
@@ -101,10 +101,10 @@ Use Node Package Manager:
 This is an important concept to understand when using this lib: there are two stages to perform an async flow.
 
 In the first stage, you define the plan.
-All plan definition returns an *async.Plan* object.
+All plan definition returns an `async.Plan` object.
 
-Then you can *exec()* your plan as many time as you want. All the *exec* method family returns an *execContext* object.
-The first time an *async.Plan* is *exec()*, it becomes locked forever: you cannot modify it anymore.
+Then you can `.exec()` your plan as many time as you want. All the *exec* method family returns an *execContext* object.
+The first time an `async.Plan` is `.exec()`, it becomes locked forever: you cannot modify it anymore.
 
 The example above becomes:
 
@@ -201,8 +201,8 @@ async.waterfall( [
 - *.then()* declare a *then callback* in the *Plan* itself, it will be triggered if we manage to authenticate the user
   and get its photo
 - *.catch()* declare a *catch callback* in the *Plan* itself, it will be triggered if a job fails
-- *.execArgs()* is used when you do not want to pass callback to *exec()*-like function, since by default
-  *exec()* assume than its last argument is the *finally callback*, so since we are in *waterfall* mode, every
+- *.execArgs()* is used when you do not want to pass callback to `.exec()`-like function, since by default
+  `.exec()` assume than its last argument is the *finally callback*, so since we are in *waterfall* mode, every
   arguments passed to *execArgs()* are passed only to the first job
 
 You can chain as many queries as you want, without burying them deeper and deeper in nested callback hell.
@@ -262,9 +262,9 @@ async.foreach( myArray , function( element , callback ) {
 **Explanation**: 
 - *async.foreach( myArray , function )* define a job list with myArray, and specify an iterator function
 - *doSomethingAsyncWithElement()* should trigger its callback when the job is finished
-- When all element have been processed, the *exec()*'s callback is triggered, as usual
+- When all element have been processed, the `.exec()`'s callback is triggered, as usual
 
-You can as well add a ```.parallel()``` before *exec()*, you still have the advantage versus native forEach()
+You can as well add a ```.parallel()``` before `.exec()`, you still have the advantage versus native forEach()
 of having a general callback triggered when everything is asynchronously done.
 
 	
@@ -329,11 +329,15 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.finally()](#ref..finally)
 	* [.clone()](#ref..clone)
 	* [.export()](#ref..export)
-* [Callbacks](#ref.callback)
+	* [.exec()](#ref..exec)
+	* [.execFinally()](#ref..execFinally)
+	* [.execThenCatch()](#ref..execThenCatch)
+* [Callback types](#ref.callback)
 	* [thenCallback](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
 	* [catchCallback()](#ref.callback.catchCallback)
 	* [finallyCallback()](#ref.callback.finallyCallback)
+	* [whileCallback()](#ref.callback.whileCallback)
 
 
 
@@ -420,7 +424,7 @@ By default, the `.exec()` method accept arguments to pass to the first job.
 
 By default, the *error* argument is not transmitted, see [.transmitError()](#ref..transmitError) for details.
 
-Only the last job pass its result to *finallyCallback*, *thenCallback* etc...
+Only the last job pass its result to [*finallyCallback*](#ref.callback.finallyCallback), [*thenCallback*](#ref.callback.thenCallback) etc...
 See [.lastJobOnly()](#ref..lastJobOnly) for details.
 
 **Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
@@ -619,14 +623,14 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 
 
 <a name="ref.async.while.do"></a>
-### async.while( conditionCallback ).do( jobsList )
+### async.while( whileCallback ).do( jobsList )
 
-* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+* [whileCallback](#ref.callback.whileCallback) `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
 	* error `mixed` any truthy means error
 	* results `Array` or `Object` that maps the *jobsList*
-	* logicCallback `Function( [error] , result )` where:
+	* logicCallback `Function( [error] , loopAgain )` where:
 		* error `mixed` any truthy means error
-		* result `mixed`
+		* loopAgain `Boolean` anything else is considered either *truthy* or *falsy*
 * jobsList `Array` or `Object`
 
 It performs an async while loop.
@@ -637,7 +641,7 @@ while ( expression ) {
 }
 ```
 
-Unlike others factories, in order to mimic native language syntax, this factory accepts a *conditionCallback* 
+Unlike others factories, in order to mimic native language syntax, this factory accepts a [*whileCallback*](#ref.callback.whileCallback) 
 rather than a job's list. 
 So you have to use the `async.Plan`'s `.do()` method to pass the job's list.
 
@@ -647,7 +651,7 @@ Async while loops behave diffently than other `async.Plan` in various way:
 * when everything is done, it performs again a conditionnal check, and if its outcome is truthy, it loops again (and again, etc...)
 * when the outcome of the conditionnal check is falsy, callbacks (*finally, then, catch, else*) are triggered 
 with the results of the last iteration only (if any), so older iteration's results are lost unless checked and used
-in the *conditionCallback*.
+in the [*whileCallback*](#ref.callback.whileCallback).
 
 Example:
 ```js
@@ -669,19 +673,19 @@ async.while( function( error , results , logicCallback ) {
 
 
 <a name="ref.async.do.while"></a>
-### async.do( jobsList ).while( conditionCallback )
+### async.do( jobsList ).while( whileCallback )
 
 * jobsList `Array` or `Object`
-* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+* [whileCallback](#ref.callback.whileCallback) `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
 	* error `mixed` any truthy means error
 	* results `Array` or `Object` that maps the *jobsList*
-	* logicCallback `Function( [error] , result )` where:
+	* logicCallback `Function( [error] , loopAgain )` where:
 		* error `mixed` any truthy means error
-		* result `mixed`
+		* loopAgain `Boolean` anything else is considered either *truthy* or *falsy*
 
 It performs an async do-while loop.
 
-It works exactly the same as [async.while().do()](#ref.async.while.do), except that, by default, the *conditionCallback*
+It works exactly the same as [async.while().do()](#ref.async.while.do), except that, by default, the [*whileCallback*](#ref.callback.whileCallback)
 is triggered at the end of the process rather than at the beginning.
 This is equivalent to javascript code:
 ```js
@@ -862,14 +866,14 @@ See [`async.waterfall()`](#ref.async.waterfall) factory.
 
 
 <a name="ref..while"></a>
-### .while( conditionCallback , whileActionBefore )
+### .while( whileCallback , whileActionBefore )
 
-* conditionCallback `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
+* [whileCallback](#ref.callback.whileCallback) `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
 	* error `mixed` any truthy means error
 	* results `Array` or `Object` that maps the *jobsList*
-	* logicCallback `Function( [error] , result )` where:
+	* logicCallback `Function( [error] , loopAgain )` where:
 		* error `mixed` any truthy means error
-		* result `mixed`
+		* loopAgain `Boolean` anything else is considered either *truthy* or *falsy*
 * whileActionBefore `Boolean`, if omited: `false`
 
 Set a *while* loop mode.
@@ -1090,9 +1094,9 @@ async.parallel( [
 
 In the last snippet, we have isolated jobs that can timeout due to things that are out of our control.
 If one query failed, we don't have to restart from scratch, re-doing queries that have already succeeded.
-Finally, moving `updateOurLocalDatabaseAccordingly()` into the *finallyCallback* of `.exec()` allows
-us to use the parallel mode, so the whole process perform faster. If we had chosen to put this function
-into a job, we would have been constrained to use an `async.series()` factory.
+Finally, moving `updateOurLocalDatabaseAccordingly()` into the [*finallyCallback*](#ref.callback.finallyCallback)
+of `.exec()` allows us to use the parallel mode, so the whole process perform faster.
+If we had chosen to put this function into a job, we would have been constrained to use an `async.series()` factory.
 More important: we are sure that the code that update our database will run once.
 
 
@@ -1102,7 +1106,8 @@ More important: we are sure that the code that update our database will run once
 
 * returnLastJobOnly `boolean`, if omited: `true`
 
-If set to `true`, only the last job pass its result to *finallyCallback*, *thenCallback* etc...
+If set to `true`, only the last job pass its result to [*finallyCallback*](#ref.callback.finallyCallback),
+[*thenCallback*](#ref.callback.thenCallback) etc...
 
 Without `.lastJobOnly()` (the default in most factories):
 ```js
@@ -1344,7 +1349,7 @@ to spawn a process or create a new specific service for this particular task any
 <a name="ref..then"></a>
 ### .then( thenCallback )
 
-* thenCallback `Function( results )`
+* [thenCallback](#ref.callback.thenCallback) `Function( results )`
 	* results `mixed`, depends on options
 
 This set up a *then* callback part of the `async.Plan` itself.
@@ -1355,7 +1360,7 @@ See [thenCallback](#ref.callback.thenCallback) for details.
 <a name="ref..else"></a>
 ### .else( elseCallback )
 
-* elseCallback `Function( results )`
+* [elseCallback](#ref.callback.elseCallback) `Function( results )`
 	* results `mixed`, depends on options
 
 This set up an *else* callback part of the `async.Plan` itself.
@@ -1368,7 +1373,7 @@ This has no effect for *Do* family `async.Plan`.
 <a name="ref..catch"></a>
 ### .catch( catchCallback )
 
-* catchCallback `Function( error , results )`
+* [catchCallback](#ref.callback.catchCallback) `Function( error , results )`
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
@@ -1380,7 +1385,7 @@ See [catchCallback](#ref.callback.catchCallback) for details.
 <a name="ref..finally"></a>
 ### .finally( finallyCallback )
 
-* finallyCallback `Function( error , results )`
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
@@ -1406,6 +1411,111 @@ This export and return an `async.Plan` as a function.
 The exported function behaves exactly like the `.exec()` method of the `async.Plan`.
 
 Since the `async.Plan` is internally cloned, changes made on the original `async.Plan` do **not** change how the exported function behaves.
+
+
+
+<a name="ref..exec"></a>
+### .exec( ... )
+
+This method execute the `async.Plan`.
+
+Until an exec-like method is called, nothing happens at all, previous methods mostly configure the `async.Plan`.
+
+Arguments passed to `.exec()` depend on factories by default, and can be modified by [`.execMapping()`](#ref..execMapping).
+
+However, most factories use this scheme:
+
+`.exec( [arg1] , [arg2] , ... , [finallyCallback](#ref.callback.finallyCallback) )`.
+
+* arg1, arg2, ... `mixed` : arguments to pass to all the jobs (or to the first job only in *waterfall* mode)
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+Following `.exec()`-like methods have a static scheme, and are not modified by [`.execMapping()`](#ref..execMapping).
+
+
+
+<a name="ref..execFinally"></a>
+### .execFinally( finallyCallback )
+
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+It only accepts one argument: the [finallyCallback](#ref.callback.finallyCallback).
+
+
+
+<a name="ref..execThenCatch"></a>
+### .execThenCatch( thenCallback , catchCallback , [finallyCallback] )
+
+* [thenCallback](#ref.callback.thenCallback) `Function( results )`
+	* results `mixed`, depends on options
+* [catchCallback](#ref.callback.catchCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback), and
+[catchCallback](#ref.callback.catchCallback) as the second.
+
+However, the [finallyCallback](#ref.callback.finallyCallback) can still be passed as the third argument.
+
+
+
+<a name="ref..execThenElse"></a>
+### .execThenElse( thenCallback , elseCallback , [finallyCallback] )
+
+* [thenCallback](#ref.callback.thenCallback) `Function( results )`
+	* results `mixed`, depends on options
+* [elseCallback](#ref.callback.elseCallback) `Function( results )`
+	* results `mixed`, depends on options
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback), and
+[elseCallback](#ref.callback.elseCallback) as the second.
+
+However, the [finallyCallback](#ref.callback.finallyCallback) can still be passed as the third argument.
+
+
+
+<a name="ref..execThenElseCatch"></a>
+### .execThenCatch( thenCallback , elseCallback , catchCallback , [finallyCallback] )
+
+* [thenCallback](#ref.callback.thenCallback) `Function( results )`
+	* results `mixed`, depends on options
+* [elseCallback](#ref.callback.elseCallback) `Function( results )`
+	* results `mixed`, depends on options
+* [catchCallback](#ref.callback.catchCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+* [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
+	* error `mixed`, depends on jobs' code
+	* results `mixed`, depends on options
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback),
+[elseCallback](#ref.callback.elseCallback) as the second, and [catchCallback](#ref.callback.catchCallback) as the third.
+
+However, the [finallyCallback](#ref.callback.finallyCallback) can still be passed as the fourth argument.
+
+
+
+<a name="ref..execArgs"></a>
+### .execArgs( [arg1] , [arg2] , ... )
+
+* arg1, arg2, ... `mixed`
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+All arguments passed to this method are passed to all the jobs (except in *waterfall* mode, where they are passed only to the first job).
 
 
 
@@ -1476,6 +1586,26 @@ This callback is triggered when the final outcome is an error.
 This callback is **\*ALWAYS\*** triggered.
 This is the **last** callback of a stage to be triggered.
 
+
+
+<a name="ref.callback.whileCallback"></a>
+### whileCallback
+
+* whileCallback `Function( error , results , logicCallback )`, where:
+	* error `mixed` any truthy means error
+	* results `Array` or `Object` that maps the *jobsList*
+	* logicCallback `Function( [error] , loopAgain )` where:
+		* error `mixed` any truthy means error
+		* loopAgain `Boolean` anything else is considered either *truthy* or *falsy*
+
+This callback is used for while loop.
+
+The last iteration's *error* and *results* are passed to this function. 
+
+Then the internal *logicCallback* function can be triggered, if a *truthy* value is passed as the *loopAgain* argument,
+a new loop iteration will be performed, if a *falsy* value is passed, no new loop iteration will take place:
+completion callback (*thenCallback*, *elseCallback*, *catchCallback*, *finallyCallback*) will be triggered
+depending on the current (last) iteration's outcome.
 
 
 
