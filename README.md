@@ -335,6 +335,7 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.execThenElse()](#ref..execThenElse)
 	* [.execThenElseCatch()](#ref..execThenElseCatch)
 	* [.execArgs()](#ref..execArgs)
+	* [.execMapping()](#ref..execMapping)
 * [Callback types](#ref.callback)
 	* [thenCallback](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
@@ -1519,6 +1520,38 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 
 This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
 All arguments passed to this method are passed to all the jobs (except in *waterfall* mode, where they are passed only to the first job).
+
+
+
+<a name="ref..execMapping"></a>
+### .execMapping( config )
+
+* config `Object`
+	* .aggregateArg `Boolean`, if omited: `false`
+	* .minInputs `Number` (integer), if omited: 0
+	* .maxInputs `Number` (integer), if omited: 0
+	* .inputsName `Array` of `String` describing each input (only used for function signature), if omited: `[]`
+	* .callbacks `Array` of `String` (can only be: 'then', 'else', 'catch' and 'finally'), if omited: `[]`
+
+This method is used to configure [`.exec()`](#ref..exec)'s behaviour.
+
+If `config.aggregateArg` is `true`, the first argument of `.exec()` is the aggregate's value.
+
+If `config.maxInputs` is greater than 0, the next arguments of `.exec()` **\*MAY\*** be inputs for jobs (arguments passed to them).
+If `config.minInputs` is greater than 0, the next arguments of `.exec()` **\*MUST\*** be inputs for jobs.
+In fact, `.exec()` supports variable number of arguments.
+
+Note that in *waterfall* mode, inputs arguments are only passed to the first job.
+
+Finally, if `config.callbacks` is not an empty array, the last arguments are callback, strictly in the order defined.
+
+`.exec()` supports variable number of arguments:
+
+* if `config.minInputs` and `config.maxInputs` are equals, the number of inputs arguments are fixed,
+  so the number of callback is variable: some callback could be omited
+
+* if `config.minInputs` and `config.maxInputs` are **\*NOT\*** equals, the number of inputs arguments are variable,
+  so the number of callback is fixed (if wasn't, we couldn't have a clue weither an argument is an input or a callback)
 
 
 
