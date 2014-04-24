@@ -1551,7 +1551,59 @@ Finally, if `config.callbacks` is not an empty array, the last arguments are cal
   so the number of callback is variable: some callback could be omited
 
 * if `config.minInputs` and `config.maxInputs` are **\*NOT\*** equals, the number of inputs arguments are variable,
-  so the number of callback is fixed (if wasn't, we couldn't have a clue weither an argument is an input or a callback)
+  so the number of callback is fixed (if it wasn't, we couldn't have a clue weither an argument is an input or a callback)
+
+
+Example using the `async.Plan` property `.execMappingSignature` to get the **signature** of `.exec()`, here with variable number of inputs:
+```js
+var plan = async.do( [
+	// Some jobs
+] )
+.execMapping( {
+	callbacks: [ 'then' , 'catch' ] ,
+	minInputs: 0 ,
+	maxInputs: 2 ,
+	inputsName: [ 'firstArg' , 'secondArg' ]
+} ) ;
+
+console.log( plan.execMappingSignature ) ;
+// produce: ( [firstArg], [secondArg], thenCallback, catchCallback )
+```
+
+
+Example with fixed number of inputs:
+```js
+var plan = async.do( [
+	// Some jobs
+] )
+.execMapping( {
+	callbacks: [ 'then' , 'catch' ] ,
+	minInputs: 2 ,
+	maxInputs: 2 ,
+	inputsName: [ 'firstArg' , 'secondArg' ]
+} ) ;
+
+console.log( plan.execMappingSignature ) ;
+// produce: ( firstArg, secondArg, [thenCallback], [catchCallback] )
+```
+
+
+Example with `config.aggregateArg` set to `true`:
+```js
+var plan = async.do( [
+	// Some jobs
+] )
+.execMapping( {
+	aggregateArg: true ,
+	callbacks: [ 'then' , 'catch' ] ,
+	minInputs: 2 ,
+	maxInputs: 2 ,
+	inputsName: [ 'firstArg' , 'secondArg' ]
+} ) ;
+
+console.log( plan.execMappingSignature ) ;
+// produce: ( aggregateValue, firstArg, secondArg, [thenCallback], [catchCallback] )
+```
 
 
 
