@@ -336,6 +336,7 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.execThenElseCatch()](#ref..execThenElseCatch)
 	* [.execArgs()](#ref..execArgs)
 	* [.execMapping()](#ref..execMapping)
+	* [.execKV()](#ref..execKV)
 * [Callback types](#ref.callback)
 	* [thenCallback](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
@@ -1604,6 +1605,30 @@ var plan = async.do( [
 console.log( plan.execMappingSignature ) ;
 // produce: ( aggregateValue, firstArg, secondArg, [thenCallback], [catchCallback] )
 ```
+
+
+
+<a name="ref..execKV"></a>
+### .execKV( KeyValuePairs )
+
+* KeyValuePairs `Object`
+	* .inputs `Array` input arguments for jobs, if omited: `[]`
+	* .aggegate `mixed` optionnal aggregate initial value
+	* .then `Function` optionnal [thenCallback](#ref.callback.thenCallback)
+	* .else `Function` optionnal [elseCallback](#ref.callback.elseCallback)
+	* .catch `Function` optionnal [catchCallback](#ref.callback.catchCallback)
+	* .finally `Function` optionnal [finallyCallback](#ref.callback.finallyCallback)
+
+This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+Rather than passing arguments in a predefined order, `.execKV()` accepts an object of key-value pairs.
+This is an alternative to `.execMapping()` & `.exec()`.
+
+Pro:
+* it improves greatly the readability
+* more straightforward, no need to remember the signature of `.exec()`
+
+Cons:
+* With `.execMapping()`, `.exec()` can raise error if misused, for example it constraints a number of input's arguments
 
 
 
