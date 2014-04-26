@@ -1410,10 +1410,15 @@ or is currently under execution.
 
 
 <a name="ref..export"></a>
-### .export()
+### .export( [execMethod] )
+
+* execMethod `String`, one of *'exec'*, *'execKV'*, *'execFinally'*, *'execThenCatch'*, *'execThenElse'*, *'execThenElseCatch'*
+  and *'execArgs'*... if omited: 'exec'
 
 This export and return an `async.Plan` as a function.
-The exported function behaves exactly like the `.exec()` method of the `async.Plan`.
+
+By default, the exported function behaves exactly like the `.exec()` method of the `async.Plan`.
+If we want to export a different `.exec()`-like method, we can provide the method's name as the argument of `.export()`.
 
 Since the `async.Plan` is internally cloned, changes made on the original `async.Plan` do **not** change how the exported function behaves.
 
