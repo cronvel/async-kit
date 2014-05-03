@@ -291,8 +291,6 @@ To clean everything that can be automatically regenerated: `make clean`
 
 # Reference
 
-**/!\ Work in progress /!\\**
-
 * [*Do* family factories](#ref.do.factories)
 	* [async.do()](#ref.async.do)
 	* [async.series()](#ref.async.series)
