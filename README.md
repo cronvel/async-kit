@@ -88,6 +88,12 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 
 
 
+### Misc
+
+* Async event emitter class
+
+
+
 # Install
 
 Use Node Package Manager:
@@ -305,44 +311,51 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.if.or()](#ref.async.if.or)
 	* [Nested condition()](#ref.nested)
 * [Class async.Plan](#ref.async.Plan)
-	* [.do()](#ref..do)
-	* [.parallel()](#ref..parallel)
-	* [.race()](#ref..race)
-	* [.waterfall()](#ref..waterfall)
-	* [.while()](#ref..while)
-	* [.repeat()](#ref..repeat)
-	* [.fatal()](#ref..fatal)
-	* [.boolean()](#ref..boolean)
-	* [.transmitError()](#ref..transmitError)
-	* [.timeout()](#ref..timeout)
-	* [.retry()](#ref..retry)
+	* [.do()](#ref.async.Plan.do)
+	* [.parallel()](#ref.async.Plan.parallel)
+	* [.race()](#ref.async.Plan.race)
+	* [.waterfall()](#ref.async.Plan.waterfall)
+	* [.while()](#ref.async.Plan.while)
+	* [.repeat()](#ref.async.Plan.repeat)
+	* [.fatal()](#ref.async.Plan.fatal)
+	* [.boolean()](#ref.async.Plan.boolean)
+	* [.transmitError()](#ref.async.Plan.transmitError)
+	* [.timeout()](#ref.async.Plan.timeout)
+	* [.retry()](#ref.async.Plan.retry)
 	* [Mixing .timeout() & .retry()](#ref.mixing.timeout.retry)
-	* [.lastJobOnly()](#ref..lastJobOnly)
-	* [.mapping1to1()](#ref..mapping1to1)
-	* [.using()](#ref..using)
-	* [.iterator()](#ref..iterator)
-	* [.aggregator()](#ref..aggregator)
-	* [.nice()](#ref..nice)
-	* [.then()](#ref..then)
-	* [.else()](#ref..else)
-	* [.catch()](#ref..catch)
-	* [.finally()](#ref..finally)
-	* [.clone()](#ref..clone)
-	* [.export()](#ref..export)
-	* [.exec()](#ref..exec)
-	* [.execFinally()](#ref..execFinally)
-	* [.execThenCatch()](#ref..execThenCatch)
-	* [.execThenElse()](#ref..execThenElse)
-	* [.execThenElseCatch()](#ref..execThenElseCatch)
-	* [.execArgs()](#ref..execArgs)
-	* [.execMapping()](#ref..execMapping)
-	* [.execKV()](#ref..execKV)
+	* [.lastJobOnly()](#ref.async.Plan.lastJobOnly)
+	* [.mapping1to1()](#ref.async.Plan.mapping1to1)
+	* [.using()](#ref.async.Plan.using)
+	* [.iterator()](#ref.async.Plan.iterator)
+	* [.aggregator()](#ref.async.Plan.aggregator)
+	* [.nice()](#ref.async.Plan.nice)
+	* [.then()](#ref.async.Plan.then)
+	* [.else()](#ref.async.Plan.else)
+	* [.catch()](#ref.async.Plan.catch)
+	* [.finally()](#ref.async.Plan.finally)
+	* [.clone()](#ref.async.Plan.clone)
+	* [.export()](#ref.async.Plan.export)
+	* [.exec()](#ref.async.Plan.exec)
+	* [.execFinally()](#ref.async.Plan.execFinally)
+	* [.execThenCatch()](#ref.async.Plan.execThenCatch)
+	* [.execThenElse()](#ref.async.Plan.execThenElse)
+	* [.execThenElseCatch()](#ref.async.Plan.execThenElseCatch)
+	* [.execArgs()](#ref.async.Plan.execArgs)
+	* [.execMapping()](#ref.async.Plan.execMapping)
+	* [.execKV()](#ref.async.Plan.execKV)
 * [Callback types](#ref.callback)
 	* [thenCallback](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
 	* [catchCallback()](#ref.callback.catchCallback)
 	* [finallyCallback()](#ref.callback.finallyCallback)
 	* [whileCallback()](#ref.callback.whileCallback)
+* [Class async.eventEmitter](#ref.async.eventEmitter)
+	* [.emit()](#ref.async.eventEmitter.emit)
+	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
+	* [.asyncEmit()](#ref.async.eventEmitter.asyncEmit)
+	* [.nice()](#ref.async.eventEmitter.nice)
+	* [.defaultEmitIsAsync()](#ref.async.eventEmitter.defaultEmitIsAsync)
+
 
 
 
@@ -427,10 +440,10 @@ Each job is called with the previous job output as arguments.
 
 By default, the `.exec()` method accept arguments to pass to the first job.
 
-By default, the *error* argument is not transmitted, see [.transmitError()](#ref..transmitError) for details.
+By default, the *error* argument is not transmitted, see [.transmitError()](#ref.async.Plan.transmitError) for details.
 
 Only the last job pass its result to [*finallyCallback*](#ref.callback.finallyCallback), [*thenCallback*](#ref.callback.thenCallback) etc...
-See [.lastJobOnly()](#ref..lastJobOnly) for details.
+See [.lastJobOnly()](#ref.async.Plan.lastJobOnly) for details.
 
 **Calling `.parallel()` on it has no effect, it will process jobs one at a time anyway.**
 
@@ -550,7 +563,7 @@ By default, *element*s are performed in parallel mode.
 
 If the *iterator* fails for one element, it will continue processing others elements anyway.
 
-The *results* (see example below) directly map the *container*, like [`.mapping1to1()`](#ref...mapping1to1) do.
+The *results* (see example below) directly map the *container*, like [`.mapping1to1()`](#ref.async.Plan.mapping1to1) do.
 
 Note that `async.map( container , iterator )` is equal to `async.do( container ).iterator( iterator ).mapping1to1()`.
 
@@ -812,7 +825,7 @@ However, modifier methods have no effect as soon as an `.exec()` family method i
 
 
 
-<a name="ref..do"></a>
+<a name="ref.async.Plan.do"></a>
 ### .do( jobsList )
 
 * jobsList `Array` or `Object`
@@ -824,7 +837,7 @@ However, it is used in the [`async.while().do()`](#ref.async.while) scheme, to m
 
 
 
-<a name="ref..parallel"></a>
+<a name="ref.async.Plan.parallel"></a>
 ### .parallel( [parallelLimit] )
 
 * parallelLimit `Number`, if omited: `Infinity`
@@ -843,7 +856,7 @@ and so on...
 
 
 
-<a name="ref..race"></a>
+<a name="ref.async.Plan.race"></a>
 ### .race( raceMode )
 
 * raceMode `Boolean`, if omited: `true`
@@ -856,7 +869,7 @@ See [`async.race()`](#ref.async.race) factory.
 
 
 
-<a name="ref..waterfall"></a>
+<a name="ref.async.Plan.waterfall"></a>
 ### .waterfall( waterfallMode )
 
 * waterfallMode `Boolean`, if omited: `true`
@@ -870,7 +883,7 @@ See [`async.waterfall()`](#ref.async.waterfall) factory.
 
 
 
-<a name="ref..while"></a>
+<a name="ref.async.Plan.while"></a>
 ### .while( whileCallback , whileActionBefore )
 
 * [whileCallback](#ref.callback.whileCallback) `Function( error , results , logicCallback )` triggered for checking if we have to continue or not, where:
@@ -891,7 +904,7 @@ See [async.while().do()](#ref.async.while.do) (if *whileActionBefore* is true) o
 
 
 
-<a name="ref..repeat"></a>
+<a name="ref.async.Plan.repeat"></a>
 ### .repeat( n )
 
 * n `Number`
@@ -901,11 +914,11 @@ Set loop mode, the job's list will run *n* times.
 Actually this is a shortcut, it simply set up a *while* loop with a trivial callback.
 Avoid to reinvent the wheel again and again.
 
-See [.while()](#ref..while) for details.
+See [.while()](#ref.async.Plan.while) for details.
 
 
 
-<a name="ref..fatal"></a>
+<a name="ref.async.Plan.fatal"></a>
 ### .fatal( [errorsAreFatal] )
 
 * errorsAreFatal `Boolean`, if omitted: true
@@ -916,7 +929,7 @@ If error are not fatal, others jobs will be processed even if some errors occurs
 
 
 
-<a name="ref..boolean"></a>
+<a name="ref.async.Plan.boolean"></a>
 ### .boolean( [castToBoolean] )
 
 * castToBoolean `Boolean`, if omitted: true
@@ -931,7 +944,7 @@ the outcome of the last job: this is what happens with `async.and()` and `async.
 
 
 
-<a name="ref..transmitError"></a>
+<a name="ref.async.Plan.transmitError"></a>
 ### .transmitError( [transmit] )
 
 * transmit `Boolean`, if omitted: true
@@ -970,7 +983,7 @@ async.waterfall( [
 
 
 
-<a name="ref..timeout"></a>
+<a name="ref.async.Plan.timeout"></a>
 ### .timeout( [jobsTimeout] )
 
 * jobsTimeout `undefined` or `Number` (in ms), if omited: `undefined`
@@ -990,7 +1003,7 @@ interupt the job in any way**.
 
 
 
-<a name="ref..retry"></a>
+<a name="ref.async.Plan.retry"></a>
 ### .retry( [maxRetry] , [baseTimeout] , [multiply] , [maxTimeout] )
 
 * maxRetry `Number`, it doesn't update if omited
@@ -1060,7 +1073,7 @@ it triggers its callback with a failed status (`new Error( 'Timeout' )`), then *
 it may hit the time limit again and be restarted again, until it succeeds or the retry countdown abort the whole process.
 
 Also there are **IMPORTANT** drawback we need to be aware of:
-* when a timeout occurs, the job is **\*NOT\*** interupted in any way (see [`.timeout()`](#ref..timeout) for details)
+* when a timeout occurs, the job is **\*NOT\*** interupted in any way (see [`.timeout()`](#ref.async.Plan.timeout) for details)
 * so when successive retries kick in, the same job can run multiple times: our job's code should support that without
   messing our database for example
 * also if a job timeout and is retried, the first try *may* finally succeed before the second try complete: our job's
@@ -1106,7 +1119,7 @@ More important: we are sure that the code that update our database will run once
 
 
 
-<a name="ref..lastJobOnly"></a>
+<a name="ref.async.Plan.lastJobOnly"></a>
 ### .lastJobOnly( [returnLastJobOnly] )
 
 * returnLastJobOnly `boolean`, if omited: `true`
@@ -1146,7 +1159,7 @@ without error, so the first job and the last job are the same.
 
 
 
-<a name="ref..mapping1to1"></a>
+<a name="ref.async.Plan.mapping1to1"></a>
 ### .mapping1to1( [returnMapping1to1] )
 
 * returnMapping1to1 `Boolean`, if omited: `true`
@@ -1185,7 +1198,7 @@ async.parallel( [
 
 
 
-<a name="ref..using"></a>
+<a name="ref.async.Plan.using"></a>
 ### .using( various )
 
 * various `Function`, `Array` or `Object`
@@ -1263,7 +1276,7 @@ and get the page content.
 
 
 
-<a name="ref..iterator"></a>
+<a name="ref.async.Plan.iterator"></a>
 ### .iterator( iteratorFunction )
 
 * iteratorFunction `Function( element , [key] , [container] , callback )` where:
@@ -1284,7 +1297,7 @@ See [async.foreach()](#ref.async.foreach) for details.
 
 
 
-<a name="ref..aggregator"></a>
+<a name="ref.async.Plan.aggregator"></a>
 ### .aggregator( transmitAggregate , returnAggregate , defaultAggregate )
 
 * transmitAggregate `Boolean`, if omited: `true`
@@ -1307,7 +1320,7 @@ If *defaultAggregate* is set, this is what will be used as the starting value fo
 
 
 
-<a name="ref..nice"></a>
+<a name="ref.async.Plan.nice"></a>
 ### .nice( niceness )
 
 * niceness `Number` between *-3* and `Infinity`
@@ -1316,7 +1329,7 @@ This try to mimic the unix command `nice` and `renice`.
 This set up how the job's scheduler behaves.
 
 It depends on the *niceness* value:
-* *-3* is for synchonous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
+* *-3* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
   everything will be synchronous and will be executed in one code flow, in that particular case, there will be no difference
   between `async.series()` or `async.parallel()`. 
 * *-2* is for asynchronous scheduling, it uses `process.nextTick()` internally. Basicly, it will run almost as fast as
@@ -1351,7 +1364,7 @@ to spawn a process or create a new specific service for this particular task any
 
 
 
-<a name="ref..then"></a>
+<a name="ref.async.Plan.then"></a>
 ### .then( thenCallback )
 
 * [thenCallback](#ref.callback.thenCallback) `Function( results )`
@@ -1362,7 +1375,7 @@ See [thenCallback](#ref.callback.thenCallback) for details.
 
 
 
-<a name="ref..else"></a>
+<a name="ref.async.Plan.else"></a>
 ### .else( elseCallback )
 
 * [elseCallback](#ref.callback.elseCallback) `Function( results )`
@@ -1375,7 +1388,7 @@ This has no effect for *Do* family `async.Plan`.
 
 
 
-<a name="ref..catch"></a>
+<a name="ref.async.Plan.catch"></a>
 ### .catch( catchCallback )
 
 * [catchCallback](#ref.callback.catchCallback) `Function( error , results )`
@@ -1387,7 +1400,7 @@ See [catchCallback](#ref.callback.catchCallback) for details.
 
 
 
-<a name="ref..finally"></a>
+<a name="ref.async.Plan.finally"></a>
 ### .finally( finallyCallback )
 
 * [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
@@ -1399,7 +1412,7 @@ See [finallyCallback](#ref.callback.finallyCallback) for details.
 
 
 
-<a name="ref..clone"></a>
+<a name="ref.async.Plan.clone"></a>
 ### .clone()
 
 This method is used to clone an `async.Plan` and return it.
@@ -1409,7 +1422,7 @@ or is currently under execution.
 
 
 
-<a name="ref..export"></a>
+<a name="ref.async.Plan.export"></a>
 ### .export( [execMethod] )
 
 * execMethod `String`, one of *'exec'*, *'execKV'*, *'execFinally'*, *'execThenCatch'*, *'execThenElse'*, *'execThenElseCatch'*
@@ -1424,14 +1437,14 @@ Since the `async.Plan` is internally cloned, changes made on the original `async
 
 
 
-<a name="ref..exec"></a>
+<a name="ref.async.Plan.exec"></a>
 ### .exec( ... )
 
 This method execute the `async.Plan`.
 
 Until an exec-like method is called, nothing happens at all, previous methods mostly configure the `async.Plan`.
 
-Arguments passed to `.exec()` depend on factories by default, and can be modified by [`.execMapping()`](#ref..execMapping).
+Arguments passed to `.exec()` depend on factories by default, and can be modified by [`.execMapping()`](#ref.async.Plan.execMapping).
 
 However, most factories use this scheme:
 
@@ -1442,23 +1455,23 @@ However, most factories use this scheme:
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
-Following `.exec()`-like methods have a static scheme, and are not modified by [`.execMapping()`](#ref..execMapping).
+Following `.exec()`-like methods have a static scheme, and are not modified by [`.execMapping()`](#ref.async.Plan.execMapping).
 
 
 
-<a name="ref..execFinally"></a>
+<a name="ref.async.Plan.execFinally"></a>
 ### .execFinally( finallyCallback )
 
 * [finallyCallback](#ref.callback.finallyCallback) `Function( error , results )`
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 It only accepts one argument: the [finallyCallback](#ref.callback.finallyCallback).
 
 
 
-<a name="ref..execThenCatch"></a>
+<a name="ref.async.Plan.execThenCatch"></a>
 ### .execThenCatch( thenCallback , catchCallback , [finallyCallback] )
 
 * [thenCallback](#ref.callback.thenCallback) `Function( results )`
@@ -1470,7 +1483,7 @@ It only accepts one argument: the [finallyCallback](#ref.callback.finallyCallbac
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback), and
 [catchCallback](#ref.callback.catchCallback) as the second.
 
@@ -1478,7 +1491,7 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 
 
 
-<a name="ref..execThenElse"></a>
+<a name="ref.async.Plan.execThenElse"></a>
 ### .execThenElse( thenCallback , elseCallback , [finallyCallback] )
 
 * [thenCallback](#ref.callback.thenCallback) `Function( results )`
@@ -1489,7 +1502,7 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback), and
 [elseCallback](#ref.callback.elseCallback) as the second.
 
@@ -1497,7 +1510,7 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 
 
 
-<a name="ref..execThenElseCatch"></a>
+<a name="ref.async.Plan.execThenElseCatch"></a>
 ### .execThenCatch( thenCallback , elseCallback , catchCallback , [finallyCallback] )
 
 * [thenCallback](#ref.callback.thenCallback) `Function( results )`
@@ -1511,7 +1524,7 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 	* error `mixed`, depends on jobs' code
 	* results `mixed`, depends on options
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 Like the name suggests, the first argument should be the [thenCallback](#ref.callback.thenCallback),
 [elseCallback](#ref.callback.elseCallback) as the second, and [catchCallback](#ref.callback.catchCallback) as the third.
 
@@ -1519,17 +1532,17 @@ However, the [finallyCallback](#ref.callback.finallyCallback) can still be passe
 
 
 
-<a name="ref..execArgs"></a>
+<a name="ref.async.Plan.execArgs"></a>
 ### .execArgs( [arg1] , [arg2] , ... )
 
 * arg1, arg2, ... `mixed`
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 All arguments passed to this method are passed to all the jobs (except in *waterfall* mode, where they are passed only to the first job).
 
 
 
-<a name="ref..execMapping"></a>
+<a name="ref.async.Plan.execMapping"></a>
 ### .execMapping( config )
 
 * config `Object`
@@ -1539,7 +1552,7 @@ All arguments passed to this method are passed to all the jobs (except in *water
 	* .inputsName `Array` of `String` describing each input (only used for function signature), if omited: `[]`
 	* .callbacks `Array` of `String` (can only be: 'then', 'else', 'catch' and 'finally'), if omited: `[]`
 
-This method is used to configure [`.exec()`](#ref..exec)'s behaviour.
+This method is used to configure [`.exec()`](#ref.async.Plan.exec)'s behaviour.
 
 If `config.aggregateArg` is `true`, the first argument of `.exec()` is the aggregate's value.
 
@@ -1613,7 +1626,7 @@ console.log( plan.execMappingSignature ) ;
 
 
 
-<a name="ref..execKV"></a>
+<a name="ref.async.Plan.execKV"></a>
 ### .execKV( KeyValuePairs )
 
 * KeyValuePairs `Object`
@@ -1624,7 +1637,7 @@ console.log( plan.execMappingSignature ) ;
 	* .catch `Function` optionnal [catchCallback](#ref.callback.catchCallback)
 	* .finally `Function` optionnal [finallyCallback](#ref.callback.finallyCallback)
 
-This method execute the `async.Plan`, just like [`.exec()`](#ref..exec).
+This method execute the `async.Plan`, just like [`.exec()`](#ref.async.Plan.exec).
 Rather than passing arguments in a predefined order, `.execKV()` accepts an object of key-value pairs.
 This is an alternative to `.execMapping()` & `.exec()`.
 
@@ -1641,7 +1654,7 @@ Cons:
 ## Callbacks
 
 Those callbacks are triggered (if conditions are met) when the `async.Plan` is resolved.
-Note that if we don't use [`.timeout()`](#ref..timeout) and a job is pending forever, the `async.Plan` will never being resolved,
+Note that if we don't use [`.timeout()`](#ref.async.Plan.timeout) and a job is pending forever, the `async.Plan` will never being resolved,
 thus no callback will be ever triggered.
 
 There are two stages of callback.
@@ -1659,7 +1672,7 @@ There are two stages of callback.
 	* results `mixed`, depends on options
 
 For *Do* family, this callback is triggered if the `async.Plan`'s execution succeed. The *success* depends on factory and options used.
-Usually, an `async.Plan` succeed if no error happened. But jobs on error can be retried if [`.retry()`](#ref..retry) is used, and finally succeed,
+Usually, an `async.Plan` succeed if no error happened. But jobs on error can be retried if [`.retry()`](#ref.async.Plan.retry) is used, and finally succeed,
 [`async.race`](#ref.async.race) succeed as long as one job succeed, and so on.
 
 Furthermore, for *Conditionnal* family, the final result should be `true` or *truthy* for this callback to be triggered.
@@ -1727,7 +1740,86 @@ depending on the current (last) iteration's outcome.
 
 
 
-**/!\ Work in progress /!\\**
+<a name="ref.async.eventEmitter"></a>
+## Class async.eventEmitter
+
+This is a subclass of the core Node.js `events.eventEmitter` class.
+
+It features asynchronous event emitting.
+
+
+
+<a name="ref.async.eventEmitter.emit"></a>
+### .emit( event, [arg1], [arg2], [...] )
+
+* event `mixed` event to throw
+* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
+
+By default, this is a copy of the `.emit()` method of core Node.js `events.eventEmitter`.
+
+However, this can be replaced by [`.asyncEmit()`](#ref.async.eventEmitter.asyncEmit) if
+[`.defaultEmitIsAsync()`](#ref.async.eventEmitter.defaultEmitIsAsync) is used.
+
+
+
+<a name="ref.async.eventEmitter.syncEmit"></a>
+### .syncEmit( event, [arg1], [arg2], [...] )
+
+* event `mixed` event to throw
+* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
+
+This is a copy of the `.emit()` method of core Node.js `events.eventEmitter`.
+
+
+
+<a name="ref.async.eventEmitter.asyncEmit"></a>
+### .asyncEmit( event, [arg1], [arg2], [...] )
+
+* event `mixed` event to throw
+* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
+
+This method emits events asynchronously.
+
+Arguments work just the same way as `.emit()` method of core Node.js `events.eventEmitter`.
+
+The [*nice*](#ref.async.eventEmitter.nice) value controle the *asyncness*.
+
+
+
+<a name="ref.async.eventEmitter.nice"></a>
+### .nice( niceness )
+
+* niceness `Number` between *-3* and `Infinity`
+
+This try to mimic the unix command `nice` and `renice`.
+This set up how the *asyncness* behaves.
+
+It depends on the *niceness* value:
+* *-3* is for synchronous event emiting: just like core Node.js `.emit()` methods, listener are called right now,
+  just like a function call.
+* *-2* is for asynchronous event emiting, using `process.nextTick()` internally. Basicly, it will run almost as fast as
+  synchronous mode, but it will run listeners in another code execution flow, so any code following the event emitting
+  will run before listeners. Also it will schedule before I/O most of times
+  (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
+* *-1* is for asynchronous event emiting, using `setImmediate()` internally. This allows I/O to be performed
+  (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
+* *>=0* is for asynchronous event emiting, using `setTimeout()` internally. This allows I/O to be performed
+  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
+  means that listeners will be delayed for at least 100ms
+  (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
+
+
+
+<a name="ref.async.eventEmitter.defaultEmitIsAsync"></a>
+### .defaultEmitIsAsync( isAsync )
+
+* isAsync `boolean`, if omited: true
+
+If *isAsync* is `true`, the `.emit()` method is a copy of `.asyncEmit()`, else it is a copy of `.syncEmit()`.
+
+Can be useful if we plan to change a whole bunch of code relying on core Node.js `events.eventEmitter`.
+
+Otherwise, use directly `.asyncEmit()` or `.syncEmit()`.
 
 
 
