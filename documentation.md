@@ -1793,17 +1793,18 @@ This try to mimic the unix command `nice` and `renice`.
 This set up how the *asyncness* behaves.
 
 It depends on the *niceness* value:
-* *-3* is for synchronous event emiting: just like core Node.js `.emit()` methods, listener are called right now,
+* *-3* is for synchronous event emiting: just like core Node.js `.emit()` methods, listeners are called right now,
   just like a function call.
 * *-2* is for asynchronous event emiting, using `process.nextTick()` internally. Basicly, it will run almost as fast as
   synchronous mode, but it will run listeners in another code execution flow, so any code following the event emitting
-  will run before listeners. Also it will schedule before I/O most of times
+  will run before listeners. Also listeners will be called before I/O most of times
   (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
 * *-1* is for asynchronous event emiting, using `setImmediate()` internally. This allows I/O to be performed
+  before listeners
   (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
-* *>=0* is for asynchronous event emiting, using `setTimeout()` internally. This allows I/O to be performed
-  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
-  means that listeners will be delayed for at least 100ms
+* *>=0* is for asynchronous event emiting, using `setTimeout()` internally. This allows I/O and much more to be
+  performed before listeners. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`,
+  so using `.nice(10)` means that listeners will be delayed for at least 100ms
   (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
 
 
