@@ -1621,7 +1621,7 @@ describe( "async.do().repeat()" , function() {
 
 
 
-describe( "Async conditionnal" , function() {
+describe( "Async conditional" , function() {
 	
 	describe( "async.if.and()" , function() {
 		
@@ -2278,8 +2278,9 @@ describe( "async.Plan.prototype.timeout()" , function() {
 		] )
 		.timeout( 20 )
 		.exec( function( error , results ) {
-			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] ] ) ;
+			expect( error ).to.be.an( async.AsyncError ) ;
+			expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0 ] ) ;
 			done() ; 
@@ -2297,8 +2298,9 @@ describe( "async.Plan.prototype.timeout()" , function() {
 		] )
 		.timeout( 20 )
 		.exec( function( error , results ) {
-			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] , [ undefined , 'result' ] ] ) ;
+			expect( error ).to.be.an( async.AsyncError ) ;
+			expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
 			done() ; 
@@ -2348,6 +2350,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		} ) ;
 	} ) ;
 	
+	it( "how conditional factories should handle retries? It is not supported ATM..." ) ;
 } ) ;
 
 
@@ -2394,7 +2397,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		} ) ;
 	} ) ;
 	
-	it( "be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before other try, so it should return the result of the first try to complete" , function( done ) {
+	it( "be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before others tries, so it should return the result of the first try to complete without error" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -2434,8 +2437,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		} ) ;
 	} ) ;
 	
-	//it( "what happens if a job is retried, and then the first try fails before the second try complete?" , function( done ) {
-	it( "incoming" , function( done ) {
+	it( "when a job's first try timeout, a second try kick in, and then the first try finish with an error before the second try complete, the second try result is used" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -2465,14 +2467,14 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			} ,
 			[ asyncJob , stats , 2 , 5 , {} , [ undefined , 'result' ] ]
 		] )
-		.timeout( 30 )
+		.timeout( 40 )
 		.retry( 1 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '1st' ] , [ undefined , 'result' ] ] ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 1, 2 ] ) ;
 			done() ; 
 		} ) ;
 	} ) ;
