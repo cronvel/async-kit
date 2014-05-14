@@ -2434,7 +2434,48 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		} ) ;
 	} ) ;
 	
-	it( "what happens if a job is retried, and then the first try fails before the second try complete?" ) ;
+	//it( "what happens if a job is retried, and then the first try fails before the second try complete?" , function( done ) {
+	it( "incoming" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.do( [
+			[ asyncJob , stats , 0 , 5 , {} , [ undefined , 'my' ] ] ,
+			function( callback ) {
+				var timeout , error , result ;
+				
+				stats.startCounter[ 1 ] ++ ;
+				timeout = 50 ;
+				error = undefined ;
+				
+				switch ( stats.startCounter[ 1 ] )
+				{
+					case 1 : result = '1st' ; error = new Error( "Failed!" ) ; break ;
+					//case 1 : result = '1st' ; break ;
+					case 2 : result = '2nd' ; break ;
+					case 3 : result = '3rd' ; break ;
+					default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+				}
+				
+				setTimeout( function() {
+					stats.endCounter[ 1 ] ++ ;
+					stats.order.push( 1 ) ;
+					callback( error , result ) ;
+				} , timeout ) ;
+			} ,
+			[ asyncJob , stats , 2 , 5 , {} , [ undefined , 'result' ] ]
+		] )
+		.timeout( 30 )
+		.retry( 1 )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '1st' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			done() ; 
+		} ) ;
+	} ) ;
 } ) ;
 
 
