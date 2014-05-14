@@ -4174,6 +4174,42 @@ async.parallel( [
 } ) ;
 ```
 
+should retry many times, and evaluate async falsy || falsy || truthy to true.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.or( [
+	[ asyncJob , stats , 0 , 20 , { failCount: 3 } , [ undefined , false ] ] ,
+	[ asyncJob , stats , 1 , 10 , { failCount: 5 } , [ undefined , 0 ] ] ,
+	[ asyncJob , stats , 2 , 5 , { failCount: 2 } , [ undefined , 'wonderful' ] ]
+] )
+.retry( 10 )
+.exec( function( result ) {
+	expect( result ).to.be.equal( 'wonderful' ) ;
+	expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
+	done() ; 
+} ) ;
+```
+
+should retry many times, and evaluate async truthy && truthy && truthy to true.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.and( [
+	[ asyncJob , stats , 0 , 20 , { failCount: 3 } , [ undefined , true ] ] ,
+	[ asyncJob , stats , 1 , 10 , { failCount: 5 } , [ undefined , 7 ] ] ,
+	[ asyncJob , stats , 2 , 5 , { failCount: 2 } , [ undefined , 'wonderful' ] ]
+] )
+.retry( 10 )
+.exec( function( result ) {
+	expect( result ).to.be.equal( 'wonderful' ) ;
+	expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
+	done() ; 
+} ) ;
+```
+
 <a name="mixing-asyncplanprototyperetry--asyncplanprototypetimeout"></a>
 # Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()
 when a job timeout and is still pending, it should be retried, if the second try complete before, it transmit its result.
