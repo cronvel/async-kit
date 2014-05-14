@@ -302,7 +302,7 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [async.reduce()](#ref.async.reduce)
 	* [async.while().do()](#ref.async.while.do)
 	* [async.do().while()](#ref.async.do.while)
-* [*Conditionnal* family factories](#ref.conditionnal.factories)
+* [*Conditional* family factories](#ref.conditional.factories)
 	* [async.and()](#ref.async.and)
 	* [async.or()](#ref.async.or)
 	* [async.if.and()](#ref.async.if.and)
@@ -662,10 +662,10 @@ rather than a job's list.
 So you have to use the `async.Plan`'s `.do()` method to pass the job's list.
 
 Async while loops behave diffently than other `async.Plan` in various way:
-* it first performs an async conditionnal check, if the outcome is falsy, then the execution is immediately aborted
+* it first performs an async conditional check, if the outcome is falsy, then the execution is immediately aborted
 * it performs jobs, just the way other `async.Plan` do, but:
-* when everything is done, it performs again a conditionnal check, and if its outcome is truthy, it loops again (and again, etc...)
-* when the outcome of the conditionnal check is falsy, callbacks (*finally, then, catch, else*) are triggered 
+* when everything is done, it performs again a conditional check, and if its outcome is truthy, it loops again (and again, etc...)
+* when the outcome of the conditional check is falsy, callbacks (*finally, then, catch, else*) are triggered 
 with the results of the last iteration only (if any), so older iteration's results are lost unless checked and used
 in the [*whileCallback*](#ref.callback.whileCallback).
 
@@ -712,10 +712,10 @@ do {
 
 
 
-<a name="ref.factories.conditionnal"></a>
-## *Conditionnal* family factories
+<a name="ref.factories.conditional"></a>
+## *Conditional* family factories
 
-The following factories instanciate `async.Plan` of the *conditionnal* family.
+The following factories instanciate `async.Plan` of the *conditional* family.
 There are few differencies with `async.Plan` of the *do* family.
 
 Jobs have three type of outcome: true, false and error.
@@ -725,7 +725,7 @@ In this case, you are not forced to pass the error argument first.
 However, if you pass only one argument, it will be assumed to be an error only if it is an instance of `Error`.
 
 If an error occurs, it will stop processing any new jobs by default.
-If *true* or *false* is the outcome, then it all depends on the type of conditionnal.
+If *true* or *false* is the outcome, then it all depends on the type of conditional.
 
 There are two mode: boolean or not.
 When boolean mode is used, any non-error outcome are cast to a boolean value.
@@ -744,7 +744,7 @@ though the truthness of that outcome remains unchanged.
 
 * jobsList `Array` or `Object`
 
-It performs an async conditionnal *AND*, so it keeps processing jobs as long as the outcome is truthy.
+It performs an async conditional *AND*, so it keeps processing jobs as long as the outcome is truthy.
 
 By default, it uses the non-boolean mode, so the final outcome is the outcome of the last job.
 
@@ -755,7 +755,7 @@ By default, it uses the non-boolean mode, so the final outcome is the outcome of
 
 * jobsList `Array` or `Object`
 
-It performs an async conditionnal *OR*, so it keeps processing jobs as long as the outcome is falsy.
+It performs an async conditional *OR*, so it keeps processing jobs as long as the outcome is falsy.
 
 By default, it uses the non-boolean mode, so the final outcome is the outcome of the last job.
 
@@ -766,7 +766,7 @@ By default, it uses the non-boolean mode, so the final outcome is the outcome of
 
 * jobsList `Array` or `Object`
 
-It performs an async conditionnal *AND*, so it keeps processing jobs as long as the outcome is truthy.
+It performs an async conditional *AND*, so it keeps processing jobs as long as the outcome is truthy.
 
 By default, it uses the boolean mode, so the final outcome is a boolean.
 
@@ -777,7 +777,7 @@ By default, it uses the boolean mode, so the final outcome is a boolean.
 
 * jobsList `Array` or `Object`
 
-It performs an async conditionnal *OR*, so it keeps processing jobs as long as the outcome is falsy.
+It performs an async conditional *OR*, so it keeps processing jobs as long as the outcome is falsy.
 
 By default, it uses the boolean mode, so the final outcome is a boolean.
 
@@ -786,7 +786,7 @@ By default, it uses the boolean mode, so the final outcome is a boolean.
 <a name="ref.nested"></a>
 ### Nested condition
 
-We can create nested conditionnal statement just like in native language. See the following example:
+We can create nested conditional statement just like in native language. See the following example:
 
 ```js
 async.if.and( [
@@ -797,10 +797,10 @@ async.if.and( [
 	] )
 ] )
 .then( function() {
-	// Do something if the async conditionnal statement is true
+	// Do something if the async conditional statement is true
 } )
 .else( function() {
-	// Do something if the async conditionnal statement is false
+	// Do something if the async conditional statement is false
 } )
 .exec() ;
 ```
@@ -809,7 +809,7 @@ are user functions asyncly checking if some conditions are met or not.
 
 This works because if a job is an instance of `async.Plan`, the `.exec()` method will be used as a callback.
 
-We can use as many nested async conditionnal as we want.
+We can use as many nested async conditional as we want.
 
 
 
@@ -932,7 +932,7 @@ If error are not fatal, others jobs will be processed even if some errors occurs
 
 * castToBoolean `Boolean`, if omitted: true
 
-This only have effects in *Conditionnal* family `async.Plan`.
+This only have effects in *Conditional* family `async.Plan`.
 
 If *castToBoolean* is true, the outcome of jobs and the final outcome is always `true` or `false`:
 this is what happens with `async.if.and()` and `async.if.or()` factories by default.
@@ -1673,7 +1673,7 @@ For *Do* family, this callback is triggered if the `async.Plan`'s execution succ
 Usually, an `async.Plan` succeed if no error happened. But jobs on error can be retried if [`.retry()`](#ref.async.Plan.retry) is used, and finally succeed,
 [`async.race`](#ref.async.race) succeed as long as one job succeed, and so on.
 
-Furthermore, for *Conditionnal* family, the final result should be `true` or *truthy* for this callback to be triggered.
+Furthermore, for *Conditional* family, the final result should be `true` or *truthy* for this callback to be triggered.
 
 The *results* argument's format passed to this callback depends on many factor.
 See related factories and modifier.
@@ -1688,7 +1688,7 @@ See related factories and modifier.
 
 It never triggers for *Do* family `async.Plan`.
 
-For *Conditionnal* family, it will trigger if the final result is `false` or *falsy*.
+For *Conditional* family, it will trigger if the final result is `false` or *falsy*.
 However, if **no** [*catchCallback*](#ref.callback.catchCallback) exists for this stage (see [callbacks introduction](#ref.callbacks) for what a callback stage is),
 **it will trigger if the final outcome is an error too**.
 
@@ -1918,13 +1918,13 @@ Full BDD spec generated by Mocha:
    - [async.while()](#asyncwhile)
    - [async.do().while()](#asyncdowhile)
    - [async.do().repeat()](#asyncdorepeat)
-   - [Async conditionnal](#async-conditionnal)
-     - [async.if.and()](#async-conditionnal-asyncifand)
-     - [async.if.or()](#async-conditionnal-asyncifor)
-     - [async.and()](#async-conditionnal-asyncand)
-     - [async.or()](#async-conditionnal-asyncor)
-     - [nested async.or() and async.and() in async.if()](#async-conditionnal-nested-asyncor-and-asyncand-in-asyncif)
-     - [async.Plan.prototype.boolean()](#async-conditionnal-asyncplanprototypeboolean)
+   - [Async conditional](#async-conditional)
+     - [async.if.and()](#async-conditional-asyncifand)
+     - [async.if.or()](#async-conditional-asyncifor)
+     - [async.and()](#async-conditional-asyncand)
+     - [async.or()](#async-conditional-asyncor)
+     - [nested async.or() and async.and() in async.if()](#async-conditional-nested-asyncor-and-asyncand-in-asyncif)
+     - [async.Plan.prototype.boolean()](#async-conditional-asyncplanprototypeboolean)
    - [async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThenCatch(), .execThenElse() and .execThenElseCatch()](#asyncplanprototypethen-else-catch-finally-execthencatch-execthenelse-and-execthenelsecatch)
    - [async.Plan.prototype.timeout()](#asyncplanprototypetimeout)
    - [async.Plan.prototype.retry()](#asyncplanprototyperetry)
@@ -3432,9 +3432,9 @@ async.do( [
 } ) ;
 ```
 
-<a name="async-conditionnal"></a>
-# Async conditionnal
-<a name="async-conditionnal-asyncifand"></a>
+<a name="async-conditional"></a>
+# Async conditional
+<a name="async-conditional-asyncifand"></a>
 ## async.if.and()
 should evaluate async truthy && truthy && truthy to true, and run all jobs.
 
@@ -3487,7 +3487,7 @@ async.if.and( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncifor"></a>
+<a name="async-conditional-asyncifor"></a>
 ## async.if.or()
 should evaluate async truthy || truthy || truthy to true, and run only the first jobs.
 
@@ -3540,7 +3540,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncand"></a>
+<a name="async-conditional-asyncand"></a>
 ## async.and()
 should evaluate async true && 7 && 'wonderful' to 'wonderful', and run all jobs.
 
@@ -3593,7 +3593,7 @@ async.and( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncor"></a>
+<a name="async-conditional-asyncor"></a>
 ## async.or()
 should evaluate async 7 || true || 'wonderful' to 7, and run only the first jobs.
 
@@ -3646,7 +3646,7 @@ async.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-nested-asyncor-and-asyncand-in-asyncif"></a>
+<a name="async-conditional-nested-asyncor-and-asyncand-in-asyncif"></a>
 ## nested async.or() and async.and() in async.if()
 should evaluate async ( truthy || falsy ) && truthy to true, and run first and third jobs.
 
@@ -3724,7 +3724,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncplanprototypeboolean"></a>
+<a name="async-conditional-asyncplanprototypeboolean"></a>
 ## async.Plan.prototype.boolean()
 should force async.and()'s result to be a boolean, so 'wonderful' && 7 should evaluate to true.
 
@@ -4102,8 +4102,9 @@ async.series( [
 ] )
 .timeout( 20 )
 .exec( function( error , results ) {
-	expect( error ).to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] ] ) ;
+	expect( error ).to.be.an( async.AsyncError ) ;
+	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0 ] ) ;
 	done() ; 
@@ -4122,8 +4123,9 @@ async.parallel( [
 ] )
 .timeout( 20 )
 .exec( function( error , results ) {
-	expect( error ).to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] , [ undefined , 'result' ] ] ) ;
+	expect( error ).to.be.an( async.AsyncError ) ;
+	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
 	done() ; 
@@ -4215,7 +4217,7 @@ async.do( [
 } ) ;
 ```
 
-be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before other try, so it should return the result of the first try to complete.
+be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before others tries, so it should return the result of the first try to complete without error.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -4252,6 +4254,49 @@ async.do( [
 	expect( stats.startCounter ).to.be.eql( [ 1, 3, 1 ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ; 
+} ) ;
+```
+
+when a job's first try timeout, a second try kick in, and then the first try finish with an error before the second try complete, the second try result is used.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do( [
+	[ asyncJob , stats , 0 , 5 , {} , [ undefined , 'my' ] ] ,
+	function( callback ) {
+		var timeout , error , result ;
+		
+		stats.startCounter[ 1 ] ++ ;
+		timeout = 50 ;
+		error = undefined ;
+		
+		switch ( stats.startCounter[ 1 ] )
+		{
+			case 1 : result = '1st' ; error = new Error( "Failed!" ) ; break ;
+			//case 1 : result = '1st' ; break ;
+			case 2 : result = '2nd' ; break ;
+			case 3 : result = '3rd' ; break ;
+			default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+		}
+		
+		setTimeout( function() {
+			stats.endCounter[ 1 ] ++ ;
+			stats.order.push( 1 ) ;
+			callback( error , result ) ;
+		} , timeout ) ;
+	} ,
+	[ asyncJob , stats , 2 , 5 , {} , [ undefined , 'result' ] ]
+] )
+.timeout( 40 )
+.retry( 1 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
+	expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 1, 2 ] ) ;
 	done() ; 
 } ) ;
 ```

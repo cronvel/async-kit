@@ -16,13 +16,13 @@
    - [async.while()](#asyncwhile)
    - [async.do().while()](#asyncdowhile)
    - [async.do().repeat()](#asyncdorepeat)
-   - [Async conditionnal](#async-conditionnal)
-     - [async.if.and()](#async-conditionnal-asyncifand)
-     - [async.if.or()](#async-conditionnal-asyncifor)
-     - [async.and()](#async-conditionnal-asyncand)
-     - [async.or()](#async-conditionnal-asyncor)
-     - [nested async.or() and async.and() in async.if()](#async-conditionnal-nested-asyncor-and-asyncand-in-asyncif)
-     - [async.Plan.prototype.boolean()](#async-conditionnal-asyncplanprototypeboolean)
+   - [Async conditional](#async-conditional)
+     - [async.if.and()](#async-conditional-asyncifand)
+     - [async.if.or()](#async-conditional-asyncifor)
+     - [async.and()](#async-conditional-asyncand)
+     - [async.or()](#async-conditional-asyncor)
+     - [nested async.or() and async.and() in async.if()](#async-conditional-nested-asyncor-and-asyncand-in-asyncif)
+     - [async.Plan.prototype.boolean()](#async-conditional-asyncplanprototypeboolean)
    - [async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThenCatch(), .execThenElse() and .execThenElseCatch()](#asyncplanprototypethen-else-catch-finally-execthencatch-execthenelse-and-execthenelsecatch)
    - [async.Plan.prototype.timeout()](#asyncplanprototypetimeout)
    - [async.Plan.prototype.retry()](#asyncplanprototyperetry)
@@ -1530,9 +1530,9 @@ async.do( [
 } ) ;
 ```
 
-<a name="async-conditionnal"></a>
-# Async conditionnal
-<a name="async-conditionnal-asyncifand"></a>
+<a name="async-conditional"></a>
+# Async conditional
+<a name="async-conditional-asyncifand"></a>
 ## async.if.and()
 should evaluate async truthy && truthy && truthy to true, and run all jobs.
 
@@ -1585,7 +1585,7 @@ async.if.and( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncifor"></a>
+<a name="async-conditional-asyncifor"></a>
 ## async.if.or()
 should evaluate async truthy || truthy || truthy to true, and run only the first jobs.
 
@@ -1638,7 +1638,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncand"></a>
+<a name="async-conditional-asyncand"></a>
 ## async.and()
 should evaluate async true && 7 && 'wonderful' to 'wonderful', and run all jobs.
 
@@ -1691,7 +1691,7 @@ async.and( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncor"></a>
+<a name="async-conditional-asyncor"></a>
 ## async.or()
 should evaluate async 7 || true || 'wonderful' to 7, and run only the first jobs.
 
@@ -1744,7 +1744,7 @@ async.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-nested-asyncor-and-asyncand-in-asyncif"></a>
+<a name="async-conditional-nested-asyncor-and-asyncand-in-asyncif"></a>
 ## nested async.or() and async.and() in async.if()
 should evaluate async ( truthy || falsy ) && truthy to true, and run first and third jobs.
 
@@ -1822,7 +1822,7 @@ async.if.or( [
 } ) ;
 ```
 
-<a name="async-conditionnal-asyncplanprototypeboolean"></a>
+<a name="async-conditional-asyncplanprototypeboolean"></a>
 ## async.Plan.prototype.boolean()
 should force async.and()'s result to be a boolean, so 'wonderful' && 7 should evaluate to true.
 
@@ -2200,8 +2200,9 @@ async.series( [
 ] )
 .timeout( 20 )
 .exec( function( error , results ) {
-	expect( error ).to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] ] ) ;
+	expect( error ).to.be.an( async.AsyncError ) ;
+	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0 ] ) ;
 	done() ; 
@@ -2220,8 +2221,9 @@ async.parallel( [
 ] )
 .timeout( 20 )
 .exec( function( error , results ) {
-	expect( error ).to.be.an( Error ) ;
-	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new Error() ] , [ undefined , 'result' ] ] ) ;
+	expect( error ).to.be.an( async.AsyncError ) ;
+	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
 	done() ; 
@@ -2313,7 +2315,7 @@ async.do( [
 } ) ;
 ```
 
-be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before other try, so it should return the result of the first try to complete.
+be careful when mixing .timeout() and .retry(), if a job timeout and retry, the first try may finally complete before others tries, so it should return the result of the first try to complete without error.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -2350,6 +2352,49 @@ async.do( [
 	expect( stats.startCounter ).to.be.eql( [ 1, 3, 1 ] ) ;
 	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ; 
+} ) ;
+```
+
+when a job's first try timeout, a second try kick in, and then the first try finish with an error before the second try complete, the second try result is used.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.do( [
+	[ asyncJob , stats , 0 , 5 , {} , [ undefined , 'my' ] ] ,
+	function( callback ) {
+		var timeout , error , result ;
+		
+		stats.startCounter[ 1 ] ++ ;
+		timeout = 50 ;
+		error = undefined ;
+		
+		switch ( stats.startCounter[ 1 ] )
+		{
+			case 1 : result = '1st' ; error = new Error( "Failed!" ) ; break ;
+			//case 1 : result = '1st' ; break ;
+			case 2 : result = '2nd' ; break ;
+			case 3 : result = '3rd' ; break ;
+			default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+		}
+		
+		setTimeout( function() {
+			stats.endCounter[ 1 ] ++ ;
+			stats.order.push( 1 ) ;
+			callback( error , result ) ;
+		} , timeout ) ;
+	} ,
+	[ asyncJob , stats , 2 , 5 , {} , [ undefined , 'result' ] ]
+] )
+.timeout( 40 )
+.retry( 1 )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
+	expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 1, 2 ] ) ;
 	done() ; 
 } ) ;
 ```
