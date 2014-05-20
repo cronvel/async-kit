@@ -15,6 +15,8 @@ So anything that can be done by caolan/async lib can be converted to CSK Async, 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
 
+Please read [this doc on Github](https://github.com/cronvel/csk-async.git), it is truncated here.
+
 
 
 # Quick example
