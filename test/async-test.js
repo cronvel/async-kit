@@ -2729,7 +2729,7 @@ describe( "async.Plan.prototype.execKV()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "should accept 'catch' callback in the 'catch' property" , function() {
+	it( "should accept 'catch' callback in the 'catch' property" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		var then , catch_ ;
