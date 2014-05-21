@@ -15,6 +15,8 @@ So anything that can be done by caolan/async lib can be converted to CSK Async, 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
 
+Please read [this doc on Github](https://github.com/cronvel/csk-async.git), it is truncated here.
+
 
 
 # Quick example
@@ -342,11 +344,15 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.execMapping()](#ref.async.Plan.execMapping)
 	* [.execKV()](#ref.async.Plan.execKV)
 * [Callback types](#ref.callback)
-	* [thenCallback](#ref.callback.thenCallback)
+	* [thenCallback()](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
 	* [catchCallback()](#ref.callback.catchCallback)
 	* [finallyCallback()](#ref.callback.finallyCallback)
 	* [whileCallback()](#ref.callback.whileCallback)
+* [Class async.ExecContext](#ref.async.ExecContext)
+	* [Event: 'progress'](#ref.async.ExecContext.event.progress)
+	* [Event: 'resolved'](#ref.async.ExecContext.event.resolved)
+	* [Event: 'finish'](#ref.async.ExecContext.event.finish)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
 	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
@@ -1738,6 +1744,72 @@ depending on the current (last) iteration's outcome.
 
 
 
+<a name="ref.async.ExecContext"></a>
+## Class async.ExecContext
+
+An instance of `async.ExecContext` is returned by each `exec()`-like methods.
+We can use this object to listen to some useful event.
+
+
+
+<a name="ref.async.ExecContext.event.progress"></a>
+### Event: 'progress' ( progressStatus , [error] , results )
+
+* progressStatus `Object`, with properties:
+	* done `Number` the number of jobs done
+	* running `Number` the number of jobs started and still running (i.e. not *done*)
+	* queued `Number` the number of jobs in queue, not started yet
+	* loop `Number` the loop iteration ([*while* loop](#ref.async.Plan.while) or [`.repeat()`](#ref.async.Plan.repeat))
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'progress' event is fired each time a job complete.
+
+The *progressStatus* object contains the main informations necessary to build a progress bar.
+
+Others arguments can be useful if we need access to the partial results.
+
+
+
+<a name="ref.async.ExecContext.event.resolved"></a>
+### Event: 'resolved' ( [error] , results )
+
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'resolved' event is fired when the final result is known.
+
+It is this event that triggers [*thenCallback()*](#ref.callback.thenCallback), [*elseCallback()*](#ref.callback.elseCallback),
+[*catchCallback()*](#ref.callback.catchCallback) and [*finallyCallback()*](#ref.callback.finallyCallback).
+
+If we listen this event, the above callbacks will always trigger first (since they register first).
+Also there is only few cases where it is useful to listen to it, since it is already used by the above callbacks.
+Sometime it can be useful to register for this event directly in jobs (using `this` which references the current `async.ExecContext` instance),
+so we can abort a CPU consuming job that will be ignored anyway.
+
+When in concurrency with others, the 'resolved' event is always fired before any others events.
+
+
+
+<a name="ref.async.ExecContext.event.finish"></a>
+### Event: 'finish' ( [error] , results )
+
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'finish' event is fired after the 'resolved' event, when all remaining running jobs are finished.
+In series flow, there is practically no differences with the 'resolved' event.
+However, in a parallel flow, many jobs are running at the same time, if one job finish with an error, the final result is settled right now,
+so the 'resolved' event is fired, however all other pending jobs have to be done for the 'finish' event to be fired.
+Alternatively, when using [`async.race`](#ref.async.race), the first non-error job to finish settle the final result and fire
+the 'resolved' event, so the 'finish' event is fired when all racing jobs are done.
+
+Most of time, this event is not so useful, however there are cases where we do not want to continue until nothing run in the background anymore.
+
+When in concurrency with others, the 'finish' event is always fired after any others events.
+                        
+
+
 <a name="ref.async.eventEmitter"></a>
 ## Class async.eventEmitter
 
@@ -1934,6 +2006,7 @@ Full BDD spec generated by Mocha:
    - [async.Plan.prototype.lastJobOnly()](#asyncplanprototypelastjobonly)
    - [async.Plan.prototype.mapping1to1()](#asyncplanprototypemapping1to1)
    - [async.Plan.prototype.execKV()](#asyncplanprototypeexeckv)
+   - [Events](#events)
 <a name=""></a>
  
 <a name="asyncseries"></a>
@@ -4603,6 +4676,241 @@ async.reduce( myArray , 5 , function( aggregate , element , callback ) {
 		expect( results ).to.be.eql( 28 ) ;
 		done() ;
 	}
+} ) ;
+```
+
+<a name="events"></a>
+# Events
+should trigger a 'progress' event after each jobs of a series complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event.
+
+```js
+var stats = createStats( 3 ) ;
+var finallyTriggered = false ;
+var resolvedTriggered = false ;
+
+var context = async.series( [
+	[ asyncJob , stats , 0 , 10 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 10 , {} , [ undefined , 'result' ] ]
+] )
+.nice( 0 )
+.exec( function( error , results ) {
+	finallyTriggered = true ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+} ) ;
+
+expect( context ).to.be.an( async.ExecContext ) ;
+
+var progressCount = 0 ;
+
+context.on( 'progress' , function( progressStatus , error , results ) {
+	
+	progressCount ++ ;
+	expect( error ).not.to.be.an( Error ) ;
+	
+	switch ( progressCount )
+	{
+		case 1 : 
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 0, queued: 2 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			break ;
+		case 2 :
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 0, queued: 1 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+			break ;
+		case 3 :
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			break ;
+		default :
+			throw new Error( 'progress event received too much time' ) ;
+	}
+} ) ;
+
+context.on( 'resolved' , function( error , results ) {
+	resolvedTriggered = true ;
+	expect( progressCount ).to.be( 2 ) ; // resolved is triggered before the last 'progress' event
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+} ) ;
+
+context.on( 'finish' , function( error , results ) {
+	expect( progressCount ).to.be( 3 ) ;
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( resolvedTriggered ).to.be( true ) ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+	done() ;
+} ) ;
+```
+
+should trigger a 'progress' event after each jobs of a parallel batch complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event.
+
+```js
+var stats = createStats( 3 ) ;
+var finallyTriggered = false ;
+var resolvedTriggered = false ;
+
+var context = async.parallel( [
+	[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ]
+] )
+.nice( 0 )
+.exec( function( error , results ) {
+	finallyTriggered = true ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+} ) ;
+
+expect( context ).to.be.an( async.ExecContext ) ;
+
+var progressCount = 0 ;
+
+context.on( 'progress' , function( progressStatus , error , results ) {
+	
+	progressCount ++ ;
+	expect( error ).not.to.be.an( Error ) ;
+	
+	switch ( progressCount )
+	{
+		case 1 : 
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			break ;
+		case 2 :
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+			break ;
+		case 3 :
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			break ;
+		default :
+			throw new Error( 'progress event received too much time' ) ;
+	}
+} ) ;
+
+context.on( 'resolved' , function( error , results ) {
+	resolvedTriggered = true ;
+	expect( progressCount ).to.be( 2 ) ; // resolved is triggered before the last 'progress' event
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+} ) ;
+
+context.on( 'finish' , function( error , results ) {
+	expect( progressCount ).to.be( 3 ) ;
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( resolvedTriggered ).to.be( true ) ;
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+in parallel mode, when an error occurs the 'resolved' event is triggered, however if another job is running, the 'finish' event is triggered only when it is done.
+
+```js
+var stats = createStats( 3 ) ;
+var finallyTriggered = false ;
+var resolvedTriggered = false ;
+
+var context = async.parallel( [
+	[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 50 , {} , [ new Error() ] ]
+] )
+.nice( 0 )
+.exec( function( error , results ) {
+	finallyTriggered = true ;
+	expect( error ).to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+} ) ;
+
+expect( context ).to.be.an( async.ExecContext ) ;
+
+var progressCount = 0 ;
+
+context.on( 'progress' , function( progressStatus , error , results ) {
+	
+	progressCount ++ ;
+	
+	switch ( progressCount )
+	{
+		case 1 : 
+			expect( error ).not.to.be.an( Error ) ;
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			break ;
+		case 2 :
+			expect( error ).to.be.an( Error ) ;
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+			break ;
+		case 3 :
+			expect( error ).to.be.an( Error ) ;
+			expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
+			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			break ;
+		default :
+			throw new Error( 'progress event received too much time' ) ;
+	}
+} ) ;
+
+context.on( 'resolved' , function( error , results ) {
+	resolvedTriggered = true ;
+	expect( progressCount ).to.be( 1 ) ; // resolved is triggered before the last 'progress' event
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( error ).to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+} ) ;
+
+context.on( 'finish' , function( error , results ) {
+	expect( progressCount ).to.be( 3 ) ;
+	expect( finallyTriggered ).to.be( true ) ;
+	expect( resolvedTriggered ).to.be( true ) ;
+	expect( error ).to.be.an( Error ) ;
+	expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
+	expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+	expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+	done() ;
 } ) ;
 ```
 

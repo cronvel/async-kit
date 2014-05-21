@@ -344,11 +344,15 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [.execMapping()](#ref.async.Plan.execMapping)
 	* [.execKV()](#ref.async.Plan.execKV)
 * [Callback types](#ref.callback)
-	* [thenCallback](#ref.callback.thenCallback)
+	* [thenCallback()](#ref.callback.thenCallback)
 	* [elseCallback()](#ref.callback.elseCallback)
 	* [catchCallback()](#ref.callback.catchCallback)
 	* [finallyCallback()](#ref.callback.finallyCallback)
 	* [whileCallback()](#ref.callback.whileCallback)
+* [Class async.ExecContext](#ref.async.ExecContext)
+	* [Event: 'progress'](#ref.async.ExecContext.event.progress)
+	* [Event: 'resolved'](#ref.async.ExecContext.event.resolved)
+	* [Event: 'finish'](#ref.async.ExecContext.event.finish)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
 	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
@@ -1738,6 +1742,72 @@ a new loop iteration will be performed, if a *falsy* value is passed, no new loo
 completion callback (*thenCallback*, *elseCallback*, *catchCallback*, *finallyCallback*) will be triggered
 depending on the current (last) iteration's outcome.
 
+
+
+<a name="ref.async.ExecContext"></a>
+## Class async.ExecContext
+
+An instance of `async.ExecContext` is returned by each `exec()`-like methods.
+We can use this object to listen to some useful event.
+
+
+
+<a name="ref.async.ExecContext.event.progress"></a>
+### Event: 'progress' ( progressStatus , [error] , results )
+
+* progressStatus `Object`, with properties:
+	* done `Number` the number of jobs done
+	* running `Number` the number of jobs started and still running (i.e. not *done*)
+	* queued `Number` the number of jobs in queue, not started yet
+	* loop `Number` the loop iteration ([*while* loop](#ref.async.Plan.while) or [`.repeat()`](#ref.async.Plan.repeat))
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'progress' event is fired each time a job complete.
+
+The *progressStatus* object contains the main informations necessary to build a progress bar.
+
+Others arguments can be useful if we need access to the partial results.
+
+
+
+<a name="ref.async.ExecContext.event.resolved"></a>
+### Event: 'resolved' ( [error] , results )
+
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'resolved' event is fired when the final result is known.
+
+It is this event that triggers [*thenCallback()*](#ref.callback.thenCallback), [*elseCallback()*](#ref.callback.elseCallback),
+[*catchCallback()*](#ref.callback.catchCallback) and [*finallyCallback()*](#ref.callback.finallyCallback).
+
+If we listen this event, the above callbacks will always trigger first (since they register first).
+Also there is only few cases where it is useful to listen to it, since it is already used by the above callbacks.
+Sometime it can be useful to register for this event directly in jobs (using `this` which references the current `async.ExecContext` instance),
+so we can abort a CPU consuming job that will be ignored anyway.
+
+When in concurrency with others, the 'resolved' event is always fired before any others events.
+
+
+
+<a name="ref.async.ExecContext.event.finish"></a>
+### Event: 'finish' ( [error] , results )
+
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+The 'finish' event is fired after the 'resolved' event, when all remaining running jobs are finished.
+In series flow, there is practically no differences with the 'resolved' event.
+However, in a parallel flow, many jobs are running at the same time, if one job finish with an error, the final result is settled right now,
+so the 'resolved' event is fired, however all other pending jobs have to be done for the 'finish' event to be fired.
+Alternatively, when using [`async.race`](#ref.async.race), the first non-error job to finish settle the final result and fire
+the 'resolved' event, so the 'finish' event is fired when all racing jobs are done.
+
+Most of time, this event is not so useful, however there are cases where we do not want to continue until nothing run in the background anymore.
+
+When in concurrency with others, the 'finish' event is always fired after any others events.
+                        
 
 
 <a name="ref.async.eventEmitter"></a>
