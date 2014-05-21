@@ -1775,17 +1775,18 @@ Others arguments can be useful if we need access to the partial results.
 ### Event: 'resolved' ( [error] , results )
 
 * error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
-* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`,
+  this is the **final** results
 
-The 'resolved' event is fired when the final result is known.
+The 'resolved' event is fired when the final result is settled.
 
-It is this event that triggers [*thenCallback()*](#ref.callback.thenCallback), [*elseCallback()*](#ref.callback.elseCallback),
+This event triggers [*thenCallback()*](#ref.callback.thenCallback), [*elseCallback()*](#ref.callback.elseCallback),
 [*catchCallback()*](#ref.callback.catchCallback) and [*finallyCallback()*](#ref.callback.finallyCallback).
 
-If we listen this event, the above callbacks will always trigger first (since they register first).
-Also there is only few cases where it is useful to listen to it, since it is already used by the above callbacks.
-Sometime it can be useful to register for this event directly in jobs (using `this` which references the current `async.ExecContext` instance),
-so we can abort a CPU consuming job that will be ignored anyway.
+If we listen to this event, the above callbacks will always trigger first (since they have already registered).
+So there is only few cases where it is useful to listen to it.
+Sometime it can be useful to register for this event directly in jobs (using `this` which references the current 
+[`async.ExecContext`](#ref.async.ExecContext) instance), so we can abort a CPU consuming job that will be ignored anyway.
 
 When in concurrency with others, the 'resolved' event is always fired before any others events.
 
@@ -1795,7 +1796,9 @@ When in concurrency with others, the 'resolved' event is always fired before any
 ### Event: 'finish' ( [error] , results )
 
 * error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
-* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is **NOT** 
+  the final (i.e. *resolved*) results: jobs that finish after the 'resolved' event will have their results listed too, so this
+  can be different from what we get from the 'resolved' event.
 
 The 'finish' event is fired after the 'resolved' event, when all remaining running jobs are finished.
 In series flow, there is practically no differences with the 'resolved' event.
@@ -1804,7 +1807,8 @@ so the 'resolved' event is fired, however all other pending jobs have to be done
 Alternatively, when using [`async.race`](#ref.async.race), the first non-error job to finish settle the final result and fire
 the 'resolved' event, so the 'finish' event is fired when all racing jobs are done.
 
-Most of time, this event is not so useful, however there are cases where we do not want to continue until nothing run in the background anymore.
+Most of time, this event is not so useful, however there are cases where we do not want to continue until nothing run in the
+background anymore.
 
 When in concurrency with others, the 'finish' event is always fired after any others events.
                         
