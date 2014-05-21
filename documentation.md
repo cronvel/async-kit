@@ -56,43 +56,43 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 
 ### Code flow
 
-* Series
-* Parallel
-* Race (parallel, stop when the first job finish without error)
-* Waterfall (series, each job transmits its results to the next)
-* While loop, do while loop
-* Foreach
-* Map
-* Reduce
-* Async if/and
-* Async if/or
-* Nested async if
+* [Series](#ref.async.series)
+* [Parallel](#ref.async.parallel)
+* [Race](#ref.async.race) (parallel, stop when the first job finish without error)
+* [Waterfall](#ref.async.waterfall) (series, each job transmits its results to the next)
+* [While loop](#ref.async.while.do), [do while loop](#ref.async.do.while)
+* [Foreach](#ref.async.foreach)
+* [Map](#ref.async.map)
+* [Reduce](#ref.async.reduce)
+* [Async if](#ref.async.if.and)/[and](#ref.async.and)
+* [Async if](#ref.async.if.or)/[or](#ref.async.or)
+* [Nested async if](#ref.nested)
 
 
 
 ### Modifier
 
-* Set the parallel limit
-* While conditions
-* Repeat jobs a fixed amount of time
-* Iterator
-* Timeout for jobs (avoid pending jobs troubles)
-* Retry jobs on error (useful for managing outgoing connection for example)
-* Async/sync job's scheduling controle (turn sync jobs into async, change the *nice* value of the job's scheduler)
-* Continue on error or not
-* Transmission of all jobs' results or only results of the last job
-* Then callback, if successful
-* Else callback, for *async if*
-* Catch callback, if an error occurs
-* Finally callback, always executed
-* Define input arguments to invoke `.exec()` with, that are transmitted to jobs
-* Export a plan as a simple function
+* [Set the parallel limit](#ref.async.Plan.parallel)
+* [While conditions](#ref.async.Plan.while)
+* [Repeat jobs a fixed amount of time](#ref.async.Plan.repeat)
+* [Iterator](#ref.async.Plan.iterator)
+* [Timeout for jobs (avoid pending jobs troubles)](#ref.async.Plan.timeout)
+* [Retry jobs on error (useful for managing outgoing connection for example)](#ref.async.Plan.retry)
+* [Async/sync job's scheduling controle (turn sync jobs into async, change the *nice* value of the job's scheduler)(#ref.async.Plan.nice)
+* [Continue on error or not](#ref.async.Plan.fatal)
+* [Transmission of all jobs' results or only results of the last job](#ref.async.Plan.lastJobOnly)
+* [Then callback, if successful](#ref.callback.thenCallback)
+* [Else callback, for *async if*](#ref.callback.elseCallback)
+* [Catch callback, if an error occurs](#ref.callback.catchCallback)
+* [Finally callback, always executed](#ref.callback.finallyCallback)
+* [Define input arguments to invoke `.exec()` with, that are transmitted to jobs](#ref.async.Plan.execMapping)
+* [Export a plan as a simple function](#ref.async.Plan.export)
 
 
 
 ### Misc
 
-* Async event emitter class
+* [Async event emitter class](#ref.async.eventEmitter)
 
 
 
