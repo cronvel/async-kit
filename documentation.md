@@ -522,7 +522,7 @@ where *element* is the current element, *key* is the current key (the current in
 or the current property's name if *container* is an object), *container* is the original container,
 and *callback* is the completion's callback.
 
-By default, *element*s are performed one at a time, in series.
+By default, `element`s are performed one at a time, in **series**.
 
 If the *iterator* fails for one element, it will continue processing others elements anyway.
 
@@ -563,7 +563,7 @@ where *element* is the current element, *key* is the current key (the current in
 or the current property's name if *container* is an object), *container* is the original container,
 and *callback* is the completion's callback.
 
-By default, *element*s are performed in parallel mode.
+By default, `element`s are performed in **parallel** mode.
 
 If the *iterator* fails for one element, it will continue processing others elements anyway.
 
@@ -613,7 +613,7 @@ or `( aggregatedValue , element , key , container , callback )`, where *aggregat
 or the current property's name if *container* is an object), *container* is the original container,
 and *callback* is the completion's callback.
 
-Each *element* is processed one at a time, in series.
+Each `element` is processed one at a time, in **series**.
 **Calling `.parallel()` on this `async.Plan` has no effect, it will process jobs one at a time anyway.**
 
 If the *iterator* fails for one element, the whole process *aborts and fails*.
