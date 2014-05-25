@@ -13,8 +13,14 @@ install: log/npm-install.log
 # Just install things so it works, basicaly: it just performs a "npm install" ATM
 dev-install: log/npm-dev-install.log
 
+# This run the JsHint & Mocha BDD test, display it to STDOUT & save it to log/mocha.log and log/jshint.log
+test: log/jshint.log log/mocha.log
+
+# This run the JsHint, display it to STDOUT & save it to log/jshint.log
+lint: log/jshint.log
+
 # This run the Mocha BDD test, display it to STDOUT & save it to log/mocha.log
-test: log/mocha.log
+unit: log/mocha.log
 
 # This build the doc and README.md
 doc: README.md
@@ -27,11 +33,22 @@ clean: clean-all
 
 
 
+# Variables
+
+MOCHA=./node_modules/mocha/bin/mocha
+JSHINT=./node_modules/jshint/bin/jshint
+
+
+
 # Files rules
+
+# JsHint STDOUT test
+log/jshint.log: log/npm-dev-install.log lib/async.js test/async-test.js
+	${JSHINT} lib/async.js test/async-test.js | tee log/jshint.log ; exit $${PIPESTATUS[0]}
 
 # Mocha BDD STDOUT test
 log/mocha.log: log/npm-dev-install.log lib/async.js test/async-test.js
-	mocha test/async-test.js | tee log/mocha.log
+	${MOCHA} test/async-test.js -R list | tee log/mocha.log ; exit $${PIPESTATUS[0]}
 
 # README
 README.md: documentation.md bdd-spec.md
@@ -39,29 +56,29 @@ README.md: documentation.md bdd-spec.md
 
 # Mocha Markdown BDD spec
 bdd-spec.md: log/npm-dev-install.log lib/async.js test/async-test.js
-	mocha test/async-test.js -R markdown > bdd-spec.md
+	${MOCHA} test/async-test.js -R markdown > bdd-spec.md
 
 # Upgrade version in package.json
 log/upgrade-package.log: lib/async.js test/async-test.js documentation.md
-	npm version patch -m "Upgrade package.json version to %s" | tee log/upgrade-package.log
+	npm version patch -m "Upgrade package.json version to %s" | tee log/upgrade-package.log ; exit $${PIPESTATUS[0]}
 
 # Publish to NPM
 log/npm-publish.log: check-if-master-branch log/upgrade-package.log
-	npm publish | tee log/npm-publish.log
+	npm publish | tee log/npm-publish.log ; exit $${PIPESTATUS[0]}
 
 # Push to Github/master
 log/github-push.log: lib/async.js test/async-test.js package.json
 	#'npm version patch' create the git tag by itself... 
 	#git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
-	git push origin master --tags | tee log/github-push.log
+	git push origin master --tags | tee log/github-push.log ; exit $${PIPESTATUS[0]}
 
 # NPM install
 log/npm-install.log: package.json
-	npm install --production | tee log/npm-install.log
+	npm install --production | tee log/npm-install.log ; exit $${PIPESTATUS[0]}
 
 # NPM install for developpement usage
 log/npm-dev-install.log: package.json
-	npm install | tee log/npm-dev-install.log
+	npm install | tee log/npm-dev-install.log ; exit $${PIPESTATUS[0]}
 
 
 

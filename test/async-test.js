@@ -1,18 +1,18 @@
 /*
 	The Cedric's Swiss Knife (CSK) - CSK Async lib test suite
-
+	
 	Copyright (c) 2009, 2010, 2011, 2012, 2013, 2014 Cédric Ronvel 
 	All rights reserved.
-
+	
 	Redistribution and use in source and binary forms, with or without
 	modification, are permitted provided that the following conditions are met:
-
+	
 	1. Redistributions of source code must retain the above copyright notice, this
 	   list of conditions and the following disclaimer.
 	2. Redistributions in binary form must reproduce the above copyright notice,
 	   this list of conditions and the following disclaimer in the documentation
 	   and/or other materials provided with the distribution.
-
+	
 	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,6 +25,7 @@
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/* global describe, it, before, after */
 
 /*
 	TODO:
@@ -511,7 +512,7 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 					stats.order.push( id ) ;
 					id ++ ;
 					callback( undefined , data ) ;
-			 	} , 0 ) ;
+				} , 0 ) ;
 			} )
 			.exec( function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
@@ -1968,7 +1969,7 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
 		} )
-		.execThenCatch( 
+		.execThenCatch(
 			function( results ) {
 				stats.exec.then ++ ;
 				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
@@ -2283,7 +2284,7 @@ describe( "async.Plan.prototype.timeout()" , function() {
 			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2303,7 +2304,7 @@ describe( "async.Plan.prototype.timeout()" , function() {
 			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 } ) ;
@@ -2327,7 +2328,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2346,7 +2347,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
 			// stats.order is not relevant here
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2363,7 +2364,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		.exec( function( result ) {
 			expect( result ).to.be.equal( 'wonderful' ) ;
 			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2380,7 +2381,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		.exec( function( result ) {
 			expect( result ).to.be.equal( 'wonderful' ) ;
 			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 } ) ;
@@ -2403,10 +2404,19 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 				
 				switch ( stats.startCounter[ 1 ] )
 				{
-					case 1 : result = '1st' ; timeout = 100 ; break ;
-					case 2 : result = '2nd' ; break ;
-					case 3 : result = '3rd' ; break ;
-					default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+					case 1 :
+						result = '1st' ;
+						timeout = 100 ;
+						break ;
+					case 2 :
+						result = '2nd' ;
+						break ;
+					case 3 :
+						result = '3rd' ;
+						break ;
+					default :
+						result = '' + stats.startCounter[ 1 ] + 'th' ;
+						break ;
 				}
 				
 				setTimeout( function() {
@@ -2425,7 +2435,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2443,10 +2453,18 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 				
 				switch ( stats.startCounter[ 1 ] )
 				{
-					case 1 : result = '1st' ; break ;
-					case 2 : result = '2nd' ; break ;
-					case 3 : result = '3rd' ; break ;
-					default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+					case 1 :
+						result = '1st' ;
+						break ;
+					case 2 :
+						result = '2nd' ;
+						break ;
+					case 3 :
+						result = '3rd' ;
+						break ;
+					default :
+						result = '' + stats.startCounter[ 1 ] + 'th' ;
+						break ;
 				}
 				
 				setTimeout( function() {
@@ -2465,7 +2483,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			expect( stats.startCounter ).to.be.eql( [ 1, 3, 1 ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 	
@@ -2484,11 +2502,20 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 				
 				switch ( stats.startCounter[ 1 ] )
 				{
-					case 1 : result = '1st' ; error = new Error( "Failed!" ) ; break ;
+					case 1 :
+						result = '1st' ;
+						error = new Error( "Failed!" ) ;
+						break ;
 					//case 1 : result = '1st' ; break ;
-					case 2 : result = '2nd' ; break ;
-					case 3 : result = '3rd' ; break ;
-					default : result = '' + stats.startCounter[ 1 ] + 'th' ; break ;
+					case 2 :
+						result = '2nd' ;
+						break ;
+					case 3 :
+						result = '3rd' ;
+						break ;
+					default :
+						result = '' + stats.startCounter[ 1 ] + 'th' ;
+						break ;
 				}
 				
 				setTimeout( function() {
@@ -2507,7 +2534,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
 			expect( stats.endCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
 			expect( stats.order ).to.be.eql( [ 0, 1, 1, 2 ] ) ;
-			done() ; 
+			done() ;
 		} ) ;
 	} ) ;
 } ) ;
@@ -2821,7 +2848,7 @@ describe( "Events" , function() {
 			
 			switch ( progressCount )
 			{
-				case 1 : 
+				case 1 :
 					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 0, queued: 2 } ) ;
 					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined ] ) ;
 					expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
@@ -2898,7 +2925,7 @@ describe( "Events" , function() {
 			
 			switch ( progressCount )
 			{
-				case 1 : 
+				case 1 :
 					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
 					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
 					expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
@@ -2974,7 +3001,7 @@ describe( "Events" , function() {
 			
 			switch ( progressCount )
 			{
-				case 1 : 
+				case 1 :
 					expect( error ).not.to.be.an( Error ) ;
 					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
 					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
