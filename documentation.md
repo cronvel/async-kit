@@ -3,9 +3,9 @@
 
 A simple and powerful async abstraction layer lib to easily write Node.js code.
 
-* License: BSD
+* License: MIT
 * Current status: beta
-* Platform: Node.js only
+* Platform: Node.js only (browser support is planned)
 
 While inspired in some way by [caolan/async](https://github.com/caolan/async), CSK Async uses a completely different approach.
 
@@ -15,7 +15,7 @@ So anything that can be done by caolan/async lib can be converted to CSK Async, 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
 
-Please read [this doc on Github](https://github.com/cronvel/csk-async.git), it is truncated here.
+Please read [this doc on Github](https://github.com/cronvel/csk-async.git), npmjs.org truncate it.
 
 
 

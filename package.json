@@ -50,7 +50,7 @@
     "easy"
   ],
   "author": "Cédric Ronvel",
-  "license": "BSD",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/cronvel/csk-async/issues"
   }
