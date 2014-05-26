@@ -25,6 +25,7 @@
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/* jshint unused:false */
 /* global describe, it, before, after */
 
 /*
@@ -32,19 +33,15 @@
 	
 	Async.EventEmitter
 	Async.Plan:
-		clone()
-		execAction()
-		export()
-		while( condition , true )
-		race()
-		waterfall()
-		iterator() & usingIterator() -- should be mostly covered by foreach
-		aggregator()
+		.clone()
+		.export()
+		.while( condition , true )
+		.race()
+		.waterfall()
+		.iterator() & .usingIterator() -- should be mostly covered by foreach
+		.aggregator()
 	Exec:
-		execArgs()
-	Event:
-		progress
-		finish
+		.execArgs()
 */
 
 
