@@ -167,9 +167,9 @@ describe( "async.series()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -185,9 +185,9 @@ describe( "async.series()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -201,9 +201,9 @@ describe( "async.series()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'my wonderful result' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			expect( results ).to.equal( 'my wonderful result' ) ;
+			expect( stats.endCounter ).to.eql( [ 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -217,9 +217,9 @@ describe( "async.series()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'my wonderful result' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			expect( results ).to.equal( 'my wonderful result' ) ;
+			expect( stats.endCounter ).to.eql( [ 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -241,9 +241,9 @@ describe( "async.parallel()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -259,9 +259,9 @@ describe( "async.parallel()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ undefined , undefined , [ new Error() , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 0, 0, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2 ] ) ;
+			expect( results ).to.eql( [ undefined , undefined , [ new Error() , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 0, 0, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -277,9 +277,9 @@ describe( "async.parallel()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -324,9 +324,9 @@ describe( "Jobs" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -360,9 +360,9 @@ describe( "Jobs" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -378,9 +378,9 @@ describe( "Jobs" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -396,9 +396,9 @@ describe( "Jobs" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -423,10 +423,10 @@ describe( "Jobs" , function() {
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results[ 0 ][ 0 ] ).not.to.be.an( Error ) ;
 			expect( results[ 1 ][ 0 ] ).not.to.be.an( Error ) ;
-			expect( results[ 0 ][ 1 ] ).to.be.eql( [ [ undefined , 'a' ], [ undefined , 'nice' ], [ undefined , 'output' ] ] ) ;
-			expect( results[ 1 ][ 1 ] ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1, 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 3, 1, 4, 2, 5 ] ) ;
+			expect( results[ 0 ][ 1 ] ).to.eql( [ [ undefined , 'a' ], [ undefined , 'nice' ], [ undefined , 'output' ] ] ) ;
+			expect( results[ 1 ][ 1 ] ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 3, 1, 4, 2, 5 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -462,15 +462,15 @@ describe( "Jobs" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [
+			expect( results ).to.eql( [
 				[ undefined , "I'm an async anonymous function" ] ,
 				[ undefined , "I'm a synchronous anonymous function" ] ,
 				[ undefined , [ [ undefined , "nested" ] , [ undefined , "async.Plan" ] , [ undefined , "results" ] ] ] ,
 				[ undefined , "I'm a synchronous array of function and arguments" ] ,
 				[ undefined , "I'm an async array of function and arguments" ]
 			] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1, 1, 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 5, 0, 6, 2, 3, 4 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 5, 0, 6, 2, 3, 4 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -486,10 +486,10 @@ describe( "Jobs" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
-			expect( Object.keys( results ) ).to.be.eql( [ 'one' , 'two' , 'three' ] ) ;	// Check the keys order
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			expect( results ).to.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
+			expect( Object.keys( results ) ).to.eql( [ 'one' , 'two' , 'three' ] ) ;	// Check the keys order
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -513,9 +513,9 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 			.using( asyncJob )
 			.exec( function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -536,9 +536,9 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 			} )
 			.exec( function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -582,13 +582,13 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 			.using( [ { describe: 'some data' , body: 'blahblihblah' } ] )
 			.exec( function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [
+				expect( results ).to.eql( [
 					[ undefined , 'DESCRIPTION: some data' ] ,
 					[ undefined , 'LENGTH: 12' ] ,
 					[ undefined , 'BODY: blahblihblah' ]
 				] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -611,9 +611,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -3 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -630,9 +630,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -2 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -649,9 +649,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -1 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -668,9 +668,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( 10 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -687,9 +687,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -3 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -706,9 +706,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -2 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -725,9 +725,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( -1 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -744,9 +744,9 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		.nice( 10 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -770,8 +770,8 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 					stats.endCounter[ id ] ++ ;
 					stats.order.push( id ) ;
 					callback( undefined , "result" ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 					done() ;
 				} , 0 ) ;
 			}
@@ -814,13 +814,13 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 		] )
 		.exec( 'some data' , 'blahblihblah' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [
+			expect( results ).to.eql( [
 				[ undefined , 'DESCRIPTION: some data' ] ,
 				[ undefined , 'LENGTH: 12' ] ,
 				[ undefined , 'BODY: blahblihblah' ]
 			] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -861,13 +861,13 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 		.execMapping( { callbacks: [ 'finally' ] , minInputs: 2 , maxInputs: 2 , inputsName: [ 'describe' , 'body' ] } )
 		.exec( 'some data' , 'blahblihblah' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [
+			expect( results ).to.eql( [
 				[ undefined , 'DESCRIPTION: some data' ] ,
 				[ undefined , 'LENGTH: 12' ] ,
 				[ undefined , 'BODY: blahblihblah' ]
 			] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -912,37 +912,37 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 		
 		asyncPlan.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [
+			expect( results ).to.eql( [
 				[ undefined , "DESCRIPTION: <insert .using()'s description here>" ] ,
 				[ undefined , 'LENGTH: 29' ] ,
 				[ undefined , "BODY: <insert .using()'s body here>" ]
 			] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 			
 			stats = createStats( 3 ) ;
 			
 			asyncPlan.exec( "<insert .exec()'s description here>" , function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [
+				expect( results ).to.eql( [
 					[ undefined , "DESCRIPTION: <insert .exec()'s description here>" ] ,
 					[ undefined , 'LENGTH: 29' ] ,
 					[ undefined , "BODY: <insert .using()'s body here>" ]
 				] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 				
 				stats = createStats( 3 ) ;
 				
 				asyncPlan.exec( "<insert .exec()'s description here>" , "<insert .exec()'s body here>" , function( error , results ) {
 					expect( error ).not.to.be.an( Error ) ;
-					expect( results ).to.be.eql( [
+					expect( results ).to.eql( [
 						[ undefined , "DESCRIPTION: <insert .exec()'s description here>" ] ,
 						[ undefined , 'LENGTH: 28' ] ,
 						[ undefined , "BODY: <insert .exec()'s body here>" ]
 					] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 					done() ;
 				} ) ;
 			} ) ;
@@ -962,7 +962,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 0 ;
 				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.be.eql( [ undefined ] ) ;
+				expect( this.results ).to.eql( [ undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -973,7 +973,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 1 ;
 				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.be.eql( [ [ undefined , 'my' ] , undefined ] ) ;
+				expect( this.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -984,7 +984,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 2 ;
 				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+				expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -1007,7 +1007,7 @@ describe( "*this*" , function() {
 		] )
 		.using( function( id , result , expectedThisResults , callback ) {
 			expect( this ).to.be.an( async.ExecContext ) ;
-			expect( this.results ).to.be.eql( expectedThisResults ) ;
+			expect( this.results ).to.eql( expectedThisResults ) ;
 			stats.startCounter[ id ] ++ ;
 			setTimeout( function() {
 				stats.endCounter[ id ] ++ ;
@@ -1029,21 +1029,21 @@ describe( "*this*" , function() {
 		] )
 		.then( function( results ) {
 			expect( this ).to.be.an( async.ExecContext ) ;
-			expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 		} )
 		.finally( function( error , results ) {
 			expect( this ).to.be.an( async.ExecContext ) ;
-			expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 		} )
 		.execThenCatch(
 			function( results ) {
 				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 			} ,
 			function( error ) {} ,
 			function( error , results ) {
 				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 				done() ;
 			}
 		) ;
@@ -1076,9 +1076,9 @@ describe( "async.foreach()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1096,7 +1096,7 @@ describe( "async.foreach()" , function() {
 		async.foreach( myArray , function( element , key , callback ) {
 			
 			stats.startCounter[ element.id ] ++ ;
-			expect( key ).to.be.equal( element.id ) ;
+			expect( key ).to.equal( element.id ) ;
 			
 			setTimeout( function() {
 				stats.endCounter[ element.id ] ++ ;
@@ -1106,9 +1106,9 @@ describe( "async.foreach()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1126,7 +1126,7 @@ describe( "async.foreach()" , function() {
 		async.foreach( myObject , function( element , key , callback ) {
 			
 			stats.startCounter[ element.id ] ++ ;
-			expect( key ).to.be.equal( element.name ) ;
+			expect( key ).to.equal( element.name ) ;
 			
 			setTimeout( function() {
 				stats.endCounter[ element.id ] ++ ;
@@ -1136,9 +1136,9 @@ describe( "async.foreach()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( { one: [ undefined , 'my' ], two: [ undefined , 'wonderful' ], three: [ undefined , 'result' ] } ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1156,8 +1156,8 @@ describe( "async.foreach()" , function() {
 		async.foreach( myArray , function( element , key , array , callback ) {
 			
 			stats.startCounter[ element.id ] ++ ;
-			expect( key ).to.be.equal( element.id ) ;
-			expect( array ).to.be.equal( myArray ) ;
+			expect( key ).to.equal( element.id ) ;
+			expect( array ).to.equal( myArray ) ;
 			
 			setTimeout( function() {
 				stats.endCounter[ element.id ] ++ ;
@@ -1167,9 +1167,9 @@ describe( "async.foreach()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1196,9 +1196,9 @@ describe( "async.foreach()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1220,7 +1220,7 @@ describe( "async.map()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ 2, 9, 6 ] ) ;
+			expect( results ).to.eql( [ 2, 9, 6 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1237,7 +1237,7 @@ describe( "async.map()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( { one: 2, two: 9, three: 6 } ) ;
+			expect( results ).to.eql( { one: 2, two: 9, three: 6 } ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1249,7 +1249,7 @@ describe( "async.map()" , function() {
 		
 		async.map( myArray , function( element , key , callback ) {
 			
-			expect( key ).to.be.equal( count ) ;
+			expect( key ).to.equal( count ) ;
 			count ++ ;
 			
 			setTimeout( function() {
@@ -1258,7 +1258,7 @@ describe( "async.map()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ 2, 9, 6 ] ) ;
+			expect( results ).to.eql( [ 2, 9, 6 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1269,7 +1269,7 @@ describe( "async.map()" , function() {
 		
 		async.map( myObject , function( element , key , callback ) {
 			
-			expect( key ).to.be.equal( element ) ;
+			expect( key ).to.equal( element ) ;
 			
 			setTimeout( function() {
 				callback( undefined , element.length ) ;
@@ -1277,7 +1277,7 @@ describe( "async.map()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( { my: 2, wonderful: 9, result: 6 } ) ;
+			expect( results ).to.eql( { my: 2, wonderful: 9, result: 6 } ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1299,7 +1299,7 @@ describe( "async.reduce()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( 22 ) ;
+			expect( results ).to.eql( 22 ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1316,7 +1316,7 @@ describe( "async.reduce()" , function() {
 		} )
 		.exec( 7 , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( 24 ) ;
+			expect( results ).to.eql( 24 ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1349,7 +1349,7 @@ describe( "async.waterfall()" , function() {
 		] )
 		.exec( 'oh' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'oh my wonderful result' ) ;
+			expect( results ).to.equal( 'oh my wonderful result' ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1378,7 +1378,7 @@ describe( "async.waterfall()" , function() {
 		.transmitError()
 		.exec( 'oh' , function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'oh my wonderful result' ) ;
+			expect( results ).to.equal( 'oh my wonderful result' ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1399,8 +1399,8 @@ describe( "async.race()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'wonderful' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 0, 1, 0 ] ) ;
+			expect( results ).to.equal( 'wonderful' ) ;
+			expect( stats.endCounter ).to.eql( [ 0, 1, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1416,9 +1416,9 @@ describe( "async.race()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'result' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 0, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 2 ] ) ;
+			expect( results ).to.equal( 'result' ) ;
+			expect( stats.endCounter ).to.eql( [ 0, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1434,8 +1434,8 @@ describe( "async.race()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 2, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 2, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1453,9 +1453,9 @@ describe( "async.race()" , function() {
 		.parallel( 3 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.equal( 'wonderful' ) ;
-			expect( stats.startCounter ).to.be.eql( [ 1, 1, 1, 0 ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 0, 1, 0, 0 ] ) ;
+			expect( results ).to.equal( 'wonderful' ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 0, 1, 0, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1481,10 +1481,10 @@ describe( "async.while()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( whileCount ).to.be.equal( 4 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 3, 3, 3 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( whileCount ).to.equal( 4 ) ;
+			expect( stats.endCounter ).to.eql( [ 3, 3, 3 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1505,10 +1505,10 @@ describe( "async.while()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( whileCount ).to.be.equal( 4 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 3, 3, 3 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( whileCount ).to.equal( 4 ) ;
+			expect( stats.endCounter ).to.eql( [ 3, 3, 3 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1530,10 +1530,10 @@ describe( "async.while()" , function() {
 		.parallel( Infinity )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( whileCount ).to.be.equal( 4 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 3, 3, 3 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 2, 0, 1, 2, 0, 1, 2, 0 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( whileCount ).to.equal( 4 ) ;
+			expect( stats.endCounter ).to.eql( [ 3, 3, 3 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 2, 0, 1, 2, 0, 1, 2, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1554,10 +1554,10 @@ describe( "async.while()" , function() {
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [] ) ;
-			expect( whileCount ).to.be.equal( 1 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 0, 0, 0 ] ) ;
-			expect( stats.order ).to.be.eql( [] ) ;
+			expect( results ).to.eql( [] ) ;
+			expect( whileCount ).to.equal( 1 ) ;
+			expect( stats.endCounter ).to.eql( [ 0, 0, 0 ] ) ;
+			expect( stats.order ).to.eql( [] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1583,10 +1583,10 @@ describe( "async.do().while()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( whileCount ).to.be.equal( 4 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 4, 4 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( whileCount ).to.equal( 4 ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 4, 4 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1607,10 +1607,10 @@ describe( "async.do().while()" , function() {
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( whileCount ).to.be.equal( 1 ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( whileCount ).to.equal( 1 ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1632,9 +1632,9 @@ describe( "async.do().repeat()" , function() {
 		.repeat( 4 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 4, 4 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 4, 4 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -1656,8 +1656,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1672,8 +1672,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1688,8 +1688,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ false ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1707,8 +1707,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1723,8 +1723,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ false ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1739,8 +1739,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ false ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1758,8 +1758,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( 'wonderful' ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( 'wonderful' ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1774,8 +1774,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( 0 ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( result ).to.equal( 0 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1790,8 +1790,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ false ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( undefined ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+				expect( result ).to.equal( undefined ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1809,8 +1809,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 'wonderful' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( 7 ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
+				expect( result ).to.equal( 7 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1825,8 +1825,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ false ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( 7 ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( result ).to.equal( 7 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1841,8 +1841,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ '' ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( '' ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( '' ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1862,8 +1862,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ true ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1880,8 +1880,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 0 ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1898,8 +1898,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ true ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1916,8 +1916,8 @@ describe( "Async conditional" , function() {
 				[ asyncJob , stats , 2 , 0 , {} , [ 0 ] ]
 			] )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1935,8 +1935,8 @@ describe( "Async conditional" , function() {
 			] )
 			.boolean()
 			.exec( function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1951,8 +1951,8 @@ describe( "Async conditional" , function() {
 			] )
 			.boolean( false )
 			.exec( function( result ) {
-				expect( result ).to.be.equal( 7 ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1 ] ) ;
+				expect( result ).to.equal( 7 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1 ] ) ;
 				done() ;
 			} ) ;
 		} ) ;
@@ -1974,9 +1974,9 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		] )
 		.then( function( results ) {
 			stats.plan.then ++ ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 		} )
 		.catch( function( error , results ) {
 			stats.plan.catch ++ ;
@@ -1985,16 +1985,16 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		.finally( function( error , results ) {
 			stats.plan.finally ++ ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 		} )
 		.execThenCatch(
 			function( results ) {
 				stats.exec.then ++ ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			} ,
 			function( error , results ) {
 				stats.exec.catch ++ ;
@@ -2002,14 +2002,14 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			} ,
 			function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 1 ) ;
-				expect( stats.plan.catch ).to.be.equal( 0 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 1 ) ;
-				expect( stats.exec.catch ).to.be.equal( 0 ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
+				expect( stats.plan.then ).to.equal( 1 ) ;
+				expect( stats.plan.catch ).to.equal( 0 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 1 ) ;
+				expect( stats.exec.catch ).to.equal( 0 ) ;
 				done() ;
 			}
 		) ;
@@ -2031,16 +2031,16 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		.catch( function( error , results ) {
 			stats.plan.catch ++ ;
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 		} )
 		.finally( function( error , results ) {
 			stats.plan.finally ++ ;
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 		} )
 		.execThenCatch(
 			function( results ) {
@@ -2050,20 +2050,20 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			function( error , results ) {
 				stats.exec.catch ++ ;
 				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 			} ,
 			function( error , results ) {
 				expect( error ).to.be.an( Error ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 0 ) ;
-				expect( stats.plan.catch ).to.be.equal( 1 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 0 ) ;
-				expect( stats.exec.catch ).to.be.equal( 1 ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+				expect( stats.plan.then ).to.equal( 0 ) ;
+				expect( stats.plan.catch ).to.equal( 1 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 0 ) ;
+				expect( stats.exec.catch ).to.equal( 1 ) ;
 				done() ;
 			}
 		) ;
@@ -2080,8 +2080,8 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		] )
 		.then( function( result ) {
 			stats.plan.then ++ ;
-			expect( result ).to.be.equal( true ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( result ).to.equal( true ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 		} )
 		.else( function( result ) {
 			stats.plan.else ++ ;
@@ -2093,14 +2093,14 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		} )
 		.finally( function( result ) {
 			stats.plan.finally ++ ;
-			expect( result ).to.be.equal( true ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+			expect( result ).to.equal( true ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 		} )
 		.execThenElseCatch(
 			function( result ) {
 				stats.exec.then ++ ;
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 			} ,
 			function( result ) {
 				stats.exec.else ++ ;
@@ -2111,15 +2111,15 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 				done( new Error( "Should not trigger catch()" ) ) ;
 			} ,
 			function( result ) {
-				expect( result ).to.be.equal( true ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 1 ) ;
-				expect( stats.plan.else ).to.be.equal( 0 ) ;
-				expect( stats.plan.catch ).to.be.equal( 0 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 1 ) ;
-				expect( stats.exec.else ).to.be.equal( 0 ) ;
-				expect( stats.exec.catch ).to.be.equal( 0 ) ;
+				expect( result ).to.equal( true ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.plan.then ).to.equal( 1 ) ;
+				expect( stats.plan.else ).to.equal( 0 ) ;
+				expect( stats.plan.catch ).to.equal( 0 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 1 ) ;
+				expect( stats.exec.else ).to.equal( 0 ) ;
+				expect( stats.exec.catch ).to.equal( 0 ) ;
 				done() ;
 			}
 		) ;
@@ -2140,8 +2140,8 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		} )
 		.else( function( result ) {
 			stats.plan.else ++ ;
-			expect( result ).to.be.equal( false ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( result ).to.equal( false ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.catch( function( error ) {
 			stats.plan.catch ++ ;
@@ -2149,8 +2149,8 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		} )
 		.finally( function( result ) {
 			stats.plan.finally ++ ;
-			expect( result ).to.be.equal( false ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( result ).to.equal( false ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.execThenElseCatch(
 			function( result ) {
@@ -2159,23 +2159,23 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			} ,
 			function( result ) {
 				stats.exec.else ++ ;
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 			} ,
 			function( error ) {
 				stats.exec.catch ++ ;
 				done( new Error( "Should not trigger catch()" ) ) ;
 			} ,
 			function( result ) {
-				expect( result ).to.be.equal( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 0 ) ;
-				expect( stats.plan.else ).to.be.equal( 1 ) ;
-				expect( stats.plan.catch ).to.be.equal( 0 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 0 ) ;
-				expect( stats.exec.else ).to.be.equal( 1 ) ;
-				expect( stats.exec.catch ).to.be.equal( 0 ) ;
+				expect( result ).to.equal( false ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.plan.then ).to.equal( 0 ) ;
+				expect( stats.plan.else ).to.equal( 1 ) ;
+				expect( stats.plan.catch ).to.equal( 0 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 0 ) ;
+				expect( stats.exec.else ).to.equal( 1 ) ;
+				expect( stats.exec.catch ).to.equal( 0 ) ;
 				done() ;
 			}
 		) ;
@@ -2201,12 +2201,12 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		.catch( function( error ) {
 			stats.plan.catch ++ ;
 			expect( error ).to.be.an( Error ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.finally( function( result ) {
 			stats.plan.finally ++ ;
 			expect( result ).to.be.an( Error ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.execThenElseCatch(
 			function( result ) {
@@ -2220,18 +2220,18 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			function( error ) {
 				stats.exec.catch ++ ;
 				expect( error ).to.be.an( Error ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 			} ,
 			function( result ) {
 				expect( result ).to.be.an( Error ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 0 ) ;
-				expect( stats.plan.else ).to.be.equal( 0 ) ;
-				expect( stats.plan.catch ).to.be.equal( 1 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 0 ) ;
-				expect( stats.exec.else ).to.be.equal( 0 ) ;
-				expect( stats.exec.catch ).to.be.equal( 1 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.plan.then ).to.equal( 0 ) ;
+				expect( stats.plan.else ).to.equal( 0 ) ;
+				expect( stats.plan.catch ).to.equal( 1 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 0 ) ;
+				expect( stats.exec.else ).to.equal( 0 ) ;
+				expect( stats.exec.catch ).to.equal( 1 ) ;
 				done() ;
 			}
 		) ;
@@ -2253,12 +2253,12 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		.else( function( result ) {
 			stats.plan.else ++ ;
 			expect( result ).to.be( false ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.finally( function( result ) {
 			stats.plan.finally ++ ;
 			expect( result ).to.be( false ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 		} )
 		.execThenElse(
 			function( result ) {
@@ -2268,16 +2268,16 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 			function( result ) {
 				stats.exec.else ++ ;
 				expect( result ).to.be( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 			} ,
 			function( result ) {
 				expect( result ).to.be( false ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.plan.then ).to.be.equal( 0 ) ;
-				expect( stats.plan.else ).to.be.equal( 1 ) ;
-				expect( stats.plan.finally ).to.be.equal( 1 ) ;
-				expect( stats.exec.then ).to.be.equal( 0 ) ;
-				expect( stats.exec.else ).to.be.equal( 1 ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.plan.then ).to.equal( 0 ) ;
+				expect( stats.plan.else ).to.equal( 1 ) ;
+				expect( stats.plan.finally ).to.equal( 1 ) ;
+				expect( stats.exec.then ).to.equal( 0 ) ;
+				expect( stats.exec.else ).to.equal( 1 ) ;
 				done() ;
 			}
 		) ;
@@ -2301,9 +2301,9 @@ describe( "async.Plan.prototype.timeout()" , function() {
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( async.AsyncError ) ;
 			expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2321,9 +2321,9 @@ describe( "async.Plan.prototype.timeout()" , function() {
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( async.AsyncError ) ;
 			expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2345,9 +2345,9 @@ describe( "async.Plan.prototype.retry()" , function() {
 		.retry( 10 , 5 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2364,8 +2364,8 @@ describe( "async.Plan.prototype.retry()" , function() {
 		.retry( 10 , 5 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;
 			// stats.order is not relevant here
 			done() ;
 		} ) ;
@@ -2382,8 +2382,8 @@ describe( "async.Plan.prototype.retry()" , function() {
 		] )
 		.retry( 10 )
 		.exec( function( result ) {
-			expect( result ).to.be.equal( 'wonderful' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
+			expect( result ).to.equal( 'wonderful' ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2399,8 +2399,8 @@ describe( "async.Plan.prototype.retry()" , function() {
 		] )
 		.retry( 10 )
 		.exec( function( result ) {
-			expect( result ).to.be.equal( 'wonderful' ) ;
-			expect( stats.endCounter ).to.be.eql( [ 4, 6, 3 ] ) ;
+			expect( result ).to.equal( 'wonderful' ) ;
+			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2451,10 +2451,10 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		.retry( 5 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 2, 1 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2499,10 +2499,10 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		.retry( 5 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '1st' ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.startCounter ).to.be.eql( [ 1, 3, 1 ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , '1st' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 3, 1 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2550,10 +2550,10 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 		.retry( 1 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
-			expect( stats.startCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 2, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , '2nd' ] , [ undefined , 'result' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 2, 1 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 2, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2578,9 +2578,9 @@ describe( "async.Plan.prototype.parallel()" , function() {
 		.parallel( 3 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined, 'one' ], [ undefined, 'two' ], [ undefined, 'three' ], [ undefined, 'four' ], [ undefined, 'five' ], [ undefined, 'six' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1, 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 3, 2, 5, 4, 0 ] ) ;
+			expect( results ).to.eql( [ [ undefined, 'one' ], [ undefined, 'two' ], [ undefined, 'three' ], [ undefined, 'four' ], [ undefined, 'five' ], [ undefined, 'six' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 3, 2, 5, 4, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2602,9 +2602,9 @@ describe( "async.Plan.prototype.fatal()" , function() {
 		.fatal( false )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2621,9 +2621,9 @@ describe( "async.Plan.prototype.fatal()" , function() {
 		.fatal( false )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 1, 2, 0 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 1, 2, 0 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2645,9 +2645,9 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 		.lastJobOnly()
 		.exec( function() {
 			var args = Array.prototype.slice.call( arguments ) ;
-			expect( args ).to.be.eql( [ undefined , 'result' ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( args ).to.eql( [ undefined , 'result' ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2664,9 +2664,9 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 		.lastJobOnly()
 		.exec( function() {
 			var args = Array.prototype.slice.call( arguments ) ;
-			expect( args ).to.be.eql( [ undefined , 'wonderful' ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( args ).to.eql( [ undefined , 'wonderful' ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2687,9 +2687,9 @@ describe( "async.Plan.prototype.mapping1to1()" , function() {
 		] )
 		.mapping1to1()
 		.exec( function( error , results ) {
-			expect( results ).to.be.eql( [ 'my' , 'wonderful' , 'result' ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( [ 'my' , 'wonderful' , 'result' ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2705,9 +2705,9 @@ describe( "async.Plan.prototype.mapping1to1()" , function() {
 		} )
 		.mapping1to1()
 		.exec( function( error , results ) {
-			expect( results ).to.be.eql( { one: 'my' , two: 'wonderful' , three: 'result' } ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 2, 0, 1 ] ) ;
+			expect( results ).to.eql( { one: 'my' , two: 'wonderful' , three: 'result' } ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -2755,7 +2755,7 @@ describe( "async.Plan.prototype.execKV()" , function() {
 			inputs: [ 'some data' , 'blahblihblah' ],
 			then: function( results ) {
 				then = true ;
-				expect( results ).to.be.eql( [
+				expect( results ).to.eql( [
 					[ undefined , 'DESCRIPTION: some data' ] ,
 					[ undefined , 'LENGTH: 12' ] ,
 					[ undefined , 'BODY: blahblihblah' ]
@@ -2763,14 +2763,14 @@ describe( "async.Plan.prototype.execKV()" , function() {
 			} ,
 			'finally': function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( then ).to.be.equal( true ) ;
-				expect( results ).to.be.eql( [
+				expect( then ).to.equal( true ) ;
+				expect( results ).to.eql( [
 					[ undefined , 'DESCRIPTION: some data' ] ,
 					[ undefined , 'LENGTH: 12' ] ,
 					[ undefined , 'BODY: blahblihblah' ]
 				] ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-				expect( stats.order ).to.be.eql( [ 2, 1, 0 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 2, 1, 0 ] ) ;
 				done() ;
 			}
 		} ) ;
@@ -2796,11 +2796,11 @@ describe( "async.Plan.prototype.execKV()" , function() {
 			} ,
 			'finally': function( error , results ) {
 				expect( error ).to.be.an( Error ) ;
-				expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-				expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 				expect( then ).to.not.be.equal( true ) ;
-				expect( catch_ ).to.be.equal( true ) ;
-				expect( results ).to.be.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
+				expect( catch_ ).to.equal( true ) ;
+				expect( results ).to.eql( [ [ undefined , 'my' ], [ new Error() , 'wonderful' ] ] ) ;
 				done() ;
 			}
 		} ) ;
@@ -2821,12 +2821,12 @@ describe( "async.Plan.prototype.execKV()" , function() {
 			aggregate: 11,
 			'then': function( results ) {
 				then = true ;
-				expect( results ).to.be.eql( 28 ) ;
+				expect( results ).to.eql( 28 ) ;
 			} ,
 			'finally': function( error , results ) {
 				expect( error ).not.to.be.an( Error ) ;
-				expect( then ).to.be.equal( true ) ;
-				expect( results ).to.be.eql( 28 ) ;
+				expect( then ).to.equal( true ) ;
+				expect( results ).to.eql( 28 ) ;
 				done() ;
 			}
 		} ) ;
@@ -2852,9 +2852,9 @@ describe( "Events" , function() {
 		.exec( function( error , results ) {
 			finallyTriggered = true ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 		} ) ;
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
@@ -2869,22 +2869,22 @@ describe( "Events" , function() {
 			switch ( progressCount )
 			{
 				case 1 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 0, queued: 2 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 0, queued: 2 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 0, queued: 1 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 0 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 1 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 0, queued: 1 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 					break ;
 				case 3 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 					break ;
 				default :
 					throw new Error( 'progress event received too much time' ) ;
@@ -2896,9 +2896,9 @@ describe( "Events" , function() {
 			expect( progressCount ).to.be( 2 ) ; // resolved is triggered before the last 'progress' event
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 		} ) ;
 		
 		context.on( 'finish' , function( error , results ) {
@@ -2906,9 +2906,9 @@ describe( "Events" , function() {
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( resolvedTriggered ).to.be( true ) ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 1, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
 			done() ;
 		} ) ;
 		
@@ -2929,9 +2929,9 @@ describe( "Events" , function() {
 		.exec( function( error , results ) {
 			finallyTriggered = true ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 		} ) ;
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
@@ -2946,22 +2946,22 @@ describe( "Events" , function() {
 			switch ( progressCount )
 			{
 				case 1 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ undefined , 'result' ] ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ undefined , 'result' ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 					break ;
 				case 3 :
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 					break ;
 				default :
 					throw new Error( 'progress event received too much time' ) ;
@@ -2973,9 +2973,9 @@ describe( "Events" , function() {
 			expect( progressCount ).to.be( 2 ) ; // resolved is triggered before the last 'progress' event
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 		} ) ;
 		
 		context.on( 'finish' , function( error , results ) {
@@ -2983,9 +2983,9 @@ describe( "Events" , function() {
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( resolvedTriggered ).to.be( true ) ;
 			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 			done() ;
 		} ) ;
 		
@@ -3006,9 +3006,9 @@ describe( "Events" , function() {
 		.exec( function( error , results ) {
 			finallyTriggered = true ;
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 		} ) ;
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
@@ -3023,24 +3023,24 @@ describe( "Events" , function() {
 			{
 				case 1 :
 					expect( error ).not.to.be.an( Error ) ;
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 0, 0 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
 					expect( error ).to.be.an( Error ) ;
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 					break ;
 				case 3 :
 					expect( error ).to.be.an( Error ) ;
-					expect( progressStatus ).to.be.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
-					expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
-					expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-					expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+					expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 					break ;
 				default :
 					throw new Error( 'progress event received too much time' ) ;
@@ -3052,9 +3052,9 @@ describe( "Events" , function() {
 			expect( progressCount ).to.be( 1 ) ; // resolved is triggered before the last 'progress' event
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 0, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 		} ) ;
 		
 		context.on( 'finish' , function( error , results ) {
@@ -3062,9 +3062,9 @@ describe( "Events" , function() {
 			expect( finallyTriggered ).to.be( true ) ;
 			expect( resolvedTriggered ).to.be( true ) ;
 			expect( error ).to.be.an( Error ) ;
-			expect( results ).to.be.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
-			expect( stats.endCounter ).to.be.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.be.eql( [ 0, 2, 1 ] ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
 			done() ;
 		} ) ;
 		
@@ -3077,21 +3077,21 @@ describe( "Async EventEmitter" , function() {
 	
 	it( "should emit synchronously, with a synchronous flow (nice=-3)" , function( done ) {
 		asyncEventTest( -3 , function( order ) {
-			expect( order ).to.be.eql( [ 'listener' , 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
+			expect( order ).to.eql( [ 'listener' , 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
 	
 	it( "should emit asynchronously, with an asynchronous flow, as fast as possible (nice=-2 -> nextTick)" , function( done ) {
 		asyncEventTest( -2 , function( order ) {
-			expect( order ).to.be.eql( [ 'flow' , 'listener' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
+			expect( order ).to.eql( [ 'flow' , 'listener' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
 	
 	it( "should emit asynchronously, with an asynchronous flow, almost as fast as possible (nice=-1 -> setImmediate)" , function( done ) {
 		asyncEventTest( -1 , function( order ) {
-			expect( order ).to.be.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
+			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -3099,12 +3099,12 @@ describe( "Async EventEmitter" , function() {
 	it( "should emit asynchronously, with an asynchronous flow, with minimal delay (nice=0 -> setTimeout 0ms)" , function( done ) {
 		asyncEventTest( 0 , function( order ) {
 			try {
-				expect( order ).to.be.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'listener' , 'setTimeout5' , 'setTimeout20' ] ) ;
+				expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'listener' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			}
 			catch( error ) {
 				// Sometime setImmediate() is unpredictable and is slower than setTimeout(fn,0)
 				// It is a bug of V8, not a bug of the async lib
-				expect( order ).to.be.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
+				expect( order ).to.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			}
 			done() ;
 		} ) ;
@@ -3112,14 +3112,14 @@ describe( "Async EventEmitter" , function() {
 	
 	it( "should emit asynchronously, with an asynchronous flow, with a 10ms delay (nice=1 -> setTimeout 10ms)" , function( done ) {
 		asyncEventTest( 1 , function( order ) {
-			expect( order ).to.be.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'listener' , 'setTimeout20' ] ) ;
+			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'listener' , 'setTimeout20' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
 	
 	it( "should emit asynchronously, with an asynchronous flow, with a 30ms delay (nice=3 -> setTimeout 30ms)" , function( done ) {
 		asyncEventTest( 3 , function( order ) {
-			expect( order ).to.be.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' , 'listener' ] ) ;
+			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' , 'listener' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
