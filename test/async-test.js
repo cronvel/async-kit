@@ -3073,6 +3073,21 @@ describe( "Events" , function() {
 
 
 
+describe( "Misc tests" , function() {
+	
+	it( "should trigger the callback even if no job is provided (empty array)" , function( done ) {
+		
+		async.series( [] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "Async EventEmitter" , function() {
 	
 	it( "should emit synchronously, with a synchronous flow (nice=-3)" , function( done ) {
@@ -3124,6 +3139,3 @@ describe( "Async EventEmitter" , function() {
 		} ) ;
 	} ) ;
 } ) ;
-
-
-
