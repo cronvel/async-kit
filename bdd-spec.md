@@ -33,6 +33,7 @@
    - [async.Plan.prototype.mapping1to1()](#asyncplanprototypemapping1to1)
    - [async.Plan.prototype.execKV()](#asyncplanprototypeexeckv)
    - [Events](#events)
+   - [Misc tests](#misc-tests)
    - [Async EventEmitter](#async-eventemitter)
 <a name=""></a>
  
@@ -2963,6 +2964,19 @@ context.on( 'finish' , function( error , results ) {
 	expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
 	expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 	expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+<a name="misc-tests"></a>
+# Misc tests
+should trigger the callback even if no job is provided (empty array).
+
+```js
+async.series( [] )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.eql( [] ) ;
 	done() ;
 } ) ;
 ```
