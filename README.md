@@ -844,7 +844,7 @@ However, it is used in the [`async.while().do()`](#ref.async.while) scheme, to m
 <a name="ref.async.Plan.parallel"></a>
 ### .parallel( [parallelLimit] )
 
-* parallelLimit `Number`, if omited: `Infinity`
+* parallelLimit `Number`, if omited or true: `Infinity`, if false: 1
 
 It set the parallel limit or concurrency limit.
 This is the number of async jobs that can be running/pending at a time.
