@@ -7,7 +7,7 @@
     "test": "test"
   },
   "dependencies": {
-    "extend": "~1.2.1"
+    "tree-kit": "0.0.4"
   },
   "devDependencies": {
     "expect.js": "~0.3.1",
