@@ -3,6 +3,8 @@
 
 A simple and powerful async abstraction layer lib to easily write Node.js code.
 
+This is the new name for the former **CSK Async** package.
+
 * License: MIT
 * Current status: beta
 * Platform: Node.js only (browser support is planned)
