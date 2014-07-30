@@ -1,5 +1,5 @@
 
-# CSK Async
+# Async Kit
 
 A simple and powerful async abstraction layer lib to easily write Node.js code.
 
@@ -7,10 +7,10 @@ A simple and powerful async abstraction layer lib to easily write Node.js code.
 * Current status: beta
 * Platform: Node.js only (browser support is planned)
 
-While inspired in some way by [caolan/async](https://github.com/caolan/async), CSK Async uses a completely different approach.
+While inspired in some way by [caolan/async](https://github.com/caolan/async), Async Kit uses a completely different approach.
 
 Rather than having a whole bunch of specific functions, this lib provides a generic way to solve async code flow.
-So anything that can be done by caolan/async lib can be converted to CSK Async, but the reverse is not always true.
+So anything that can be done by caolan/async lib can be converted to Async Kit, but the reverse is not always true.
 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
@@ -161,7 +161,7 @@ callback( [error] , [argument1] , [argument2] , ... ) ;
 
 That's it: the first argument, if present, is always assumed to be the error argument.
 
-CSK Async will assume that something is wrong with a job if it get **ANY** truthy value as the error argument,
+Async Kit will assume that something is wrong with a job if it get **ANY** truthy value as the error argument,
 weither it is an instanceof of *Error*, *true*, *'my error message'*, or any expression evaluated to true.
 If you are unsure what are *truthy* and *falsy* values, 
 [check this out](http://docs.nodejitsu.com/articles/javascript-conventions/what-are-truthy-and-falsy-values).
