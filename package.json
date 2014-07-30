@@ -1,5 +1,5 @@
 {
-  "name": "csk-async",
+  "name": "async-kit",
   "version": "0.3.24",
   "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
   "main": "lib/async.js",
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cronvel/csk-async.git"
+    "url": "https://github.com/cronvel/async-kit.git"
   },
   "keywords": [
     "async",
@@ -52,6 +52,6 @@
   "author": "Cédric Ronvel",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cronvel/csk-async/issues"
+    "url": "https://github.com/cronvel/async-kit/issues"
   }
 }
