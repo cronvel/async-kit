@@ -1136,9 +1136,9 @@ If set to `true`, only the last job pass its result to [*finallyCallback*](#ref.
 Without `.lastJobOnly()` (the default in most factories):
 ```js
 async.series( [
-	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'result' ) ; }
+	function( callback ) { callback( undefined , 'my' ) ; } ,
+	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
+	function( callback ) { callback( undefined , 'result' ) ; }
 ] )
 .exec( function( error , result ) {
 	// result equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
@@ -1148,9 +1148,9 @@ async.series( [
 With `.lastJobOnly()` (default in `async.waterfall()` and `async.race()` factories):
 ```js
 async.series( [
-	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'result' ) ; }
+	function( callback ) { callback( undefined , 'my' ) ; } ,
+	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
+	function( callback ) { callback( undefined , 'result' ) ; }
 ] )
 .lastJobOnly()
 .exec( function( error , result ) {
@@ -1179,9 +1179,9 @@ passed by the job's callback.
 Without `.mapping1to1()` (the default in most factories):
 ```js
 async.parallel( [
-	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'result' ) ; }
+	function( callback ) { callback( undefined , 'my' ) ; } ,
+	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
+	function( callback ) { callback( undefined , 'result' ) ; }
 ] )
 .exec( function( error , results ) {
 	// results equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
@@ -1191,9 +1191,9 @@ async.parallel( [
 With `.mapping1to1()` (the default in `async.map()` factory):
 ```js
 async.parallel( [
-	function( callback ) { callback( 'undefined' , 'my' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'wonderful' ) ; } ,
-	function( callback ) { callback( 'undefined' , 'result' , 'extra argument that will be dropped' ) ; }
+	function( callback ) { callback( undefined , 'my' ) ; } ,
+	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
+	function( callback ) { callback( undefined , 'result' , 'extra argument that will be dropped' ) ; }
 ] )
 .exec( function( error , results ) {
 	// results equals `[ 'my' , 'wonderful' , 'result' ]`
