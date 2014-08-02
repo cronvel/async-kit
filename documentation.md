@@ -356,6 +356,7 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [Event: 'resolved'](#ref.async.ExecContext.event.resolved)
 	* [Event: 'finish'](#ref.async.ExecContext.event.finish)
 * [Class async.JobContext](#ref.async.JobContext)
+	* [.execContext](#ref.async.JobContext.execContext)
 	* [.abort()](#ref.async.JobContext.abort)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
@@ -1826,6 +1827,14 @@ We can use this object to perform some particular task.
 
 
 
+<a name="ref.async.JobContext.execContext"></a>
+### .execContext
+
+This immutable property directly point to the current [async.ExecContext](#ref.async.ExecContext).
+So you can use it to listen to event directly from within the job, for example.
+
+
+
 <a name="ref.async.JobContext.abort"></a>
 ### .abort( [error] , [arg1] , [arg2], [...] )
 
@@ -1836,7 +1845,7 @@ Calling `this.abort()` from inside a job immediately aborts the current job's qu
 
 Arguments passed works the same way than regular `callback( [error] , [arg1] , [arg2], [...] )`.
 
-In fact, in most cases, this is the same than `callback( new Error( 'Error!' ) , arg1, arg2, [...] )` except than it will
+In fact, in most cases, this is the same than `callback( new Error( 'Error!' ) , arg1, arg2, [...] )` except that it will
 abort the job's queue even when a regular error wouldn't.
 That's it, even if the `async.Plan` as been created with `.fatal( false )`, or we have set `.retry()`, or even if the
 *error* parameter is falsy, it will abort anyway.
