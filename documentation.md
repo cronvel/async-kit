@@ -1830,7 +1830,7 @@ We can use this object to perform some particular task.
 <a name="ref.async.JobContext.execContext"></a>
 ### .execContext
 
-This immutable property directly point to the current [async.ExecContext](#ref.async.ExecContext).
+This immutable property directly point to the current [`async.ExecContext`](#ref.async.ExecContext)'s instance.
 So you can use it to listen to event directly from within the job, for example.
 
 
