@@ -355,6 +355,8 @@ To clean everything that can be automatically regenerated: `make clean`
 	* [Event: 'progress'](#ref.async.ExecContext.event.progress)
 	* [Event: 'resolved'](#ref.async.ExecContext.event.resolved)
 	* [Event: 'finish'](#ref.async.ExecContext.event.finish)
+* [Class async.JobContext](#ref.async.JobContext)
+	* [.abort()](#ref.async.JobContext.abort)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
 	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
@@ -1814,6 +1816,38 @@ background anymore.
 
 When in concurrency with others, the 'finish' event is always fired after any others events.
                         
+
+
+<a name="ref.async.JobContext"></a>
+## Class async.JobContext
+
+Job's function, *using* function and *iterator* function automatically get an async.JobContext instance as its *this* context.
+We can use this object to perform some particular task.
+
+
+
+<a name="ref.async.JobContext.abort"></a>
+### .abort( [error] , [arg1] , [arg2], [...] )
+
+* error: any truthy value will be considered as an error
+* arg1, arg2, [...]: job's results
+
+Calling `this.abort()` from inside a job immediately aborts the current job's queue, and triggers completion callbacks.
+
+Arguments passed works the same way than regular `callback( [error] , [arg1] , [arg2], [...] )`.
+
+In fact, in most cases, this is the same than `callback( new Error( 'Error!' ) , arg1, arg2, [...] )` except than it will
+abort the job's queue even when a regular error wouldn't.
+That's it, even if the `async.Plan` as been created with `.fatal( false )`, or we have set `.retry()`, or even if the
+*error* parameter is falsy, it will abort anyway.
+
+This can be useful if a job succeed, but require that nothing else should be run afterward.
+
+**Notice:** An async while loop will **\*NOT\*** be aborted: **\*ONLY\*** the current loop iteration will be aborted,
+the *whileAction* will be called immediately to evaluate if it should loop again or not.
+
+**Notice:** It has no effect on *Conditional* family `async.Plan`.
+
 
 
 <a name="ref.async.eventEmitter"></a>
