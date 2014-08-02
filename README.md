@@ -2825,7 +2825,7 @@ asyncPlan.exec( function( error , results ) {
 
 <a name="this"></a>
 # *this*
-each job function should have *this* set to the current execContext.
+each job function should have *this* set to the current jobContext.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -2833,8 +2833,9 @@ var stats = createStats( 3 ) ;
 async.series( [
 	function( callback ) {
 		var id = 0 ;
-		expect( this ).to.be.an( async.ExecContext ) ;
-		expect( this.results ).to.eql( [ undefined ] ) ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		expect( this.execContext.results ).to.eql( [ undefined ] ) ;
 		stats.startCounter[ id ] ++ ;
 		setTimeout( function() {
 			stats.endCounter[ id ] ++ ;
@@ -2844,8 +2845,9 @@ async.series( [
 	} ,
 	function( callback ) {
 		var id = 1 ;
-		expect( this ).to.be.an( async.ExecContext ) ;
-		expect( this.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
 		stats.startCounter[ id ] ++ ;
 		setTimeout( function() {
 			stats.endCounter[ id ] ++ ;
@@ -2855,8 +2857,9 @@ async.series( [
 	} ,
 	function( callback ) {
 		var id = 2 ;
-		expect( this ).to.be.an( async.ExecContext ) ;
-		expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 		stats.startCounter[ id ] ++ ;
 		setTimeout( function() {
 			stats.endCounter[ id ] ++ ;
@@ -2868,7 +2871,7 @@ async.series( [
 .exec( done ) ;
 ```
 
-using()'s function should have *this* set to the current execContext.
+using()'s function should have *this* set to the current jobContext.
 
 ```js
 var stats = createStats( 3 ) ;
@@ -2879,8 +2882,9 @@ async.series( [
 	[ 2 , 'result' , [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ]
 ] )
 .using( function( id , result , expectedThisResults , callback ) {
-	expect( this ).to.be.an( async.ExecContext ) ;
-	expect( this.results ).to.eql( expectedThisResults ) ;
+	expect( this ).to.be.an( async.JobContext ) ;
+	expect( this.execContext ).to.be.an( async.ExecContext ) ;
+	expect( this.execContext.results ).to.eql( expectedThisResults ) ;
 	stats.startCounter[ id ] ++ ;
 	setTimeout( function() {
 		stats.endCounter[ id ] ++ ;
@@ -2921,6 +2925,26 @@ async.series( [
 		done() ;
 	}
 ) ;
+```
+
+should start a series of job, one of them call this.abort(), so it should abort the whole job's queue.
+
+```js
+var stats = createStats( 3 ) ;
+
+async.series( [
+	[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+	[ asyncJob , stats , 1 , 50 , { abort: true } , [ undefined , 'wonderful' ] ] ,
+	[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+] )
+.exec( function( error , results ) {
+	expect( error ).not.to.be.an( Error ) ;
+	expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ] ] ) ;
+	expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
+	expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+	expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+	done() ;
+} ) ;
 ```
 
 <a name="asyncforeach"></a>

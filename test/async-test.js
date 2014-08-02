@@ -86,7 +86,7 @@ function createStats( n )
 
 function asyncJob( stats , id , delay , options , result , callback )
 {
-	var realResult = result.slice() ;
+	var jobContext = this , realResult = result.slice() ;
 	
 	stats.startCounter[ id ] ++ ;
 	
@@ -99,7 +99,8 @@ function asyncJob( stats , id , delay , options , result , callback )
 			realResult[ 0 ] = new Error( "Planned failure" ) ;
 		}
 		
-		callback.apply( undefined , realResult ) ;
+		if ( options.abort ) { jobContext.abort.apply( jobContext , realResult ) ; }
+		else { callback.apply( undefined , realResult ) ; }
 		
 	} , delay ) ;
 }
@@ -119,7 +120,8 @@ function syncJob( stats , id , options , result , callback )
 		realResult[ 0 ] = new Error( "Planned failure" ) ;
 	}
 	
-	callback.apply( undefined , realResult ) ;
+	if ( options.abort ) { this.abort.apply( this , realResult ) ; }
+	else { callback.apply( undefined , realResult ) ; }
 }
 
 
@@ -956,15 +958,16 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 
 describe( "*this*" , function() {
 	
-	it( "each job function should have *this* set to the current execContext" , function( done ) {
+	it( "each job function should have *this* set to the current jobContext" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
 			function( callback ) {
 				var id = 0 ;
-				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.eql( [ undefined ] ) ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				expect( this.execContext.results ).to.eql( [ undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -974,8 +977,9 @@ describe( "*this*" , function() {
 			} ,
 			function( callback ) {
 				var id = 1 ;
-				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -985,8 +989,9 @@ describe( "*this*" , function() {
 			} ,
 			function( callback ) {
 				var id = 2 ;
-				expect( this ).to.be.an( async.ExecContext ) ;
-				expect( this.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
 				setTimeout( function() {
 					stats.endCounter[ id ] ++ ;
@@ -998,7 +1003,7 @@ describe( "*this*" , function() {
 		.exec( done ) ;
 	} ) ;
 	
-	it( "using()'s function should have *this* set to the current execContext" , function( done ) {
+	it( "using()'s function should have *this* set to the current jobContext" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -1008,8 +1013,9 @@ describe( "*this*" , function() {
 			[ 2 , 'result' , [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ]
 		] )
 		.using( function( id , result , expectedThisResults , callback ) {
-			expect( this ).to.be.an( async.ExecContext ) ;
-			expect( this.results ).to.eql( expectedThisResults ) ;
+			expect( this ).to.be.an( async.JobContext ) ;
+			expect( this.execContext ).to.be.an( async.ExecContext ) ;
+			expect( this.execContext.results ).to.eql( expectedThisResults ) ;
 			stats.startCounter[ id ] ++ ;
 			setTimeout( function() {
 				stats.endCounter[ id ] ++ ;
@@ -1049,6 +1055,25 @@ describe( "*this*" , function() {
 				done() ;
 			}
 		) ;
+	} ) ;
+	
+	it( "should start a series of job, one of them call this.abort(), so it should abort the whole job's queue" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.series( [
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 50 , { abort: true } , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+			done() ;
+		} ) ;
 	} ) ;
 } ) ;
 
