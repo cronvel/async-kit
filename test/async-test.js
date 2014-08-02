@@ -1,6 +1,8 @@
 /*
 	The Cedric's Swiss Knife (CSK) - CSK Async lib test suite
 	
+	The MIT License (MIT)
+	
 	Copyright (c) 2009-2014 Cédric Ronvel 
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
