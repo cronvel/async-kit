@@ -358,6 +358,7 @@ To clean everything that can be automatically regenerated: `make clean`
 * [Class async.JobContext](#ref.async.JobContext)
 	* [.execContext](#ref.async.JobContext.execContext)
 	* [.abort()](#ref.async.JobContext.abort)
+	* [Event: 'timeout'](#ref.async.JobContext.event.finish)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
 	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
@@ -1859,6 +1860,14 @@ the *whileAction* will be called immediately to evaluate if it should loop again
 
 
 
+<a name="ref.async.JobContext.event.timeout"></a>
+### Event: 'timeout' ()
+
+This event is triggered if the current job has been timed out by the underlying lib.
+This can happen when using the [`.timeout()`](#ref.async.Plan.timeout) method of an `async.Plan` instance.
+
+
+
 <a name="ref.async.eventEmitter"></a>
 ## Class async.eventEmitter
 
@@ -2986,6 +2995,71 @@ async.series( [
 	expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
 	expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 	expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+	done() ;
+} ) ;
+```
+
+a job can register to the 'timeout' event, that will be triggered when using .timeout() when the job exceed the time limit.
+
+```js
+var stats = createStats( 3 ) ;
+var timeoutArray = [ false , false , false ] ;
+
+async.parallel( [
+	function( callback ) {
+		var id = 0 ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		stats.startCounter[ id ] ++ ;
+		
+		this.on( 'timeout' , function() {
+			timeoutArray[ id ] = true ;
+		} ) ;
+		
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , 'my' ) ;
+		} , 20 ) ;
+	} ,
+	function( callback ) {
+		var id = 1 ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		stats.startCounter[ id ] ++ ;
+		
+		this.on( 'timeout' , function() {
+			timeoutArray[ id ] = true ;
+		} ) ;
+		
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , 'wonderful' ) ;
+		} , 60 ) ;
+	} ,
+	function( callback ) {
+		var id = 2 ;
+		expect( this ).to.be.an( async.JobContext ) ;
+		expect( this.execContext ).to.be.an( async.ExecContext ) ;
+		stats.startCounter[ id ] ++ ;
+		
+		this.on( 'timeout' , function() {
+			timeoutArray[ id ] = true ;
+		} ) ;
+		
+		setTimeout( function() {
+			stats.endCounter[ id ] ++ ;
+			stats.order.push( id ) ;
+			callback( undefined , 'result' ) ;
+		} , 0 ) ;
+	}
+] )
+.timeout( 40 )
+.exec( function( error , results ) {
+	expect( error ).to.be.ok() ;
+	expect( results ).to.eql( [ [ undefined, 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined, 'result' ] ] ) ;
+	expect( timeoutArray ).to.be.eql( [ false , true , false ] ) ;
 	done() ;
 } ) ;
 ```

@@ -1075,6 +1075,70 @@ describe( "*this*" , function() {
 			done() ;
 		} ) ;
 	} ) ;
+	
+	it( "a job can register to the 'timeout' event, that will be triggered when using .timeout() when the job exceed the time limit" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		var timeoutArray = [ false , false , false ] ;
+		
+		async.parallel( [
+			function( callback ) {
+				var id = 0 ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				stats.startCounter[ id ] ++ ;
+				
+				this.on( 'timeout' , function() {
+					timeoutArray[ id ] = true ;
+				} ) ;
+				
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'my' ) ;
+				} , 20 ) ;
+			} ,
+			function( callback ) {
+				var id = 1 ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				stats.startCounter[ id ] ++ ;
+				
+				this.on( 'timeout' , function() {
+					timeoutArray[ id ] = true ;
+				} ) ;
+				
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'wonderful' ) ;
+				} , 60 ) ;
+			} ,
+			function( callback ) {
+				var id = 2 ;
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				stats.startCounter[ id ] ++ ;
+				
+				this.on( 'timeout' , function() {
+					timeoutArray[ id ] = true ;
+				} ) ;
+				
+				setTimeout( function() {
+					stats.endCounter[ id ] ++ ;
+					stats.order.push( id ) ;
+					callback( undefined , 'result' ) ;
+				} , 0 ) ;
+			}
+		] )
+		.timeout( 40 )
+		.exec( function( error , results ) {
+			expect( error ).to.be.ok() ;
+			expect( results ).to.eql( [ [ undefined, 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined, 'result' ] ] ) ;
+			expect( timeoutArray ).to.be.eql( [ false , true , false ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
 } ) ;
 
 

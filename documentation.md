@@ -358,6 +358,7 @@ To clean everything that can be automatically regenerated: `make clean`
 * [Class async.JobContext](#ref.async.JobContext)
 	* [.execContext](#ref.async.JobContext.execContext)
 	* [.abort()](#ref.async.JobContext.abort)
+	* [Event: 'timeout'](#ref.async.JobContext.event.finish)
 * [Class async.eventEmitter](#ref.async.eventEmitter)
 	* [.emit()](#ref.async.eventEmitter.emit)
 	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
@@ -1856,6 +1857,14 @@ This can be useful if a job succeed, but require that nothing else should be run
 the *whileAction* will be called immediately to evaluate if it should loop again or not.
 
 **Notice:** It has no effect on *Conditional* family `async.Plan`.
+
+
+
+<a name="ref.async.JobContext.event.timeout"></a>
+### Event: 'timeout' ()
+
+This event is triggered if the current job has been timed out by the underlying lib.
+This can happen when using the [`.timeout()`](#ref.async.Plan.timeout) method of an `async.Plan` instance.
 
 
 
