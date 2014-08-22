@@ -102,7 +102,7 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 
 Use Node Package Manager:
 
-    npm install csk-async
+    npm install async-kit
 
 
 
