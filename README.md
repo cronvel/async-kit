@@ -17,7 +17,7 @@ So anything that can be done by caolan/async lib can be converted to Async Kit, 
 Using natural syntax really easy to become familiar with, you will be able to code great things effortlessly, 
 without cumbersome callback hell, and without coding again and again the same async pattern and logic.
 
-Please read [this doc on Github](https://github.com/cronvel/csk-async.git), npmjs.org truncate it.
+Please read [this doc on Github](https://github.com/cronvel/async-kit.git), npmjs.org truncate it.
 
 
 
@@ -1006,7 +1006,7 @@ If the job triggers its callback later, it will be ignored.
 
 It comes in handy in any network or service dependant async jobs, like database queries, HTTP request, and so on.
 
-Also this is **IMPORTANT** to understand that this is the csk-async lib who is responsible for the timeout to kick in:
+Also this is **IMPORTANT** to understand that this is the async-kit lib who is responsible for the timeout to kick in:
 the user code is still in execution, it may be pending, waiting for I/O to perform some other tasks.
 The timeout feature give us the chance to be sure that our callback get triggered within some time limit, **it doesn't
 interupt the job in any way**.
