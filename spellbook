@@ -141,15 +141,18 @@ formula
 		package.json
 		lib/async.js
 		test/async-test.js
+		header-bdd-spec.md
 	
 	sh
-		${mocha} test/async-test.js -R markdown > bdd-spec.md
+		cp header-bdd-spec.md bdd-spec.md
+		${mocha} test/async-test.js -R markdown >> bdd-spec.md
 
 :README.md
 	summon
-		documentation.md
+		# documentation.md
 		bdd-spec.md
 	sh
-		cat documentation.md bdd-spec.md > README.md
+		# cat documentation.md bdd-spec.md > README.md
+		cp documentation.md README.md
 
 
