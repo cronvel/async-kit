@@ -1,0 +1,155 @@
+
+
+
+# 			### Formula: variables ###
+
+
+
+formula
+	mocha:./node_modules/.bin/mocha
+	jshint:./node_modules/.bin/jshint --verbose
+
+
+
+
+
+#			###   Spells: rules   ###
+
+
+
+.summon
+	cast
+		npm-install
+	
+	summon
+		README.md
+		bdd-spec.md
+
+.dev-summon
+	cast
+		summon
+		npm-dev-install
+
+# Delete files that can be rebuilt
+.clean
+	sh
+		rm -rf README.md bdd-spec.md node_modules
+
+# Run all tests: jshint & bdd
+.test
+	cast
+		hint
+		bdd
+
+# Run bdd tests
+.bdd
+	summon
+		package.json
+		lib/async.js
+		test/async-test.js
+	
+	cast
+		dev-summon
+	
+	sh
+		${mocha} test/async-test.js -R spec
+
+# Run jshint
+.hint
+	summon
+		lib/async.js
+		test/async-test.js
+	
+	cast
+		dev-summon
+	
+	sh
+		${jshint} lib/async.js test/async-test.js
+
+# Publish to NPM & Git
+.publish
+	cast
+		npm-publish
+		git-push
+
+
+
+
+
+#			###   Non-user spells: internal rules   ###
+
+
+
+# NPM install
+.npm-install
+	summon
+		package.json
+	sh
+		npm install --production
+
+# NPM install for developpement usage
+.npm-dev-install
+	summon
+		package.json
+	sh
+		npm install
+
+# Publish to NPM
+.npm-publish
+	cast
+		check-master
+		upgrade-version
+	sh
+		npm publish
+
+# Upgrade package version
+.upgrade-version
+	summon
+		lib/async.js
+		test/async-test.js
+		documentation.md
+	sh
+		npm version patch -m "Upgrade package.json version to %s"
+
+# This will fail if we are not on master branch (grep exit 1 if nothing found)
+.check-master
+	sh silence
+		git branch | grep  "^* master$"
+
+# Git push
+.git-push
+	summon
+		spellbook
+		package.json
+		lib/async.js
+		test/async-test.js
+	sh
+		# 'npm version patch' create the git tag by itself... 
+		# git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
+		git push origin master --tags
+
+
+
+
+
+#			###   Summoning: files to build   ###
+
+
+
+:bdd-spec.md
+	summon
+		package.json
+		lib/async.js
+		test/async-test.js
+	
+	sh
+		${mocha} test/async-test.js -R markdown > bdd-spec.md
+
+:README.md
+	summon
+		documentation.md
+		bdd-spec.md
+	sh
+		cat documentation.md bdd-spec.md > README.md
+
+
