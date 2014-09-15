@@ -279,17 +279,22 @@ of having a general callback triggered when everything is asynchronously done.
 
 	
 
-# Make
+# Make & Spellcast
 
-To make it work: `make install`
+As of 0.4.12, [Spellcast](https://www.npmjs.org/package/spellcast) is used instead of `make`.
 
-To build any buildable things: `make`
+Also, a `Makefile` automatically generated is available, since `make` is widely used.
+Invoking `make` simply ensure that Spellcast is installed locally and then invoke it using the same rule.
 
-To run tests: `make test`
+You can install Spellcast on your system with this: `npm install spellcast -g`
 
-To rebuild documentation: `make doc`
+To make it work: `make` or `make summon` or `spellcast summon`
 
-To clean everything that can be automatically regenerated: `make clean`
+To run tests: `make test` or `spellcast test`
+
+To rebuild the documentation: `make README.md` or `spellcast README.md`
+
+To clean everything that can be automatically regenerated: `make clean` or `spellcast clean`
 
 
 

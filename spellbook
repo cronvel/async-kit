@@ -32,7 +32,7 @@ formula
 
 # Delete files that can be rebuilt
 .clean
-	sh
+	scroll
 		rm -rf README.md bdd-spec.md node_modules
 
 # Run all tests: jshint & bdd
@@ -49,9 +49,9 @@ formula
 		test/async-test.js
 	
 	cast
-		dev-summon
+		npm-dev-install
 	
-	sh
+	scroll
 		${mocha} test/async-test.js -R spec
 
 # Run jshint
@@ -61,9 +61,9 @@ formula
 		test/async-test.js
 	
 	cast
-		dev-summon
+		npm-dev-install
 	
-	sh
+	scroll
 		${jshint} lib/async.js test/async-test.js
 
 # Publish to NPM & Git
@@ -84,14 +84,14 @@ formula
 .npm-install
 	summon
 		package.json
-	sh
+	scroll
 		npm install --production
 
 # NPM install for developpement usage
 .npm-dev-install
 	summon
 		package.json
-	sh
+	scroll
 		npm install
 
 # Publish to NPM
@@ -99,7 +99,7 @@ formula
 	cast
 		check-master
 		upgrade-version
-	sh
+	scroll
 		npm publish
 
 # Upgrade package version
@@ -108,12 +108,12 @@ formula
 		lib/async.js
 		test/async-test.js
 		documentation.md
-	sh
+	scroll
 		npm version patch -m "Upgrade package.json version to %s"
 
 # This will fail if we are not on master branch (grep exit 1 if nothing found)
 .check-master
-	sh silence
+	scroll silence
 		git branch | grep  "^* master$"
 
 # Git push
@@ -123,7 +123,7 @@ formula
 		package.json
 		lib/async.js
 		test/async-test.js
-	sh
+	scroll
 		# 'npm version patch' create the git tag by itself... 
 		# git tag v`cat package.json | grep version | sed -r 's/.*"([0-9.]*)".*/\1/'`
 		git push origin master --tags
@@ -143,7 +143,7 @@ formula
 		test/async-test.js
 		header-bdd-spec.md
 	
-	sh
+	scroll
 		cp header-bdd-spec.md bdd-spec.md
 		${mocha} test/async-test.js -R markdown >> bdd-spec.md
 
@@ -151,8 +151,13 @@ formula
 	summon
 		# documentation.md
 		bdd-spec.md
-	sh
+	scroll
 		# cat documentation.md bdd-spec.md > README.md
 		cp documentation.md README.md
 
-
+:Makefile
+	summon
+		spellbook
+		
+	scroll
+		./bin/spellcast --makefile
