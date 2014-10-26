@@ -1248,7 +1248,7 @@ describe( "async.foreach()" , function() {
 			
 			stats.startCounter[ element.id ] ++ ;
 			expect( key ).to.equal( element.id ) ;
-			expect( array ).to.equal( myArray ) ;
+			expect( array ).to.eql( myArray ) ;
 			
 			setTimeout( function() {
 				stats.endCounter[ element.id ] ++ ;
