@@ -1102,7 +1102,7 @@ async.parallel( [
 .timeout( 40 )
 .exec( function( error , results ) {
 	expect( error ).to.be.ok() ;
-	expect( results ).to.eql( [ [ undefined, 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined, 'result' ] ] ) ;
+	expect( results ).to.eql( [ [ undefined, 'my' ] , [ new async.AsyncError( 'jobTimeout' ) ] , [ undefined, 'result' ] ] ) ;
 	expect( timeoutArray ).to.be.eql( [ false , true , false ] ) ;
 	done() ;
 } ) ;
@@ -2370,7 +2370,7 @@ async.series( [
 .exec( function( error , results ) {
 	expect( error ).to.be.an( async.AsyncError ) ;
 	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
-	expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] ] ) ;
+	expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'jobTimeout' ) ] ] ) ;
 	expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 	expect( stats.order ).to.eql( [ 0 ] ) ;
 	done() ;
@@ -2391,7 +2391,7 @@ async.parallel( [
 .exec( function( error , results ) {
 	expect( error ).to.be.an( async.AsyncError ) ;
 	expect( error ).to.be.an( Error ) ;	// ensure that async.AsyncError is an instance of Error
-	expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'job_timeout' ) ] , [ undefined , 'result' ] ] ) ;
+	expect( results ).to.eql( [ [ undefined , 'my' ] , [ new async.AsyncError( 'jobTimeout' ) ] , [ undefined , 'result' ] ] ) ;
 	expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 	expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 	done() ;
@@ -2933,19 +2933,19 @@ context.on( 'progress' , function( progressStatus , error , results ) {
 	switch ( progressCount )
 	{
 		case 1 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 0, queued: 2 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 1, ok: 1, failed: 0, pending: 0, waiting: 2 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], undefined ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 			expect( stats.order ).to.eql( [ 0 ] ) ;
 			break ;
 		case 2 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 0, queued: 1 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 2, ok: 2, failed: 0, pending: 0, waiting: 1 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 			break ;
 		case 3 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 3, ok: 3, failed: 0, pending: 0, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
@@ -3010,19 +3010,19 @@ context.on( 'progress' , function( progressStatus , error , results ) {
 	switch ( progressCount )
 	{
 		case 1 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 1, ok: 1, failed: 0, pending: 2, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 			expect( stats.order ).to.eql( [ 0 ] ) ;
 			break ;
 		case 2 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 2, ok: 2, failed: 0, pending: 1, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 			break ;
 		case 3 :
-			expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 3, ok: 3, failed: 0, pending: 0, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
@@ -3087,21 +3087,21 @@ context.on( 'progress' , function( progressStatus , error , results ) {
 	{
 		case 1 :
 			expect( error ).not.to.be.an( Error ) ;
-			expect( progressStatus ).to.eql( { loop: 0, done: 1, running: 2, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 1, ok: 1, failed: 0, pending: 2, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 			expect( stats.order ).to.eql( [ 0 ] ) ;
 			break ;
 		case 2 :
 			expect( error ).to.be.an( Error ) ;
-			expect( progressStatus ).to.eql( { loop: 0, done: 2, running: 1, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 2, ok: 1, failed: 1, pending: 1, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 			break ;
 		case 3 :
 			expect( error ).to.be.an( Error ) ;
-			expect( progressStatus ).to.eql( { loop: 0, done: 3, running: 0, queued: 0 } ) ;
+			expect( progressStatus ).to.eql( { loop: 0, resolved: 3, ok: 2, failed: 1, pending: 0, waiting: 0 } ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 			expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;

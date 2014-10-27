@@ -1,0 +1,12 @@
+
+
+0.5.0
+Compatibility-breaking changes:
+	* 'progress' event: the object properties' name have changed:
+		- 'done' has been replaced by 'resolved' (less ambiguous, since abort, timeout & failure was counted in)
+		- 'running' has been replaced by 'pending' (less ambiguous, since the job may have stopped working someway)
+		- 'queued' has been replaced by 'waiting' (more appropriated)
+New features:
+	* 'progress' event properties: resolved, ok, failed, pending, waiting
+	* jobsStatus
+		waiting, pending, ok, failed, timeout, aborted

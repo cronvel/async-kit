@@ -1767,9 +1767,11 @@ We can use this object to listen to some useful event.
 ### Event: 'progress' ( progressStatus , [error] , results )
 
 * progressStatus `Object`, with properties:
-	* done `Number` the number of jobs done
-	* running `Number` the number of jobs started and still running (i.e. not *done*)
-	* queued `Number` the number of jobs in queue, not started yet
+	* resolved `Number` the number of resolved jobs (done/error/aborted)
+	* ok `Number` the number of resolved jobs that have succeeded
+	* failed `Number` the number of resolved jobs that have failed
+	* pending `Number` the number of jobs started and still running (i.e. not *done*)
+	* waiting `Number` the number of jobs in queue, not started yet
 	* loop `Number` the loop iteration ([*while* loop](#ref.async.Plan.while) or [`.repeat()`](#ref.async.Plan.repeat))
 * error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
 * results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
