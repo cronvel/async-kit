@@ -1139,15 +1139,282 @@ describe( "*this*" , function() {
 			done() ;
 		} ) ;
 	} ) ;
-	
-	it( "jobsStatus tests" ) ;//, function( done ) {
+} ) ;
+
+
+
+describe( "ExecContext.getJobsStatus()" , function() {
+
+	it( "should return the real-time status of all jobs at any time (here in series mode)" , function( done ) {
 		
-		/*
-		expect( this.jobsStatus[ 0 ].status ).to.be.ok() ;
-		expect( this.jobsStatus[ 1 ].status ).to.be.ok() ;
-		expect( this.jobsStatus[ 2 ].status ).to.be.ok() ;
-		*/
-	//} ) ;
+		async.series( [
+			function one( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( undefined , 'ok' ) ;
+				} , 20 ) ;
+			} ,
+			function two( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( new Error( 'somethingBadHappens' ) ) ;
+				} , 20 ) ;
+			} ,
+			function three( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'failed' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( undefined , 'should timeout!' ) ;
+				} , 60 ) ;
+			} ,
+			function four( callback ) {
+				var self = this , jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'failed' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'timeout' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					self.abort() ;
+				} , 0 ) ;
+			} ,
+			function five( callback ) {
+				expect().fail( "This code should never be reached" ) ;
+			}
+		] )
+		.timeout( 40 )
+		.fatal( false )
+		.exec( function( error , results ) {
+			
+			var jobsStatus = this.getJobsStatus() ;
+			
+			expect( error ).not.to.be.ok() ;
+			
+			expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+			expect( jobsStatus[ 1 ].status ).to.be( 'failed' ) ;
+			expect( jobsStatus[ 2 ].status ).to.be( 'timeout' ) ;
+			expect( jobsStatus[ 3 ].status ).to.be( 'aborted' ) ;
+			expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+			
+			done() ;
+		} ) ;
+	} ) ;
+
+	it( "should return the real-time status of all jobs at any time (here in parallel mode)" , function( done ) {
+		
+		async.parallel( [
+			function one( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( undefined , 'ok' ) ;
+				} , 20 ) ;
+			} ,
+			function two( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( new Error( 'somethingBadHappens' ) ) ;
+				} , 20 ) ;
+			} ,
+			function three( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'waiting' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					callback( undefined , 'should timeout!' ) ;
+				} , 60 ) ;
+			} ,
+			function four( callback ) {
+				var self = this , jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'waiting' ) ;
+				
+				setTimeout( function() {
+					self.abort() ;
+				} , 30 ) ;
+			} ,
+			function five( callback ) {
+				var jobsStatus = this.execContext.getJobsStatus() ;
+				
+				expect( this ).to.be.an( async.JobContext ) ;
+				expect( this.execContext ).to.be.an( async.ExecContext ) ;
+				
+				expect( jobsStatus[ 0 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 1 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 3 ].status ).to.be( 'pending' ) ;
+				expect( jobsStatus[ 4 ].status ).to.be( 'pending' ) ;
+			}
+		] )
+		.timeout( 40 )
+		.fatal( false )
+		.exec( function( error , results ) {
+			
+			var jobsStatus = this.getJobsStatus() ;
+			
+			expect( error ).not.to.be.ok() ;
+			
+			expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+			expect( jobsStatus[ 1 ].status ).to.be( 'failed' ) ;
+			expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+			expect( jobsStatus[ 3 ].status ).to.be( 'aborted' ) ;
+			expect( jobsStatus[ 4 ].status ).to.be( 'pending' ) ;
+			
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "should report the number of retry of a job, as well as the list of successives errors" , function( done ) {
+		
+		var jobOneTries = 1 , jobTwoTries = 1 ;
+		
+		async.parallel( [
+			function one( callback ) {
+				setTimeout( function() {
+					if ( jobOneTries < 6 ) { callback( new Error( 'somethingBadHappens' + jobOneTries ) ) ; }
+					else { callback( undefined , 'ok' ) ; }
+					jobOneTries ++ ;
+				} , 20 ) ;
+			} ,
+			function two( callback ) {
+				setTimeout( function() {
+					if ( jobTwoTries < 2 ) { callback( new Error( 'somethingBadHappens' + jobTwoTries ) ) ; }
+					else { callback( undefined , 'ok' ) ; }
+					jobTwoTries ++ ;
+				} , 20 ) ;
+			}
+		] )
+		.retry( 3 , 5 )
+		.exec( function( error , results ) {
+			
+			var jobsStatus = this.getJobsStatus() ;
+			//console.log( jobsStatus ) ;
+			
+			expect( error ).to.be.ok() ;
+			
+			expect( jobsStatus[ 0 ].status ).to.be( 'failed' ) ;
+			expect( jobsStatus[ 0 ].tried ).to.be( 4 ) ;
+			expect( jobsStatus[ 0 ].errors.length ).to.be( 4 ) ;
+			expect( jobsStatus[ 0 ].errors[ 0 ].message ).to.be( 'somethingBadHappens1' ) ;
+			expect( jobsStatus[ 0 ].errors[ 1 ].message ).to.be( 'somethingBadHappens2' ) ;
+			expect( jobsStatus[ 0 ].errors[ 2 ].message ).to.be( 'somethingBadHappens3' ) ;
+			expect( jobsStatus[ 0 ].errors[ 3 ].message ).to.be( 'somethingBadHappens4' ) ;
+			expect( jobsStatus[ 0 ].result ).to.eql( [ new Error( 'somethingBadHappens4' ) ] ) ;
+			
+			expect( jobsStatus[ 1 ].status ).to.be( 'ok' ) ;
+			expect( jobsStatus[ 1 ].tried ).to.be( 2 ) ;
+			expect( jobsStatus[ 1 ].errors.length ).to.be( 1 ) ;
+			expect( jobsStatus[ 1 ].errors[ 0 ].message ).to.be( 'somethingBadHappens1' ) ;
+			expect( jobsStatus[ 1 ].result ).to.eql( [ undefined, 'ok' ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "should give insight when a job call its callback twice or more" , function( done ) {
+	
+		async.parallel( [
+			function one( callback ) {
+				setTimeout( function() {
+					callback( undefined , 'ok' ) ;
+					callback( undefined , 'callback used twice' ) ;
+					callback( undefined , 'callback used three times' ) ;
+				} , 20 ) ;
+			} ,
+			function two( callback ) {
+				setTimeout( function() {
+					callback( undefined , 'ok' ) ;
+				} , 20 ) ;
+			}
+		] )
+		.exec( function( error , results ) {
+			
+			var jobsStatus = this.getJobsStatus() ;
+			//console.log( jobsStatus ) ;
+			
+			expect( error ).not.to.be.ok() ;
+			
+			expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+			expect( jobsStatus[ 0 ].tried ).to.be( 1 ) ;
+			expect( jobsStatus[ 0 ].errors.length ).to.be( 2 ) ;
+			expect( jobsStatus[ 0 ].errors[ 0 ].message ).to.be( 'This job has called its completion callback 2 times' ) ;
+			expect( jobsStatus[ 0 ].errors[ 1 ].message ).to.be( 'This job has called its completion callback 3 times' ) ;
+			expect( jobsStatus[ 0 ].result ).to.eql( [ undefined , 'ok' ] ) ;
+			
+			expect( jobsStatus[ 1 ].status ).to.be( 'ok' ) ;
+			expect( jobsStatus[ 1 ].tried ).to.be( 1 ) ;
+			expect( jobsStatus[ 1 ].errors.length ).to.be( 0 ) ;
+			expect( jobsStatus[ 1 ].result ).to.eql( [ undefined, 'ok' ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
 } ) ;
 
 
@@ -2444,6 +2711,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		] )
 		.retry( 10 , 5 )
 		.exec( function( error , results ) {
+			console.log( arguments ) ;
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;

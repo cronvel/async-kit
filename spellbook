@@ -149,8 +149,8 @@ formula
 
 :README.md
 	summon
-		# documentation.md
-		bdd-spec.md
+		documentation.md
+		# bdd-spec.md
 	scroll
 		# cat documentation.md bdd-spec.md > README.md
 		cp documentation.md README.md

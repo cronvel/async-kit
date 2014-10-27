@@ -357,6 +357,7 @@ To clean everything that can be automatically regenerated: `make clean` or `spel
 	* [finallyCallback()](#ref.callback.finallyCallback)
 	* [whileCallback()](#ref.callback.whileCallback)
 * [Class async.ExecContext](#ref.async.ExecContext)
+	* [.getJobsStatus()](#ref.async.ExecContext.getJobsStatus)
 	* [Event: 'progress'](#ref.async.ExecContext.event.progress)
 	* [Event: 'resolved'](#ref.async.ExecContext.event.resolved)
 	* [Event: 'finish'](#ref.async.ExecContext.event.finish)
@@ -1760,6 +1761,30 @@ depending on the current (last) iteration's outcome.
 
 An instance of `async.ExecContext` is returned by each `exec()`-like methods.
 We can use this object to listen to some useful event.
+
+
+
+<a name="ref.async.ExecContext.getJobsStatus"></a>
+### .getJobsStatus()
+
+This method will provide detailled real-time status for each jobs.
+This is designed for debugging/logging purpose, other uses are discouraged.
+
+It returns an `Object` or an `Array` that map the jobs' list.
+For each job, an object is given where:
+
+* job `mixed` the original job, e.g. `Function`, `Array`, `async.Plan`, etc...
+* status `string` the current status of the job, one of the following: 
+	* 'waiting': the job has not started, it is queued
+	* 'pending': the job has been started, it hasn't triggered its completion's callback yet
+	* 'ok': the job has finished successfully
+	* 'failed': the job has failed, it has returned an error (generic failure)
+	* 'timeout': the job hasn't complete in time (specific failure)
+	* 'aborted': the job has caused the whole jobs' list to abort (specific failure)
+* result `Array` the result of the job, if any... it is strictly the same than exec()-like function pass to their callbacks
+* errors `Array` a list of errors that happened for this job, e.g. each multiple failure on retryable jobs, as well
+	as reporting when the job has called its completion callback multiple times, and so on
+* tried `integer` the number of time the job has been tried (useful in conjunction with [.retry()](#ref.async.Plan.retry)).
 
 
 

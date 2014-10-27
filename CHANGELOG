@@ -1,6 +1,14 @@
 
 
-0.5.0
+v0.5.2
+------
+
+Tests and documentation about ExecContext.getJobsStatus().
+
+
+v0.5.1
+------
+
 Compatibility-breaking changes:
 	* 'progress' event: the object properties' name have changed:
 		- 'done' has been replaced by 'resolved' (less ambiguous, since abort, timeout & failure was counted in)
@@ -8,5 +16,4 @@ Compatibility-breaking changes:
 		- 'queued' has been replaced by 'waiting' (more appropriated)
 New features:
 	* 'progress' event properties: resolved, ok, failed, pending, waiting
-	* jobsStatus
-		waiting, pending, ok, failed, timeout, aborted
+	* ExecContext.getJobsStatus(): give insightful real-time information about each job, for flow-control debugging purpose
