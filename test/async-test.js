@@ -35,8 +35,6 @@
 		.clone()
 		.export()
 		.while( condition , true )
-		.race()
-		.waterfall()
 		.iterator() & .usingIterator() -- should be mostly covered by foreach
 		.aggregator()
 	Exec:
@@ -1825,6 +1823,48 @@ describe( "async.race()" , function() {
 			expect( stats.endCounter ).to.eql( [ 0, 1, 0, 0 ] ) ;
 			done() ;
 		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( ".queue()" , function() {
+	
+	it( "should switch to queue mode, a never-ending queue that emit 'drain' when no more jobs exists" , function( done ) {
+		
+		//var stats = createStats( 3 ) ;
+		
+		var job = function job( callback ) {
+			console.log( 'Job started' ) ;
+			setTimeout( function() {
+				console.log( 'Job ended' ) ;
+				callback( undefined , 'result' ) ;
+			} , 20 ) ;
+		} ;
+		
+		var context = async.series()
+		.queue()
+		.exec( function( error , results ) {
+			expect().fail( 'Should never end' ) ;
+		} ) ;
+		
+		context.on( 'drain' , function() {
+			console.log( 'Drain event received' ) ;
+		} ) ;
+		
+		context.once( 'drain' , function() {
+			console.log( 'Drain event: replenish the queue' ) ;
+			context.queueJob( job ) ;
+			context.queueJob( job ) ;
+			
+			context.once( 'drain' , function() {
+				console.log( 'Drain event: done!' ) ;
+				done() ;
+			} ) ;
+		} ) ;
+		
+		context.queueJob( job ) ;
+		context.queueJob( job ) ;
 	} ) ;
 } ) ;
 
