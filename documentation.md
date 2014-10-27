@@ -1767,8 +1767,8 @@ We can use this object to listen to some useful event.
 <a name="ref.async.ExecContext.getJobsStatus"></a>
 ### .getJobsStatus()
 
-This method will provide detailled real-time status for each jobs.
-This is designed for debugging/logging purpose, other uses are discouraged.
+This method will provide insightful real-time information about the status of each jobs.
+This is designed for flow-control debugging/logging purpose, other uses are discouraged.
 
 It returns an `Object` or an `Array` that map the jobs' list.
 For each job, an object is given where:

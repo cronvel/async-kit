@@ -16,4 +16,5 @@ Compatibility-breaking changes:
 		- 'queued' has been replaced by 'waiting' (more appropriated)
 New features:
 	* 'progress' event properties: resolved, ok, failed, pending, waiting
-	* ExecContext.getJobsStatus(): give insightful real-time information about each job, for flow-control debugging purpose
+	* ExecContext.getJobsStatus(): give insightful real-time information about the status of each jobs,
+		for flow-control debugging purpose
