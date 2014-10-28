@@ -3,3 +3,6 @@ document plan.queue() @doc
 document plan.emitError() @doc
 check Stack Overflow http://stackoverflow.com/questions/26613471/node-js-when-exactly-one-should-emit-a-drain-event @misc
 check carefully conditionnal family async.Plan, many things have been done that can break it @check
+document the 'prelaunch' status @doc
+finish the 'lowPressure' event @code
+add a .end() method on ExecContext for queue @code
