@@ -163,8 +163,8 @@ describe( "async.series()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -181,8 +181,8 @@ describe( "async.series()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ new Error() , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -199,7 +199,7 @@ describe( "async.series()" , function() {
 		var stats = createStats( 1 ) ;
 		
 		async.series( function ( callback ) {
-			asyncJob( stats , 0 , 50 , {} , [ undefined , 'my wonderful result' ] , callback ) ;
+			asyncJob( stats , 0 , 20 , {} , [ undefined , 'my wonderful result' ] , callback ) ;
 		} )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
@@ -215,7 +215,7 @@ describe( "async.series()" , function() {
 		var stats = createStats( 1 ) ;
 		
 		async.do( function ( callback ) {
-			asyncJob( stats , 0 , 50 , {} , [ new Error() , 'my wonderful result' ] , callback ) ;
+			asyncJob( stats , 0 , 20 , {} , [ new Error() , 'my wonderful result' ] , callback ) ;
 		} )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
@@ -237,8 +237,8 @@ describe( "async.parallel()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -255,8 +255,8 @@ describe( "async.parallel()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ new Error() , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -273,8 +273,8 @@ describe( "async.parallel()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ new Error() , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -606,8 +606,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -3 )
@@ -625,8 +625,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -2 )
@@ -644,8 +644,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -1 )
@@ -663,8 +663,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( 10 )
@@ -682,8 +682,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -3 )
@@ -701,8 +701,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -2 )
@@ -720,8 +720,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( -1 )
@@ -739,8 +739,8 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( 10 )
@@ -763,8 +763,8 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			function( callback ) {
 				var id = 2 ;
 				stats.startCounter[ id ] ++ ;
@@ -1061,7 +1061,7 @@ describe( "*this*" , function() {
 		
 		async.series( [
 			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 50 , { abort: true } , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 1 , 40 , { abort: true } , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
@@ -1758,9 +1758,9 @@ describe( "async.race()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.race( [
-			[ asyncJob , stats , 0 , 150 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 			[ asyncJob , stats , 1 , 10 , {} , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ]
+			[ asyncJob , stats , 2 , 30 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
@@ -1775,9 +1775,9 @@ describe( "async.race()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.race( [
-			[ asyncJob , stats , 0 , 150 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
 			[ asyncJob , stats , 1 , 10 , {} , [ new Error() , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ]
+			[ asyncJob , stats , 2 , 30 , {} , [ undefined , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
@@ -1793,9 +1793,9 @@ describe( "async.race()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.race( [
-			[ asyncJob , stats , 0 , 100 , {} , [ new Error() , 'my' ] ] ,
+			[ asyncJob , stats , 0 , 50 , {} , [ new Error() , 'my' ] ] ,
 			[ asyncJob , stats , 1 , 10 , {} , [ new Error() , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 50 , {} , [ new Error() , 'result' ] ]
+			[ asyncJob , stats , 2 , 30 , {} , [ new Error() , 'result' ] ]
 		] )
 		.exec( function( error , results ) {
 			expect( error ).to.be.an( Error ) ;
@@ -1828,43 +1828,64 @@ describe( "async.race()" , function() {
 
 
 
-describe( ".queue()" , function() {
+describe( "async.queue()" , function() {
 	
-	it( "should switch to queue mode, a never-ending queue that emit 'drain' when no more jobs exists" , function( done ) {
+	it( "should create a queue that emit 'drain' when no more jobs exists" , function( done ) {
 		
-		//var stats = createStats( 3 ) ;
+		var replenishCount = 3 ;
+		var index = 0 ;
+		var stats = createStats( 11 ) ;
 		
-		var job = function job( callback ) {
-			console.log( 'Job started' ) ;
-			setTimeout( function() {
-				console.log( 'Job ended' ) ;
-				callback( undefined , 'result' ) ;
-			} , 20 ) ;
-		} ;
+		var context = async.queue().exec() ;
 		
-		var context = async.series()
-		.queue()
-		.exec( function( error , results ) {
-			expect().fail( 'Should never end' ) ;
+		context.on( 'lowPressure' , function() {
+			console.log( 'LowPressure event received' ) ;
 		} ) ;
 		
 		context.on( 'drain' , function() {
 			console.log( 'Drain event received' ) ;
-		} ) ;
-		
-		context.once( 'drain' , function() {
-			console.log( 'Drain event: replenish the queue' ) ;
-			context.queueJob( job ) ;
-			context.queueJob( job ) ;
 			
-			context.once( 'drain' , function() {
+			if ( replenishCount > 0 )
+			{
+				switch ( replenishCount )
+				{
+					case 3 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+						break ;
+					case 2 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 0, 1, 2, 3, 4 ] ) ;
+						break ;
+					case 1 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 0, 1, 2, 3, 4, 5, 6, 7 ] ) ;
+						break ;
+				}
+				
+				console.log( 'Drain event: replenish the queue' ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 20 , {} , [ undefined , 'result' ] ] ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 40 , {} , [ undefined , 'result' ] ] ) ;
+			}
+			else
+			{
 				console.log( 'Drain event: done!' ) ;
+				console.log( 'Stats:' , stats ) ;
+				expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ] ) ;
 				done() ;
-			} ) ;
+			}
+			
+			replenishCount -- ;
 		} ) ;
 		
-		context.queueJob( job ) ;
-		context.queueJob( job ) ;
+		context.queueJob( [ asyncJob , stats , index ++ , 100 , {} , [ undefined , 'result' ] ] ) ;
+		context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
 	} ) ;
 } ) ;
 
@@ -2375,8 +2396,8 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		var stats = createStats( 3 ) ;
 		
 		async.do( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.then( function( results ) {
@@ -2427,8 +2448,8 @@ describe( "async.Plan.prototype.then(), .else(), .catch(), .finally(), .execThen
 		var stats = createStats( 3 ) ;
 		
 		async.do( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ new Error() , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.then( function( results ) {
@@ -3046,8 +3067,8 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.lastJobOnly()
@@ -3065,8 +3086,8 @@ describe( "async.Plan.prototype.lastJobOnly()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.lastJobOnly()
@@ -3089,8 +3110,8 @@ describe( "async.Plan.prototype.mapping1to1()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
 		] )
 		.mapping1to1()
@@ -3107,8 +3128,8 @@ describe( "async.Plan.prototype.mapping1to1()" , function() {
 		var stats = createStats( 3 ) ;
 		
 		async.parallel( {
-			one: [ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			two: [ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
+			one: [ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			two: [ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
 			three: [ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' , 'extra argument that will be dropped' ] ]
 		} )
 		.mapping1to1()
@@ -3190,8 +3211,8 @@ describe( "async.Plan.prototype.execKV()" , function() {
 		var then , catch_ ;
 		
 		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ new Error() , 'wonderful' ] ] ,
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 40 , {} , [ new Error() , 'wonderful' ] ] ,
 			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
 		] )
 		.execKV( {
@@ -3330,8 +3351,8 @@ describe( "Events" , function() {
 		
 		var context = async.parallel( [
 			[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 50 , {} , [ undefined , 'result' ] ]
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 20 , {} , [ undefined , 'result' ] ]
 		] )
 		.nice( 0 )
 		.exec( function( error , results ) {
@@ -3407,8 +3428,8 @@ describe( "Events" , function() {
 		
 		var context = async.parallel( [
 			[ asyncJob , stats , 0 , 0 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 50 , {} , [ new Error() ] ]
+			[ asyncJob , stats , 1 , 40 , {} , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 20 , {} , [ new Error() ] ]
 		] )
 		.nice( 0 )
 		.exec( function( error , results ) {
