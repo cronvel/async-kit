@@ -7,4 +7,8 @@
 (A) finish the 'lowPressure' event @code
 (B) add a .end() method on ExecContext for queue @code
 true parallel mode, using either cluster/child_process or some thread lib (web worker, thread à gogo) @code
-(A) (A) add a new .forgetResult() method on async.Plan, the default for async.worker() @code
+(A) handle garbage collection so async.worker() can run forever without leaks @code
+(B) copy .parallelLimit from Plan to ExecContext, so it can be changed at runtime, useful for async.worker() @code
+(A) finish the .emitError() behaviour @code
+(B) add a .queueJobs() method to ExecContext, so we can add batch of job in one call @code
+(A) finish the job with 'serialProgress' event (conditionnal family, etc) @code
