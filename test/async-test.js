@@ -84,11 +84,16 @@ function createStats( n )
 
 function asyncJob( stats , id , delay , options , result , callback )
 {
+	//console.log( "Job #" + id + " started" ) ;
+	
 	var jobContext = this , realResult = result.slice() ;
 	
 	stats.startCounter[ id ] ++ ;
 	
 	setTimeout( function() {
+		
+		//console.log( "Job #" + id + " finished" ) ;
+		
 		stats.endCounter[ id ] ++ ;
 		stats.order.push( id ) ;
 		
@@ -1828,22 +1833,25 @@ describe( "async.race()" , function() {
 
 
 
-describe( "async.queue()" , function() {
+describe( "async.worker()" , function() {
 	
-	it( "should create a queue that emit 'drain' when no more jobs exists" , function( done ) {
+	it( "should create a worker that emit 'drain' when no more jobs exists (series)" , function( done ) {
 		
-		var replenishCount = 3 ;
-		var index = 0 ;
+		var replenishCount = 3 , lowPressureCount = 0 , drainCount = 0 , index = 0 ;
 		var stats = createStats( 11 ) ;
 		
-		var context = async.queue().exec() ;
+		var context = async.worker().exec() ;
 		
 		context.on( 'lowPressure' , function() {
-			console.log( 'LowPressure event received' ) ;
+			lowPressureCount ++ ;
+			expect( context.pending + context.prelaunch + context.waiting ).to.be( 0 ) ;
+			//console.log( 'LowPressure event received' ) ;
 		} ) ;
 		
 		context.on( 'drain' , function() {
-			console.log( 'Drain event received' ) ;
+			drainCount ++ ;
+			expect( context.pending + context.prelaunch + context.waiting ).to.be( 0 ) ;
+			//console.log( 'Drain event received' ) ;
 			
 			if ( replenishCount > 0 )
 			{
@@ -1866,25 +1874,91 @@ describe( "async.queue()" , function() {
 						break ;
 				}
 				
-				console.log( 'Drain event: replenish the queue' ) ;
+				//console.log( 'Drain event: replenish the queue' ) ;
 				context.queueJob( [ asyncJob , stats , index ++ , 20 , {} , [ undefined , 'result' ] ] ) ;
 				context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
 				context.queueJob( [ asyncJob , stats , index ++ , 40 , {} , [ undefined , 'result' ] ] ) ;
 			}
 			else
 			{
-				console.log( 'Drain event: done!' ) ;
-				console.log( 'Stats:' , stats ) ;
+				//console.log( 'Drain event: done!' ) ;
+				//console.log( 'Stats:' , stats ) ;
 				expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
 				expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
 				expect( stats.order ).to.eql( [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ] ) ;
+				expect( lowPressureCount ).to.be( 4 ) ;
+				expect( drainCount ).to.be( 4 ) ;
 				done() ;
 			}
 			
 			replenishCount -- ;
 		} ) ;
 		
-		context.queueJob( [ asyncJob , stats , index ++ , 100 , {} , [ undefined , 'result' ] ] ) ;
+		context.queueJob( [ asyncJob , stats , index ++ , 40 , {} , [ undefined , 'result' ] ] ) ;
+		context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
+	} ) ;
+	
+	it( "should create a worker that emit 'drain' when no more jobs exists (parallel: 3)" , function( done ) {
+		
+		this.timeout( 5000 ) ;
+		var replenishCount = 3 , lowPressureCount = 0 , drainCount = 0 , index = 0 ;
+		var stats = createStats( 11 ) ;
+		
+		var context = async.worker().parallel( 3 ).exec() ;
+		
+		context.on( 'lowPressure' , function() {
+			lowPressureCount ++ ;
+			expect( context.pending + context.prelaunch + context.waiting ).to.be( 2 ) ;
+			//console.log( 'LowPressure event received' ) ;
+		} ) ;
+		
+		context.on( 'drain' , function() {
+			drainCount ++ ;
+			expect( context.pending + context.prelaunch + context.waiting ).to.be( 0 ) ;
+			//console.log( 'Drain event received' ) ;
+			
+			if ( replenishCount > 0 )
+			{
+				switch ( replenishCount )
+				{
+					case 3 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 1, 0 ] ) ;
+						break ;
+					case 2 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 1, 0, 3, 2, 4 ] ) ;
+						break ;
+					case 1 :
+						expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ) ;
+						expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 ] ) ;
+						expect( stats.order ).to.eql( [ 1, 0, 3, 2, 4, 6, 5, 7 ] ) ;
+						break ;
+				}
+				
+				//console.log( 'Drain event: replenish the queue' ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 20 , {} , [ undefined , 'result' ] ] ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
+				context.queueJob( [ asyncJob , stats , index ++ , 40 , {} , [ undefined , 'result' ] ] ) ;
+			}
+			else
+			{
+				//console.log( 'Drain event: done!' ) ;
+				//console.log( 'Stats:' , stats ) ;
+				expect( stats.startCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
+				expect( stats.endCounter ).to.eql( [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ] ) ;
+				expect( stats.order ).to.eql( [ 1, 0, 3, 2, 4, 6, 5, 7, 9, 8, 10 ] ) ;
+				expect( lowPressureCount ).to.be( 3 ) ;
+				expect( drainCount ).to.be( 4 ) ;
+				done() ;
+			}
+			
+			replenishCount -- ;
+		} ) ;
+		
+		context.queueJob( [ asyncJob , stats , index ++ , 40 , {} , [ undefined , 'result' ] ] ) ;
 		context.queueJob( [ asyncJob , stats , index ++ , 0 , {} , [ undefined , 'result' ] ] ) ;
 	} ) ;
 } ) ;
@@ -2772,7 +2846,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		] )
 		.retry( 10 , 5 )
 		.exec( function( error , results ) {
-			console.log( arguments ) ;
+			//console.log( arguments ) ;
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;
