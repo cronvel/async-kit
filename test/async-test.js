@@ -3340,7 +3340,7 @@ describe( "async.Plan.prototype.execKV()" , function() {
 
 describe( "Events" , function() {
 	
-	it( "should trigger a 'progress' event after each jobs of a series complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event" , function( done ) {
+	it( "should trigger a 'progress' and 'sequentialProgress' event after each jobs of a series complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		var finallyTriggered = false ;
@@ -3362,7 +3362,37 @@ describe( "Events" , function() {
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
 		
-		var progressCount = 0 ;
+		var progressCount = 0 , sequentialProgressCount = 0 ;
+		
+		context.on( 'sequentialProgress' , function( progressStatus , error , results ) {
+			
+			sequentialProgressCount ++ ;
+			expect( error ).not.to.be.an( Error ) ;
+			
+			switch ( sequentialProgressCount )
+			{
+				case 1 :
+					expect( progressStatus ).to.eql( { waiting: 2, prelaunch: 0, pending: 0, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
+					break ;
+				case 2 :
+					expect( progressStatus ).to.eql( { waiting: 1, prelaunch: 0, pending: 0, resolved: 2, sequentialResolved: 2, ok: 2, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+					break ;
+				case 3 :
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
+					break ;
+				default :
+					throw new Error( 'sequentialProgress event received too much time' ) ;
+			}
+		} ) ;
 		
 		context.on( 'progress' , function( progressStatus , error , results ) {
 			
@@ -3372,19 +3402,19 @@ describe( "Events" , function() {
 			switch ( progressCount )
 			{
 				case 1 :
-					expect( progressStatus ).to.eql( { waiting: 2, prelaunch: 0, pending: 0, resolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 2, prelaunch: 0, pending: 0, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], undefined ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
-					expect( progressStatus ).to.eql( { waiting: 1, prelaunch: 0, pending: 0, resolved: 2, ok: 2, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 1, prelaunch: 0, pending: 0, resolved: 2, sequentialResolved: 2, ok: 2, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 					break ;
 				case 3 :
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
@@ -3417,7 +3447,7 @@ describe( "Events" , function() {
 		
 	} ) ;
 	
-	it( "should trigger a 'progress' event after each jobs of a parallel batch complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event" , function( done ) {
+	it( "should trigger a 'progress' event after each jobs of a parallel batch complete, 'sequentialProgress' only when consecutive jobs complete, the 'resolved' event triggers callbacks, the 'finish' event should be triggered after all callbacks and 'progress' event" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		var finallyTriggered = false ;
@@ -3439,7 +3469,31 @@ describe( "Events" , function() {
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
 		
-		var progressCount = 0 ;
+		var progressCount = 0 , sequentialProgressCount = 0 ;
+		
+		context.on( 'sequentialProgress' , function( progressStatus , error , results ) {
+			
+			sequentialProgressCount ++ ;
+			expect( error ).not.to.be.an( Error ) ;
+			
+			switch ( sequentialProgressCount )
+			{
+				case 1 :
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
+					break ;
+				case 2 :
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
+					break ;
+				default :
+					throw new Error( 'sequentialProgress event received too much time' ) ;
+			}
+		} ) ;
 		
 		context.on( 'progress' , function( progressStatus , error , results ) {
 			
@@ -3449,19 +3503,19 @@ describe( "Events" , function() {
 			switch ( progressCount )
 			{
 				case 1 :
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 1, resolved: 2, ok: 2, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 1, resolved: 2, sequentialResolved: 1, ok: 2, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ undefined , 'result' ] ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 					break ;
 				case 3 :
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 3, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
@@ -3516,7 +3570,32 @@ describe( "Events" , function() {
 		
 		expect( context ).to.be.an( async.ExecContext ) ;
 		
-		var progressCount = 0 ;
+		var progressCount = 0 , sequentialProgressCount = 0 ;
+		
+		context.on( 'sequentialProgress' , function( progressStatus , error , results ) {
+			
+			sequentialProgressCount ++ ;
+			
+			switch ( sequentialProgressCount )
+			{
+				case 1 :
+					expect( error ).not.to.be.an( Error ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
+					expect( stats.order ).to.eql( [ 0 ] ) ;
+					break ;
+				case 2 :
+					expect( error ).to.be.an( Error ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 2, failed: 1, loop: 0 } ) ;
+					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
+					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
+					break ;
+				default :
+					throw new Error( 'sequentialProgress event received too much time' ) ;
+			}
+		} ) ;
 		
 		context.on( 'progress' , function( progressStatus , error , results ) {
 			
@@ -3526,21 +3605,21 @@ describe( "Events" , function() {
 			{
 				case 1 :
 					expect( error ).not.to.be.an( Error ) ;
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 2, resolved: 1, sequentialResolved: 1, ok: 1, failed: 0, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, undefined ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 0, 0 ] ) ;
 					expect( stats.order ).to.eql( [ 0 ] ) ;
 					break ;
 				case 2 :
 					expect( error ).to.be.an( Error ) ;
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 1, resolved: 2, ok: 1, failed: 1, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 1, resolved: 2, sequentialResolved: 1, ok: 1, failed: 1, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], undefined, [ new Error() ] ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 0, 1 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 2 ] ) ;
 					break ;
 				case 3 :
 					expect( error ).to.be.an( Error ) ;
-					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, ok: 2, failed: 1, loop: 0 } ) ;
+					expect( progressStatus ).to.eql( { waiting: 0, prelaunch: 0, pending: 0, resolved: 3, sequentialResolved: 3, ok: 2, failed: 1, loop: 0 } ) ;
 					expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ new Error() ] ] ) ;
 					expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
 					expect( stats.order ).to.eql( [ 0, 2, 1 ] ) ;
