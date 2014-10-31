@@ -1793,11 +1793,13 @@ For each job, an object is given where:
 ### Event: 'progress' ( progressStatus , [error] , results )
 
 * progressStatus `Object`, with properties:
+	* waiting `Number` the number of jobs in queue, not started yet
+	* prelaunch `Number` the number of jobs in queue about to be started right now
+	* pending `Number` the number of jobs currently running (i.e. started and not done/resolved yet)
 	* resolved `Number` the number of resolved jobs (done/error/aborted)
+	* sequentialResolved `Number` the number of sequentially resolved jobs (see the ['sequentialProgress' event](#ref.async.ExecContext.event.sequentialProgress) for details)
 	* ok `Number` the number of resolved jobs that have succeeded
 	* failed `Number` the number of resolved jobs that have failed
-	* pending `Number` the number of jobs started and still running (i.e. not *done*)
-	* waiting `Number` the number of jobs in queue, not started yet
 	* loop `Number` the loop iteration ([*while* loop](#ref.async.Plan.while) or [`.repeat()`](#ref.async.Plan.repeat))
 * error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
 * results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
@@ -1808,6 +1810,43 @@ The *progressStatus* object contains the main informations necessary to build a 
 
 Others arguments can be useful if we need access to the partial results.
 
+
+
+<a name="ref.async.ExecContext.event.sequentialProgress"></a>
+### Event: 'progress' ( progressStatus , [error] , results )
+
+* progressStatus `Object`, with properties:
+	* waiting `Number` the number of jobs in queue, not started yet
+	* prelaunch `Number` the number of jobs in queue about to be started right now
+	* pending `Number` the number of jobs currently running (i.e. started and not done/resolved yet)
+	* resolved `Number` the number of resolved jobs (done/error/aborted)
+	* sequentialResolved `Number` the number of sequentially resolved jobs (see the ['sequentialProgress' event](#ref.async.ExecContext.event.sequentialProgress) for details)
+	* ok `Number` the number of resolved jobs that have succeeded
+	* failed `Number` the number of resolved jobs that have failed
+	* loop `Number` the loop iteration ([*while* loop](#ref.async.Plan.while) or [`.repeat()`](#ref.async.Plan.repeat))
+* error `mixed` the current error status, *Conditional* family `async.Plan` **DO NOT** pass this argument
+* results `Array` of `mixed` for *Do* family `async.Plan` or just `mixed` for *Conditional* family `async.Plan`, this is the partial results
+
+In a serial context, there is no difference between the 'progress' event and the 'sequentialProgress' event.
+
+In a parallel context, a 'sequentialProgress' is only fired when a job complete and all previously started jobs
+have finished too.
+
+Example with 5 jobs running in parallel mode, for different times:
+```
+Job #0 start
+Job #1 start
+Job #2 start
+Job #3 start
+Job #4 start
+Job #0 complete -> emit both 'progress' and 'sequentialProgress' event, with { progress: 1, sequentialProgress: 1, ... }
+Job #3 complete -> emit 'progress' event, with { progress: 2, sequentialProgress: 1, ... }
+Job #2 complete -> emit 'progress' event, with { progress: 3, sequentialProgress: 1, ... }
+Job #1 complete -> emit both 'progress' and 'sequentialProgress' event, with { progress: 4, sequentialProgress: 4, ... }
+Job #4 complete -> emit both 'progress' and 'sequentialProgress' event, with { progress: 5, sequentialProgress: 5, ... }
+```
+
+When job #1 complete, job #0, #1, #2 and #3 have completed, so a 'sequentialProgress' is emited.
 
 
 <a name="ref.async.ExecContext.event.resolved"></a>

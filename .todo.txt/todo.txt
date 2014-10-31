@@ -1,12 +1,13 @@
-(B) document async.queue() @doc
-(B) document plan.queue() @doc
+(B) document async.worker() @doc
+(B) document plan.worker() @doc
 (B) document plan.emitError() @doc
 (C) check Stack Overflow http://stackoverflow.com/questions/26613471/node-js-when-exactly-one-should-emit-a-drain-event @misc
 (B) check carefully conditionnal family async.Plan, many things have been done that can break it @check
 (B) document the 'prelaunch' status @doc
-(B) add a .end() method on ExecContext for queue @code
+(B) add a .end() method on ExecContext for worker @code
 true parallel mode, using either cluster/child_process or some thread lib (web worker, thread à gogo) @code
 (A) handle garbage collection so async.worker() can run forever without leaks @code
 (B) copy .parallelLimit from Plan to ExecContext, so it can be changed at runtime, useful for async.worker() @code
 (A) finish the .emitError() behaviour @code
 (B) add a .queueJobs() method to ExecContext, so we can add batch of job in one call @code
+(B) document 'sequentialProgress' event @doc
