@@ -1,5 +1,11 @@
 
 
+v0.5.5
+------
+
+New shorthand: async.callTimeout(). API still not freezed, no documentation right now.
+
+
 v0.5.4
 ------
 

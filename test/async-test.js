@@ -3441,6 +3441,42 @@ describe( "Events" , function() {
 
 
 
+describe( "async.callTimeout()" , function() {
+	
+	it( "should perform a call with timeout which will succeed in time and another one which will timeout, argument and this context should be passed correctly" , function( done ) {
+		
+		var completionCallback1 = function( error , result ) {
+			expect( error ).not.to.be.ok() ;
+			expect( result ).to.be( 'ok: hello world' ) ;
+		} ;
+		
+		var completionCallback2 = function( error , result ) {
+			expect( error ).to.be.ok() ;
+			expect( error ).to.be.an( Error ) ;
+			expect( error.message ).to.be( 'jobTimeout' ) ;
+			done() ;
+		} ;
+		
+		var object = {
+			prop: "property" ,
+			fn: function( arg1 , arg2 , t , callback ) {
+				expect( this ).to.be.an( Object ) ;
+				expect( this.prop ).to.be( "property" ) ;
+				
+				setTimeout( function() { callback( undefined , 'ok: ' + arg1 + ' ' + arg2 ) ; } , t ) ;
+			}
+		} ;
+		
+		async.callTimeout( 20 , completionCallback1 , object.fn , object , 'hello' , 'world' , 10 ) ;
+		async.callTimeout( 20 , completionCallback2 , object.fn , object , 'hello' , 'world' , 30 ) ;
+	} ) ;
+	
+	it( "async.timeout() retry feature..." ) ;
+	
+} ) ;
+
+
+
 describe( "Misc tests" , function() {
 	
 	it( "should trigger the callback even if no job is provided (empty array)" , function( done ) {
