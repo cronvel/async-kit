@@ -958,7 +958,7 @@ describe( "Jobs & async.Plan.prototype.execMapping(), adding input arguments to 
 
 describe( "*this*" , function() {
 	
-	it( "each job function should have *this* set to the current jobContext" , function( done ) {
+	it( "each job function should have *this* set to the current jobContext, jobCallback.jobContext should be an alternate way to access it" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -966,6 +966,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 0 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				expect( this.execContext.results ).to.eql( [ undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
@@ -978,6 +979,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 1 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ] , undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
@@ -990,6 +992,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 2 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				expect( this.execContext.results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], undefined ] ) ;
 				stats.startCounter[ id ] ++ ;
@@ -1014,6 +1017,7 @@ describe( "*this*" , function() {
 		] )
 		.using( function( id , result , expectedThisResults , callback ) {
 			expect( this ).to.be.an( async.JobContext ) ;
+			expect( callback.jobContext ).to.be( this ) ;
 			expect( this.execContext ).to.be.an( async.ExecContext ) ;
 			expect( this.execContext.results ).to.eql( expectedThisResults ) ;
 			stats.startCounter[ id ] ++ ;
@@ -1085,6 +1089,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 0 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				stats.startCounter[ id ] ++ ;
 				
@@ -1101,6 +1106,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 1 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				stats.startCounter[ id ] ++ ;
 				
@@ -1117,6 +1123,7 @@ describe( "*this*" , function() {
 			function( callback ) {
 				var id = 2 ;
 				expect( this ).to.be.an( async.JobContext ) ;
+				expect( callback.jobContext ).to.be( this ) ;
 				expect( this.execContext ).to.be.an( async.ExecContext ) ;
 				stats.startCounter[ id ] ++ ;
 				
@@ -1323,10 +1330,18 @@ describe( "ExecContext.getJobsStatus()" , function() {
 			expect( error ).not.to.be.ok() ;
 			
 			expect( jobsStatus[ 0 ].status ).to.be( 'ok' ) ;
+			
 			expect( jobsStatus[ 1 ].status ).to.be( 'failed' ) ;
-			expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+			
+			// Sometime 'timeout' kick in before execThen(), but it should be considered as a normal behaviour
+			//expect( jobsStatus[ 2 ].status ).to.be( 'pending' ) ;
+			expect( [ 'pending' , 'timeout' ] ).to.contain( jobsStatus[ 2 ].status ) ;
+			
 			expect( jobsStatus[ 3 ].status ).to.be( 'aborted' ) ;
-			expect( jobsStatus[ 4 ].status ).to.be( 'pending' ) ;
+			
+			// Same here
+			//expect( jobsStatus[ 4 ].status ).to.be( 'pending' ) ;
+			expect( [ 'pending' , 'timeout' ] ).to.contain( jobsStatus[ 4 ].status ) ;
 			
 			done() ;
 		} ) ;
@@ -2711,7 +2726,7 @@ describe( "async.Plan.prototype.retry()" , function() {
 		] )
 		.retry( 10 , 5 )
 		.exec( function( error , results ) {
-			console.log( arguments ) ;
+			//console.log( arguments ) ;
 			expect( error ).not.to.be.an( Error ) ;
 			expect( results ).to.eql( [ [ undefined , 'my' ] , [ undefined , 'wonderful' ] , [ undefined , 'result' ] ] ) ;
 			expect( stats.endCounter ).to.eql( [ 4, 6, 3 ] ) ;

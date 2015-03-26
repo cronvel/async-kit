@@ -1,5 +1,17 @@
 
 
+v0.5.8
+------
+
+Upgraded dependencies.
+
+
+v0.5.7
+------
+
+Now jobCallback contains .jobContext which is equals to *this*.
+
+
 v0.5.6
 ------
 
