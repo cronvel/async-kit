@@ -1,2 +1,3 @@
 (A) document async.callTimeout() @doc
 (A) document jobCallback.jobContext @doc
+(A) document this.abortLoop() @doc

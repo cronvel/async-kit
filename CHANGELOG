@@ -3,7 +3,7 @@
 v0.5.8
 ------
 
-Upgraded dependencies.
+New: jobContext.abortLoop(), since jobContext.abort() can be looped anyway.
 
 
 v0.5.7

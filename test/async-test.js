@@ -1061,25 +1061,6 @@ describe( "*this*" , function() {
 		) ;
 	} ) ;
 	
-	it( "should start a series of job, one of them call this.abort(), so it should abort the whole job's queue" , function( done ) {
-		
-		var stats = createStats( 3 ) ;
-		
-		async.series( [
-			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 50 , { abort: true } , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-		] )
-		.exec( function( error , results ) {
-			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ] ] ) ;
-			expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
-			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
-			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
 	it( "a job can register to the 'timeout' event, that will be triggered when using .timeout() when the job exceed the time limit" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
@@ -1143,6 +1124,105 @@ describe( "*this*" , function() {
 			expect( error ).to.be.ok() ;
 			expect( results ).to.eql( [ [ undefined, 'my' ] , [ new async.AsyncError( 'jobTimeout' ) ] , [ undefined, 'result' ] ] ) ;
 			expect( timeoutArray ).to.be.eql( [ false , true , false ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "JobContext.abort()" , function() {
+	
+	it( "should start a series of sync job, one of them call this.abort(), so it should abort the whole job's queue" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.series( [
+			[ syncJob , stats , 0 , {} , [ undefined , 'my' ] ] ,
+			[ syncJob , stats , 1 , { abort: true } , [ undefined , 'wonderful' ] ] ,
+			[ syncJob , stats , 2 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "should start a series of async job, one of them call this.abort(), so it should abort the whole job's queue" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		
+		async.series( [
+			[ asyncJob , stats , 0 , 20 , {} , [ undefined , 'my' ] ] ,
+			[ asyncJob , stats , 1 , 50 , { abort: true } , [ undefined , 'wonderful' ] ] ,
+			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "a job within a while loop, calling this.abort(), cannot abort the whole loop" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		var count = -1 ;
+		
+		async.while( function( error , results , callback ) {
+			count ++ ;
+			callback( count < 3 ) ;
+		} )
+		.do( [
+			function( callback ) {
+				stats.startCounter[ count ] ++ ;
+				stats.endCounter[ count ] ++ ;
+				stats.order.push( count ) ;
+				if ( count === 1 ) { this.abort( undefined , count ) ; }
+				else { callback( undefined , count ) ; }
+			}
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [ [ undefined, 2 ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+	
+	it( "should run a job within a while loop, one of them call this.abortLoop(), so it should abort the whole loop" , function( done ) {
+		
+		var stats = createStats( 3 ) ;
+		var count = -1 ;
+		
+		async.while( function( error , results , callback ) {
+			count ++ ;
+			callback( count < 3 ) ;
+		} )
+		.do( [
+			function( callback ) {
+				stats.startCounter[ count ] ++ ;
+				stats.endCounter[ count ] ++ ;
+				stats.order.push( count ) ;
+				if ( count === 1 ) { this.abortLoop( undefined , count ) ; }
+				else { callback( undefined , count ) ; }
+			}
+		] )
+		.exec( function( error , results ) {
+			expect( error ).not.to.be.an( Error ) ;
+			expect( results ).to.eql( [ [ undefined, 1 ] ] ) ;
+			expect( stats.startCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.endCounter ).to.eql( [ 1, 1, 0 ] ) ;
+			expect( stats.order ).to.eql( [ 0, 1 ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
