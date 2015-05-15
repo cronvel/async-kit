@@ -3566,7 +3566,38 @@ describe( "async.callTimeout()" , function() {
 		async.callTimeout( 20 , completionCallback2 , object.fn , object , 'hello' , 'world' , 30 ) ;
 	} ) ;
 	
-	it( "async.timeout() retry feature..." ) ;
+} ) ;
+
+
+
+describe( "async.wrapper.timeout()" , function() {
+	
+	it( "should create a wrapper around an asynchronous function, that call automatically the callback with an error after a predefined time (and also ensure the callback is called only once)" , function( done ) {
+		
+		var object = {
+			prop: "property" ,
+			fn: function( arg1 , arg2 , t , callback ) {
+				expect( this ).to.be.an( Object ) ;
+				expect( this.prop ).to.be( "property" ) ;
+				
+				setTimeout( function() { callback( undefined , 'ok: ' + arg1 + ' ' + arg2 ) ; } , t ) ;
+			}
+		} ;
+		
+		object.fnWrapper = async.wrapper.timeout( object.fn , 20 ) ;
+		
+		object.fnWrapper( 'hello' , 'world' , 10 , function( error , result ) {
+			expect( error ).not.to.be.ok() ;
+			expect( result ).to.be( 'ok: hello world' ) ;
+		} ) ;
+		
+		object.fnWrapper( 'hello' , 'world' , 30 , function( error , result ) {
+			expect( error ).to.be.ok() ;
+			expect( error ).to.be.an( Error ) ;
+			expect( error.message ).to.be( 'Timeout' ) ;
+			done() ;
+		} ) ;
+	} ) ;
 	
 } ) ;
 

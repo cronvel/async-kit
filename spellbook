@@ -46,6 +46,7 @@ formula
 	summon
 		package.json
 		lib/async.js
+		lib/wrapper.js
 		test/async-test.js
 	
 	cast
@@ -58,13 +59,14 @@ formula
 .hint
 	summon
 		lib/async.js
+		lib/wrapper.js
 		test/async-test.js
 	
 	cast
 		npm-dev-install
 	
 	scroll
-		${jshint} lib/async.js test/async-test.js
+		${jshint} lib/async.js lib/wrapper.js test/async-test.js
 
 # Publish to NPM & Git
 .publish
@@ -106,6 +108,7 @@ formula
 .upgrade-version
 	summon
 		lib/async.js
+		lib/wrapper.js
 		test/async-test.js
 		documentation.md
 	scroll
@@ -122,6 +125,7 @@ formula
 		spellbook
 		package.json
 		lib/async.js
+		lib/wrapper.js
 		test/async-test.js
 	scroll
 		# 'npm version patch' create the git tag by itself... 
@@ -140,6 +144,7 @@ formula
 	summon
 		package.json
 		lib/async.js
+		lib/wrapper.js
 		test/async-test.js
 		header-bdd-spec.md
 	

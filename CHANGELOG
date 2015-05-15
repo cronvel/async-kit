@@ -1,5 +1,11 @@
 
 
+v0.5.9
+------
+
+New: async.wrapper.timeout(), a wrapper for asynchronous function. Not documented yet.
+
+
 v0.5.8
 ------
 
