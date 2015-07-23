@@ -1,5 +1,11 @@
 
 
+v0.5.10
+-------
+
+Fixed an error in the documentation (async.foreach()).
+
+
 v0.5.9
 ------
 

@@ -544,7 +544,7 @@ Example:
 ```js
 var myArray = [ 'one' , 'two' , 'three' ] ;
 
-async.foreach( myArray , function( key , element , callback ) {
+async.foreach( myArray , function( element , callback ) {
 	// Called three time, with element's value: 'one', then 'two', then 'three'
 	doSomethingAsyncWithElement( element , callback ) ;
 } )
