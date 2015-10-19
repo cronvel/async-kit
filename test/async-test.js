@@ -603,26 +603,7 @@ describe( "Jobs & async.Plan.prototype.using()" , function() {
 
 describe( "Jobs scheduling with async.prototype.nice()" , function() {
 	
-	it( "using .nice( -3 ), it should run the series of job with synchonous scheduling" , function( done ) {
-		
-		var stats = createStats( 3 ) ;
-		
-		async.series( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-		] )
-		.nice( -3 )
-		.exec( function( error , results ) {
-			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.eql( [ 0, 1, 2 ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "using .nice( -2 ), it should run the series of job with an async scheduling (nextTick)" , function( done ) {
+	it( "using .nice( -2 ), it should run the series of job with synchonous scheduling" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -679,26 +660,7 @@ describe( "Jobs scheduling with async.prototype.nice()" , function() {
 		} ) ;
 	} ) ;
 	
-	it( "using .nice( -3 ), it should run the jobs in parallel with synchonous scheduling" , function( done ) {
-		
-		var stats = createStats( 3 ) ;
-		
-		async.parallel( [
-			[ asyncJob , stats , 0 , 50 , {} , [ undefined , 'my' ] ] ,
-			[ asyncJob , stats , 1 , 100 , {} , [ undefined , 'wonderful' ] ] ,
-			[ asyncJob , stats , 2 , 0 , {} , [ undefined , 'result' ] ]
-		] )
-		.nice( -3 )
-		.exec( function( error , results ) {
-			expect( error ).not.to.be.an( Error ) ;
-			expect( results ).to.eql( [ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ] ) ;
-			expect( stats.endCounter ).to.eql( [ 1, 1, 1 ] ) ;
-			expect( stats.order ).to.eql( [ 2, 0, 1 ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "using .nice( -2 ), it should run the jobs in parallel with an async scheduling (nextTick)" , function( done ) {
+	it( "using .nice( -2 ), it should run the jobs in parallel with synchonous scheduling" , function( done ) {
 		
 		var stats = createStats( 3 ) ;
 		
@@ -3620,16 +3582,9 @@ describe( "Misc tests" , function() {
 
 describe( "Async EventEmitter" , function() {
 	
-	it( "should emit synchronously, with a synchronous flow (nice=-3)" , function( done ) {
-		asyncEventTest( -3 , function( order ) {
-			expect( order ).to.eql( [ 'listener' , 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "should emit asynchronously, with an asynchronous flow, as fast as possible (nice=-2 -> nextTick)" , function( done ) {
+	it( "should emit synchronously, with a synchronous flow (nice=-2)" , function( done ) {
 		asyncEventTest( -2 , function( order ) {
-			expect( order ).to.eql( [ 'flow' , 'listener' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
+			expect( order ).to.eql( [ 'listener' , 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
 			done() ;
 		} ) ;
 	} ) ;
@@ -3665,6 +3620,29 @@ describe( "Async EventEmitter" , function() {
 	it( "should emit asynchronously, with an asynchronous flow, with a 30ms delay (nice=3 -> setTimeout 30ms)" , function( done ) {
 		asyncEventTest( 3 , function( order ) {
 			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' , 'listener' ] ) ;
+			done() ;
+		} ) ;
+	} ) ;
+} ) ;
+
+
+
+describe( "'Maximum call stack size exceeded' prevention" , function() {
+	
+	it( "nice -20 (the new default) should call setImmediate() once every 190 recursive synchronous calls" , function( done ) {
+		
+		//this.timeout( 5000 ) ;
+		
+		var i , array = [] ;
+		
+		for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
+		
+		async.foreach( array , function( element , k , foreachCallback ) {
+			//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
+			foreachCallback() ;
+		} )
+		.nice( -20 )
+		.exec( function() {
 			done() ;
 		} ) ;
 	} ) ;

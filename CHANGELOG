@@ -1,5 +1,17 @@
 
 
+v0.6.0
+------
+
+Breaking change: 'nice' value now works differently:
+* the process.nextTick() variation doesn't exist anymore
+* starting at nice=-2, the async.EventEmitter will emit synchronously for 10 recursions, the 11th recursion will emit
+	using setImmediate()
+* nice=-3 will emit synchronously for 20 recursions...
+* nice=-4 will emit synchronously for 30 recursions...
+* and so on...
+
+
 v0.5.10
 -------
 
