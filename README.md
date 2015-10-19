@@ -1339,20 +1339,18 @@ If *defaultAggregate* is set, this is what will be used as the starting value fo
 <a name="ref.async.Plan.nice"></a>
 ### .nice( niceness )
 
-* niceness `Number` between *-3* and `Infinity`
+* niceness `Number`, any number is ok but recommended values are between *-20* and *+20*
 
 This try to mimic the unix command `nice` and `renice`.
 This set up how the job's scheduler behaves.
 
 It depends on the *niceness* value:
-* *-3* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
-  everything will be synchronous and will be executed in one code flow, in that particular case, there will be no difference
-  between `async.series()` or `async.parallel()`. 
-* *-2* is for asynchronous scheduling, it uses `process.nextTick()` internally. Basicly, it will run almost as fast as
-  synchronous mode, but each time the scheduler kick in, it will run new jobs in another code execution flow.
-  This still let us time to define things after `.exec()` that will be run before any synchronous or asynchronous jobs.
-  Also it will schedule before I/O most of times
-  (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
+* *<=-2* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
+  everything will be synchronous and will be executed in one code flow for at most *N* recursion, where *N=1O* for *nice=-2*,
+  *N=2O* for *nice=-3*, *N=3O* for *nice=-4*, and so on... When the maximum recursion counter is reached, the next job will
+  use `setImmediate()` internally. This prevent from the *Maximum call stack size exceeded* error when callbacks are synchronous,
+  and give some breath for I/O when dealing with CPU-bound tasks. As long as things are synchronous, there will be no
+  difference between `async.series()` or `async.parallel()`. 
 * *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
   (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
 * *>=0* is for asynchronous scheduling, it uses `setTimeout()` internally. This scheduling allows I/O to be performed
@@ -1360,12 +1358,13 @@ It depends on the *niceness* value:
   means that the scheduler will delay further action for 100ms
   (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
 
-By default, if `.nice()` is not called, the scheduler is synchronous.
+By default, if `.nice()` is not called, the nice value is -20 (i.e. synchronous for at most 190 recursions).
 
-Synchronous scheduling is just fine in usual case.
-However, we may have **stack overflow** issues if loop, `.retry()` or just an huge job's list is involved, because everything
-use nested callback the way we would have done it, those nested callback are just abstracted away by the lib,
-but still remains behind the scene.
+Full synchronous scheduling may cause *Maximum call stack size exceeded* issues if loop, `.retry()` or just an huge job's
+list is involved, because everything use nested callback the way we would have done it, those nested callback are just
+abstracted away by the lib, but still remains behind the scene.
+That's why **starting at v0.6.0**, there isn't full synchronous scheduling anymore: once in a while, an asynchronous call
+will be triggered. Do not drop the nice value below -20, which provide at most 190 recursions.
 
 Asynchronous scheduling uses the javascript's *event loop*, so there is no more infinite nested callback possible.
 It can scale better for big job's list, loop and `.retry()`...
@@ -1956,18 +1955,17 @@ This try to mimic the unix command `nice` and `renice`.
 This set up how the *asyncness* behaves.
 
 It depends on the *niceness* value:
-* *-3* is for synchronous event emiting: just like core Node.js `.emit()` methods, listeners are called right now,
-  just like a function call.
-* *-2* is for asynchronous event emiting, using `process.nextTick()` internally. Basicly, it will run almost as fast as
-  synchronous mode, but it will run listeners in another code execution flow, so any code following the event emitting
-  will run before listeners. Also listeners will be called before I/O most of times
-  (see [process.nextTick()](http://nodejs.org/api/process.html#process_process_nexttick_callback) for details).
-* *-1* is for asynchronous event emiting, using `setImmediate()` internally. This allows I/O to be performed
-  before listeners
+* *<=-2* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
+  everything will be synchronous and will be executed in one code flow for at most *N* recursion, where *N=1O* for *nice=-2*,
+  *N=2O* for *nice=-3*, *N=3O* for *nice=-4*, and so on... When the maximum recursion counter is reached, the next job will
+  use `setImmediate()` internally. This prevent from the *Maximum call stack size exceeded* error when callbacks are synchronous,
+  and give some breath for I/O when dealing with CPU-bound tasks. As long as things are synchronous, there will be no
+  difference between `async.series()` or `async.parallel()`. 
+* *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
   (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
-* *>=0* is for asynchronous event emiting, using `setTimeout()` internally. This allows I/O and much more to be
-  performed before listeners. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`,
-  so using `.nice(10)` means that listeners will be delayed for at least 100ms
+* *>=0* is for asynchronous scheduling, it uses `setTimeout()` internally. This scheduling allows I/O to be performed
+  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
+  means that the scheduler will delay further action for 100ms
   (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
 
 
