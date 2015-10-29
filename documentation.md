@@ -1995,19 +1995,19 @@ Otherwise, use directly `.asyncEmit()` or `.syncEmit()`.
 * code `number` the exit code
 * timeout `number` the maximum time allowed for each underlying listener before aborting, default to 1000 (ms).
 
-This is a replacement for `process.exit()`, that is async-friendly.
+This is a replacement for `process.exit()`, that is **async-friendly**.
 
 When `process.exit()` is called, the 'exit' event is emited on the `process` object, and each listener can perform a last
 synchronous task before the whole process exit. Sadly, a lot of things in Node.js are working asynchronously, and thus cannot
 be handled properly that way.
 
-But thanks to `async.exit()` those old days are gone!
+**But thanks to `async.exit()` those old days are gone!**
 
 When you call `async.exit()`, it emits the 'asyncExit' event on the `process` object.
 
 There are two kinds of listeners:
 
-* `function( [code] , [timeout] )` listeners, that does not have a callback, they are interested in the event but they don't need
+* `function( [code] , [timeout] )` listeners, that does not have a callback, are interested in the event but they don't need
 	to perform critical tasks or they can handle critical tasks synchronously. E.g.: a server that will not accept connection
 	or data anymore after receiving this event.
 
@@ -2015,9 +2015,9 @@ There are two kinds of listeners:
 	before exiting. E.g.: a server that needs to gracefully exit will not accept connection or data anymore, but it still
 	has to finish client request still in progress.
 
-Note that *code* and *timeout* arguments passed to listeners are actual value processed by `async.exit()`.
+Note that *code* and *timeout* arguments passed to listeners are actual values processed by `async.exit()`.
 
-So `async.exit()` will simply wait for all listeners having a *completionCallback* to trigger it (or being timeout) before exiting.
+So `async.exit()` will simply wait for all listeners having a *completionCallback* to trigger it (or being timed out) before exiting.
 
 Example:
 
@@ -2053,7 +2053,7 @@ Short task finished
 ```
 
 Note how the `setTimeout`'s function is not executed in the second event handler: this handler does not accept a callback,
-hence the process will exit as soon as the first handler is done.
+hence the process will exit as soon as the first handler is done: after 100ms.
 
 
 
