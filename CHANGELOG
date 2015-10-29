@@ -1,9 +1,16 @@
 
 
+v0.6.2
+------
+
+Introducing async.exit(): exit node.js async-friendly!
+
+
 v0.6.1
 ------
 
 Documentation of the 0.6.0 breaking changes.
+
 
 v0.6.0
 ------

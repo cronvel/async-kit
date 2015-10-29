@@ -43,6 +43,7 @@
     "loop",
     "callback",
     "retry",
+    "exit",
     "events",
     "scheduler",
     "progress",

@@ -3650,3 +3650,10 @@ describe( "'Maximum call stack size exceeded' prevention" , function() {
 
 
 
+describe( "async.exit()" , function() {
+	
+	it( "async.exit()" )
+} ) ;
+
+
+

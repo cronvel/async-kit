@@ -94,6 +94,7 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 
 ### Misc
 
+* [Async exit](#ref.async.exit)
 * [Async event emitter class](#ref.async.eventEmitter)
 
 
@@ -371,6 +372,8 @@ To clean everything that can be automatically regenerated: `make clean` or `spel
 	* [.asyncEmit()](#ref.async.eventEmitter.asyncEmit)
 	* [.nice()](#ref.async.eventEmitter.nice)
 	* [.defaultEmitIsAsync()](#ref.async.eventEmitter.defaultEmitIsAsync)
+* [Misc utilities](#ref.misc)
+	* [async.exit](#ref.async.exit)
 
 
 
@@ -1980,6 +1983,79 @@ If *isAsync* is `true`, the `.emit()` method is a copy of `.asyncEmit()`, else i
 Can be useful if we plan to change a whole bunch of code relying on core Node.js `events.eventEmitter`.
 
 Otherwise, use directly `.asyncEmit()` or `.syncEmit()`.
+
+
+
+<a name="ref.misc"></a>
+## Misc utilities
+
+<a name="ref.async.exit"></a>
+### async.exit( code , timeout )
+
+* code `number` the exit code
+* timeout `number` the maximum time allowed for each underlying listener before aborting, default to 1000 (ms).
+
+This is a replacement for `process.exit()`, that is async-friendly.
+
+When `process.exit()` is called, the 'exit' event is emited on the `process` object, and each listener can perform a last
+synchronous task before the whole process exit. Sadly, a lot of things in Node.js are working asynchronously, and thus cannot
+be handled properly that way.
+
+But thanks to `async.exit()` those old days are gone!
+
+When you call `async.exit()`, it emits the 'asyncExit' event on the `process` object.
+
+There are two kinds of listeners:
+
+* `function( [code] , [timeout] )` listeners, that does not have a callback, they are interested in the event but they don't need
+	to perform critical tasks or they can handle critical tasks synchronously. E.g.: a server that will not accept connection
+	or data anymore after receiving this event.
+
+* `function( code , timeout , completionCallback )` listeners, that do have a callback, have some critical async tasks to perform
+	before exiting. E.g.: a server that needs to gracefully exit will not accept connection or data anymore, but it still
+	has to finish client request still in progress.
+
+Note that *code* and *timeout* arguments passed to listeners are actual value processed by `async.exit()`.
+
+So `async.exit()` will simply wait for all listeners having a *completionCallback* to trigger it (or being timeout) before exiting.
+
+Example:
+
+```js
+process.on( 'asyncExit' , function( code , timeout , callback ) {
+	
+	console.log( 'asyncExit event received - starting a short task' ) ;
+	
+	setTimeout( function() {
+		console.log( 'Short task finished' ) ;
+		callback() ;
+	} , 100 ) ;
+} ) ;
+
+process.on( 'asyncExit' , function( code , timeout ) {
+	
+	console.log( 'asyncExit event received - non-critical task' ) ;
+	
+	setTimeout( function() {
+		console.log( 'Critical task finished' ) ;
+	} , 200 ) ;
+} ) ;
+
+async.exit( 5 , 500 ) ;
+```
+
+After 100ms, it will produce:
+
+```
+asyncExit event received - starting a short task
+asyncExit event received - non-critical task
+Short task finished
+```
+
+Note how the `setTimeout`'s function is not executed in the second event handler: this handler does not accept a callback,
+hence the process will exit as soon as the first handler is done.
+
+
 
 
 
