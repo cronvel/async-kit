@@ -2037,7 +2037,7 @@ process.on( 'asyncExit' , function( code , timeout ) {
 	console.log( 'asyncExit event received - non-critical task' ) ;
 	
 	setTimeout( function() {
-		console.log( 'Critical task finished' ) ;
+		console.log( 'Non-critical task finished' ) ;
 	} , 200 ) ;
 } ) ;
 
