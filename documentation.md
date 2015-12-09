@@ -1952,7 +1952,7 @@ The [*nice*](#ref.async.eventEmitter.nice) value controle the *asyncness*.
 <a name="ref.async.eventEmitter.nice"></a>
 ### .nice( niceness )
 
-* niceness `Number` between *-3* and `Infinity`
+* niceness `Number` between `-Infinity` and `Infinity`
 
 This try to mimic the unix command `nice` and `renice`.
 This set up how the *asyncness* behaves.
