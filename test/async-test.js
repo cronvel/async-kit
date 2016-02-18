@@ -43,6 +43,8 @@
 		.execArgs()
 */
 
+"use strict" ;
+
 
 
 var async = require( '../lib/async.js' ) ;

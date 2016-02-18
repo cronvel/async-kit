@@ -1,6 +1,6 @@
 {
   "name": "async-kit",
-  "version": "0.6.8",
+  "version": "0.6.9",
   "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
   "main": "lib/async.js",
   "directories": {
