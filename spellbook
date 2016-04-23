@@ -8,6 +8,9 @@
 formula
 	mocha:./node_modules/.bin/mocha
 	jshint:./node_modules/.bin/jshint --verbose
+	browserify:./node_modules/.bin/browserify
+	uglify:./node_modules/.bin/uglifyjs
+	testling:./node_modules/.bin/testling
 
 
 
@@ -22,6 +25,8 @@ formula
 		npm-install
 	
 	summon
+		browser/async.js
+		browser/async.min.js
 		README.md
 		bdd-spec.md
 
@@ -41,12 +46,48 @@ formula
 		hint
 		bdd
 
+# Build
+.build
+	cast
+		browser
+
+# Build the browser lib
+.browser
+	summon
+		browser/async.js
+		browser/async.min.js
+
+# Testling: Browser-side Mocha
+.browser-test
+	summon
+		lib/browser.js
+		lib/core.js
+		lib/wrapper.js
+		test/async-test.js
+	
+	scroll
+		echo No browser test
+
+.browser-test-broken
+	summon
+		lib/browser.js
+		lib/core.js
+		lib/wrapper.js
+		test/async-test.js
+	
+	scroll
+		echo -ne "\x1b[33mReminder: On linux, Xvfb should be installed!\x1b[0m\n"
+		killall Xvfb ; sleep 1
+		${testling}
+
 # Run bdd tests
 .bdd
 	summon
 		package.json
 		lib/async.js
+		lib/core.js
 		lib/wrapper.js
+		lib/exit.js
 		test/async-test.js
 	
 	cast
@@ -59,20 +100,24 @@ formula
 .hint
 	summon
 		lib/async.js
+		lib/core.js
 		lib/wrapper.js
+		lib/exit.js
+		lib/browser.js
 		test/async-test.js
 	
 	cast
 		npm-dev-install
 	
 	scroll
-		${jshint} lib/async.js lib/wrapper.js test/async-test.js
+		${jshint} lib/*.js test/async-test.js
 
 # Publish to NPM & Git
 .publish
 	cast
 		npm-publish
 		git-push
+
 
 
 
@@ -144,13 +189,33 @@ formula
 	summon
 		package.json
 		lib/async.js
+		lib/core.js
 		lib/wrapper.js
+		lib/exit.js
 		test/async-test.js
 		header-bdd-spec.md
 	
 	scroll
 		cp header-bdd-spec.md bdd-spec.md
 		${mocha} test/async-test.js -R markdown >> bdd-spec.md
+
+# Build the browser lib
+:browser/async.js
+	summon
+		lib/browser.js
+		lib/core.js
+		lib/wrapper.js
+	
+	scroll
+		${browserify} lib/browser.js -i process -s async -o browser/async.js
+
+# Build the browser minified lib
+:browser/async.min.js
+	summon
+		browser/async.js
+	
+	scroll
+		${uglify} browser/async.js -o browser/async.min.js -m
 
 :README.md
 	summon

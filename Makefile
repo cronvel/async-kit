@@ -14,6 +14,15 @@ clean: ./node_modules/spellcast/bin/spellcast
 test: ./node_modules/spellcast/bin/spellcast
 	./node_modules/spellcast/bin/spellcast test
 
+build: ./node_modules/spellcast/bin/spellcast
+	./node_modules/spellcast/bin/spellcast build
+
+browser: ./node_modules/spellcast/bin/spellcast
+	./node_modules/spellcast/bin/spellcast browser
+
+browser-test: ./node_modules/spellcast/bin/spellcast
+	./node_modules/spellcast/bin/spellcast browser-test
+
 bdd: ./node_modules/spellcast/bin/spellcast
 	./node_modules/spellcast/bin/spellcast bdd
 
@@ -44,6 +53,12 @@ git-push: ./node_modules/spellcast/bin/spellcast
 bdd-spec.md: ./node_modules/spellcast/bin/spellcast
 	./node_modules/spellcast/bin/spellcast bdd-spec.md
 
+browser/async.js: ./node_modules/spellcast/bin/spellcast
+	./node_modules/spellcast/bin/spellcast browser/async.js
+
+browser/async.min.js: ./node_modules/spellcast/bin/spellcast
+	./node_modules/spellcast/bin/spellcast browser/async.min.js
+
 README.md: ./node_modules/spellcast/bin/spellcast
 	./node_modules/spellcast/bin/spellcast README.md
 
@@ -51,5 +66,5 @@ README.md: ./node_modules/spellcast/bin/spellcast
 	npm install spellcast
 
 # Make every rules 'PHONY' rules, let Spellcast handle dependencies and everything else.
-.PHONY: summon dev-summon clean test bdd hint publish npm-install npm-dev-install npm-publish upgrade-version check-master git-push bdd-spec.md README.md
+.PHONY: summon dev-summon clean test build browser browser-test bdd hint publish npm-install npm-dev-install npm-publish upgrade-version check-master git-push bdd-spec.md browser/async.js browser/async.min.js README.md
 

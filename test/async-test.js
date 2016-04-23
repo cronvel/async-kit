@@ -3,7 +3,7 @@
 	
 	The MIT License (MIT)
 	
-	Copyright (c) 2009-2014 Cédric Ronvel 
+	Copyright (c) 2009 - 2016 Cédric Ronvel 
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -3652,10 +3652,12 @@ describe( "'Maximum call stack size exceeded' prevention" , function() {
 
 
 
-describe( "async.exit()" , function() {
-	
-	it( "async.exit()" )
-} ) ;
-
+if ( ! async.isBrowser )
+{
+	describe( "async.exit()" , function() {
+		
+		it( "async.exit()" )
+	} ) ;
+}
 
 
