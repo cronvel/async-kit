@@ -1,19 +1,21 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.async = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
-	Copyright (c) 2016 Cédric Ronvel 
+	Async Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
 	
 	The MIT License (MIT)
-
+	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
+	
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
+	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -42,11 +44,11 @@ module.exports.isBrowser = true ;
 
 },{"./core.js":2,"./wrapper.js":3}],2:[function(require,module,exports){
 /*
-	The Cedric's Swiss Knife (CSK) - CSK Async lib
+	Async Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
 	
 	The MIT License (MIT)
-	
-	Copyright (c) 2009 - 2016 Cédric Ronvel 
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -55,16 +57,16 @@ module.exports.isBrowser = true ;
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 	
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
 	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
 */
 
 
@@ -105,7 +107,7 @@ module.exports.isBrowser = true ;
 
 
 // Load modules dependencies
-var events = require( 'events' ) ;
+var NextGenEvents = require( 'nextgen-events' ) ;
 var treeExtend = require( 'tree-kit/lib/extend.js' ) ;
 
 
@@ -114,101 +116,6 @@ var async = {} ;
 module.exports = async ;
 
 
-
-			/////////////////////////
-			// Async Event Emitter //
-			/////////////////////////
-
-
-
-// Extend EventEmitter, to allow asyncEmit
-async.EventEmitter = function EventEmitter( asyncNice )
-{
-	this.asyncNice = parseInt( asyncNice ) ;
-	this.recursion = 0 ;
-} ;
-
-async.EventEmitter.prototype = Object.create( events.EventEmitter.prototype ) ;
-async.EventEmitter.prototype.syncEmit = async.EventEmitter.prototype.emit ;
-async.EventEmitter.prototype.constructor = async.EventEmitter ;
-
-
-
-// Send an event, the async way
-async.EventEmitter.prototype.asyncEmit = function asyncEmit()
-{
-	var self = this , nice , args ;
-	
-	if ( typeof arguments[ 0 ] === 'number' )
-	{
-		nice = arguments[ 0 ] ;
-		args = Array.prototype.slice.call( arguments , 1 ) ;
-	}
-	else
-	{
-		nice = this.asyncNice ;
-		args = arguments ;
-	}
-	
-	if ( nice === undefined ) { nice = -1 ; }
-	
-	this.recursion = 1 + ( this.recursion || 0 ) ;
-	
-	try {
-		if ( nice < 0 )
-		{
-			if ( this.recursion > ( - 1 - nice ) * 10 )
-			{
-				setImmediate( function() { self.syncEmit.apply( self , args ) ; } ) ;
-			}
-			else
-			{
-				self.syncEmit.apply( self , args ) ;
-			}
-		}
-		else
-		{
-			setTimeout( function() { self.syncEmit.apply( self , args ) ; } , self.asyncNice * 10 ) ;
-		}
-	}
-	catch ( error ) {
-		// Catch error, just to decrement this.recursion, re-throw after that...
-		this.recursion -- ;
-		throw error ;
-	}
-	
-	this.recursion -- ;
-	
-	return this ;
-} ;
-
-
-
-// Set the nice value for this emitter
-async.EventEmitter.prototype.nice = function nice( asyncNice )
-{
-	this.asyncNice = Math.floor( +asyncNice || 0 ) ;
-	return this ;
-} ;
-
-
-
-// Set the default .emit() method:
-// - if true or undefined: .asyncEmit()
-// - if false: .syncEmit()
-async.EventEmitter.prototype.defaultEmitIsAsync = function defaultEmitIsAsync( isAsync )
-{
-	if ( isAsync === undefined || isAsync )
-	{
-		async.EventEmitter.prototype.emit = async.EventEmitter.prototype.asyncEmit ;
-	}
-	else
-	{
-		async.EventEmitter.prototype.emit = async.EventEmitter.prototype.syncEmit ;
-	}
-	
-	return this ;
-} ;
 
 
 
@@ -243,7 +150,7 @@ async.Plan = function Plan()
 	throw new Error( "[async] Cannot create an async Plan object directly" ) ;
 } ;
 
-//async.Plan.prototype = Object.create( async.EventEmitter.prototype ) ;
+//async.Plan.prototype = Object.create( NextGenEvents.prototype ) ;
 async.Plan.prototype.constructor = async.Plan ;
 
 
@@ -1186,7 +1093,7 @@ async.Plan.prototype.execJob = function execJob( execContext , job , indexOfKey 
 	execContext.jobsStatus[ key ].tried ++ ;
 	
 	// Set up the nice value? For instance only syncEmit() are used
-	//jobContext.nice( this.asyncEventNice ) ;
+	//jobContext.setNice( this.asyncEventNice ) ;
 	
 	
 	if ( typeof this.jobsUsing === 'function' )
@@ -1297,7 +1204,7 @@ async.Plan.prototype.execJob = function execJob( execContext , job , indexOfKey 
 		execContext.jobsTimeoutTimers[ key ] = setTimeout( function() {
 			execContext.jobsTimeoutTimers[ key ] = undefined ;
 			execContext.jobsStatus[ key ].status = 'timeout' ;
-			jobContext.syncEmit( 'timeout' ) ;
+			jobContext.emit( 'timeout' ) ;
 			self.execCallback.call( self , jobContext , new async.AsyncError( 'jobTimeout' ) ) ;
 		} , this.jobsTimeout ) ;
 	}
@@ -1336,7 +1243,7 @@ async.JobContext = function JobContext()
 } ;
 
 // Extends it from EventEmitter
-async.JobContext.prototype = Object.create( async.EventEmitter.prototype ) ;
+async.JobContext.prototype = Object.create( NextGenEvents.prototype ) ;
 async.JobContext.prototype.constructor = async.JobContext ;
 
 
@@ -1373,7 +1280,7 @@ async.ExecContext = function ExecContext()
 } ;
 
 // Extends it from EventEmitter
-async.ExecContext.prototype = Object.create( async.EventEmitter.prototype ) ;
+async.ExecContext.prototype = Object.create( NextGenEvents.prototype ) ;
 async.ExecContext.prototype.constructor = async.ExecContext ;
 
 
@@ -1476,7 +1383,7 @@ function execDoInit( config , fromExecContext )
 	}
 	
 	// Set up the nice value
-	execContext.nice( this.asyncEventNice ) ;
+	execContext.setNice( this.asyncEventNice ) ;
 	
 	
 	// Initialize event listeners, only the first time
@@ -1508,7 +1415,7 @@ function execDoInit( config , fromExecContext )
 		if ( this.whileAction && this.whileActionBefore )
 		{
 			execContext.whileIterator = -1 ;
-			execContext.root.asyncEmit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) ) ;
+			execContext.root.emit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) , null ) ;
 			return this ;
 		}
 	}
@@ -1516,8 +1423,8 @@ function execDoInit( config , fromExecContext )
 	// If no jobs are provided, then exit right now
 	if ( execContext.jobsKeys.length <= 0 )
 	{
-		execContext.root.asyncEmit( 'resolved' , execContext.error , execContext.results ) ;
-		execContext.root.asyncEmit( 'progress' , {
+		execContext.root.emit( 'resolved' , execContext.error , execContext.results ) ;
+		execContext.root.emit( 'progress' , {
 				resolved: execContext.resolved ,
 				ok: execContext.ok ,
 				failed: execContext.failed ,
@@ -1527,15 +1434,15 @@ function execDoInit( config , fromExecContext )
 			} ,
 			execContext.error , execContext.results
 		) ;
-		execContext.root.asyncEmit( 'finish' , execContext.error , execContext.results ) ;
+		execContext.root.emit( 'finish' , execContext.error , execContext.results ) ;
 		return execContext.root ;
 	}
 	
 	// Run...
-	execContext.root.asyncEmit( 'next' , execContext ) ;
+	execContext.root.emit( 'next' , execContext ) ;
 	
 	// If uncommented, «if» will emit a «progress» event too, which we don't want
-	//execContext.root.asyncEmit( 'progress' , { resolved: execContext.resolved , pending: execContext.pending , waiting: execContext.waiting , loop: execContext.whileIterator } , execContext.results ) ;
+	//execContext.root.emit( 'progress' , { resolved: execContext.resolved , pending: execContext.pending , waiting: execContext.waiting , loop: execContext.whileIterator } , execContext.results ) ;
 	
 	return execContext.root ;
 }
@@ -1773,10 +1680,10 @@ function execDoCallback( jobContext , error )
 	}
 	
 	// Emit events, the order matter
-	if ( emitResolved ) { execContext.root.asyncEmit( 'resolved' , execContext.error , execContext.results ) ; }
-	if ( emitNext ) { execContext.root.asyncEmit( 'next' , execContext ) ; }
-	if ( emitWhile ) { execContext.root.asyncEmit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) ) ; }
-	execContext.root.asyncEmit( 'progress' , {
+	if ( emitResolved ) { execContext.root.emit( 'resolved' , execContext.error , execContext.results ) ; }
+	if ( emitNext ) { execContext.root.emit( 'next' , execContext ) ; }
+	if ( emitWhile ) { execContext.root.emit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) , null ) ; }
+	execContext.root.emit( 'progress' , {
 			resolved: execContext.resolved ,
 			ok: execContext.ok ,
 			failed: execContext.failed ,
@@ -1786,7 +1693,7 @@ function execDoCallback( jobContext , error )
 		} ,
 		execContext.error , execContext.results
 	) ;
-	if ( emitFinish ) { execContext.root.asyncEmit( 'finish' , execContext.error , execContext.results ) ; }
+	if ( emitFinish ) { execContext.root.emit( 'finish' , execContext.error , execContext.results ) ; }
 }
 
 
@@ -1822,9 +1729,9 @@ function execWhileCallback( execContext )
 	}
 	
 	// Emit events, the order is important
-	if ( emitResolved ) { execContext.root.asyncEmit( 'resolved' , execContext.error , execContext.results ) ; }
-	if ( emitNextLoop ) { execContext.root.asyncEmit( 'nextLoop' , execContext ) ; }
-	if ( emitFinish ) { execContext.root.asyncEmit( 'finish' , execContext.error , execContext.results ) ; }
+	if ( emitResolved ) { execContext.root.emit( 'resolved' , execContext.error , execContext.results ) ; }
+	if ( emitNextLoop ) { execContext.root.emit( 'nextLoop' , execContext ) ; }
+	if ( emitFinish ) { execContext.root.emit( 'finish' , execContext.error , execContext.results ) ; }
 	
 	execContext.whileChecked = true ;
 }
@@ -2013,10 +1920,10 @@ function execLogicCallback( jobContext )
 	}
 	
 	// Emit events, the order matter
-	if ( emitResolved ) { execContext.root.asyncEmit( 'resolved' , execContext.result ) ; }
-	if ( emitNext ) { execContext.root.asyncEmit( 'next' , execContext ) ; }
-	execContext.root.asyncEmit( 'progress' , { resolved: execContext.resolved , pending: execContext.pending , waiting: execContext.waiting , loop: execContext.whileIterator } , execContext.result ) ;
-	if ( emitFinish ) { execContext.root.asyncEmit( 'finish' , execContext.result ) ; }
+	if ( emitResolved ) { execContext.root.emit( 'resolved' , execContext.result ) ; }
+	if ( emitNext ) { execContext.root.emit( 'next' , execContext ) ; }
+	execContext.root.emit( 'progress' , { resolved: execContext.resolved , pending: execContext.pending , waiting: execContext.waiting , loop: execContext.whileIterator } , execContext.result ) ;
+	if ( emitFinish ) { execContext.root.emit( 'finish' , execContext.result ) ; }
 }
 
 
@@ -2051,13 +1958,13 @@ function execLogicFinal( execContext , result )
 
 
 
-},{"events":4,"tree-kit/lib/extend.js":5}],3:[function(require,module,exports){
+},{"nextgen-events":4,"tree-kit/lib/extend.js":5}],3:[function(require,module,exports){
 /*
-	The Cedric's Swiss Knife (CSK) - CSK Async lib
+	Async Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
 	
 	The MIT License (MIT)
-	
-	Copyright (c) 2009 - 2016 Cédric Ronvel 
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -2066,16 +1973,16 @@ function execLogicFinal( execContext , result )
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
 	
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
 	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
 */
 
 "use strict" ;
@@ -2119,304 +2026,731 @@ wrapper.timeout = function timeout( fn , timeout_ , fnThis )
 
 
 },{}],4:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+	The Cedric's Swiss Knife (CSK) - CSK NextGen Events
+	
+	Copyright (c) 2015 Cédric Ronvel 
+	
+	The MIT License (MIT)
 
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
 
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
 
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
 
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
+"use strict" ;
 
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
 
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
 
-  if (!this._events)
-    this._events = {};
+// Create the object && export it
+function NextGenEvents() { return Object.create( NextGenEvents.prototype ) ; }
+module.exports = NextGenEvents ;
 
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      }
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
 
-  handler = this._events[type];
 
-  if (isUndefined(handler))
-    return false;
 
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    args = Array.prototype.slice.call(arguments, 1);
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
 
-  return true;
-};
+			/* Basic features, more or less compatible with Node.js */
 
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
 
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
 
-  if (!this._events)
-    this._events = {};
+NextGenEvents.SYNC = -Infinity ;
 
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
+// Not part of the prototype, because it should not pollute userland's prototype.
+// It has an eventEmitter as 'this' anyway (always called using call()).
+NextGenEvents.init = function init()
+{
+	Object.defineProperty( this , '__ngev' , { value: {
+		nice: NextGenEvents.SYNC ,
+		interruptible: false ,
+		recursion: 0 ,
+		contexts: {} ,
+		events: {
+			// Special events
+			error: [] ,
+			interrupt: [] ,
+			newListener: [] ,
+			removeListener: []
+		}
+	} } ) ;
+} ;
 
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
 
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
 
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
+// Use it with .bind()
+NextGenEvents.filterOutCallback = function( what , currentElement ) { return what !== currentElement ; } ;
 
-  return this;
-};
 
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
 
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
+// .addListener( eventName , [fn] , [options] )
+NextGenEvents.prototype.addListener = function addListener( eventName , fn , options )
+{
+	var listener = {} ;
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	
+	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".addListener(): argument #0 should be a non-empty string" ) ; }
+	
+	if ( typeof fn !== 'function' )
+	{
+		options = fn ;
+		fn = undefined ;
+	}
+	
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	listener.fn = fn || options.fn ;
+	listener.id = typeof options.id === 'string' ? options.id : listener.fn ;
+	listener.once = !! options.once ;
+	listener.async = !! options.async ;
+	listener.nice = options.nice !== undefined ? Math.floor( options.nice ) : NextGenEvents.SYNC ;
+	listener.context = typeof options.context === 'string' ? options.context : null ;
+	
+	if ( typeof listener.fn !== 'function' )
+	{
+		throw new TypeError( ".addListener(): a function or an object with a 'fn' property which value is a function should be provided" ) ;
+	}
+	
+	// Implicit context creation
+	if ( listener.context && typeof listener.context === 'string' && ! this.__ngev.contexts[ listener.context ] )
+	{
+		this.addListenerContext( listener.context ) ;
+	}
+	
+	// Note: 'newListener' and 'removeListener' event return an array of listener, but not the event name.
+	// So the event's name can be retrieved in the listener itself.
+	listener.event = eventName ;
+	
+	// We should emit 'newListener' first, before adding it to the listeners,
+	// to avoid recursion in the case that eventName === 'newListener'
+	if ( this.__ngev.events.newListener.length )
+	{
+		// Return an array, because .addListener() may support multiple event addition at once
+		// e.g.: .addListener( { request: onRequest, close: onClose, error: onError } ) ;
+		this.emit( 'newListener' , [ listener ] ) ;
+	}
+	
+	this.__ngev.events[ eventName ].push( listener ) ;
+	
+	return this ;
+} ;
 
-  var fired = false;
 
-  function g() {
-    this.removeListener(type, g);
 
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
+NextGenEvents.prototype.on = NextGenEvents.prototype.addListener ;
 
-  g.listener = listener;
-  this.on(type, g);
 
-  return this;
-};
 
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
+// Shortcut
+NextGenEvents.prototype.once = function once( eventName , options )
+{
+	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".once(): argument #0 should be a non-empty string" ) ; }
+	
+	if ( typeof options === 'function' )
+	{
+		options = { id: options , fn: options } ;
+	}
+	else if ( ! options || typeof options !== 'object' || typeof options.fn !== 'function' )
+	{
+		throw new TypeError( ".once(): argument #1 should be a function or an object with a 'fn' property which value is a function" ) ;
+	}
+	
+	options.once = true ;
+	
+	return this.addListener( eventName , options ) ;
+} ;
 
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
 
-  if (!this._events || !this._events[type])
-    return this;
 
-  list = this._events[type];
-  length = list.length;
-  position = -1;
+NextGenEvents.prototype.removeListener = function removeListener( eventName , id )
+{
+	var i , length , newListeners = [] , removedListeners = [] ;
+	
+	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".removeListener(): argument #0 should be a non-empty string" ) ; }
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	
+	length = this.__ngev.events[ eventName ].length ;
+	
+	// It's probably faster to create a new array of listeners
+	for ( i = 0 ; i < length ; i ++ )
+	{
+		if ( this.__ngev.events[ eventName ][ i ].id === id )
+		{
+			removedListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+		}
+		else
+		{
+			newListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+		}
+	}
+	
+	this.__ngev.events[ eventName ] = newListeners ;
+	
+	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	{
+		this.emit( 'removeListener' , removedListeners ) ;
+	}
+	
+	return this ;
+} ;
 
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
 
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
 
-    if (position < 0)
-      return this;
+NextGenEvents.prototype.off = NextGenEvents.prototype.removeListener ;
 
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
 
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
 
-  return this;
-};
+NextGenEvents.prototype.removeAllListeners = function removeAllListeners( eventName )
+{
+	var removedListeners ;
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	
+	if ( eventName )
+	{
+		// Remove all listeners for a particular event
+		
+		if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".removeAllListener(): argument #0 should be undefined or a non-empty string" ) ; }
+		
+		if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+		
+		removedListeners = this.__ngev.events[ eventName ] ;
+		this.__ngev.events[ eventName ] = [] ;
+		
+		if ( removedListeners.length && this.__ngev.events.removeListener.length )
+		{
+			this.emit( 'removeListener' , removedListeners ) ;
+		}
+	}
+	else
+	{
+		// Remove all listeners for any events
+		// 'removeListener' listeners cannot be triggered: they are already deleted
+		this.__ngev.events = {} ;
+	}
+	
+	return this ;
+} ;
 
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
 
-  if (!this._events)
-    return this;
 
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
+NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , context )
+{
+	var returnValue , serial ;
+	
+	if ( event.interrupt ) { return ; }
+	
+	if ( listener.async )
+	{
+		//serial = context && context.serial ;
+		if ( context )
+		{
+			serial = context.serial ;
+			context.ready = ! serial ;
+		}
+		
+		returnValue = listener.fn.apply( undefined , event.args.concat( function( arg ) {
+			
+			event.listenersDone ++ ;
+			
+			// Async interrupt
+			if ( arg && event.emitter.__ngev.interruptible && ! event.interrupt && event.name !== 'interrupt' )
+			{
+				event.interrupt = arg ;
+				
+				if ( event.callback )
+				{
+					event.callback( event.interrupt , event ) ;
+					delete event.callback ;
+				}
+				
+				event.emitter.emit( 'interrupt' , event.interrupt ) ;
+			}
+			else if ( event.listenersDone >= event.listeners && event.callback )
+			{
+				event.callback( undefined , event ) ;
+				delete event.callback ;
+			}
+			
+			// Process the queue if serialized
+			if ( serial ) { NextGenEvents.processQueue.call( event.emitter , listener.context , true ) ; }
+			
+		} ) ) ;
+	}
+	else
+	{
+		returnValue = listener.fn.apply( undefined , event.args ) ;
+		event.listenersDone ++ ;
+	}
+	
+	// Interrupt if non-falsy return value, if the emitter is interruptible, not already interrupted (emit once),
+	// and not within an 'interrupt' event.
+	if ( returnValue && event.emitter.__ngev.interruptible && ! event.interrupt && event.name !== 'interrupt' )
+	{
+		event.interrupt = returnValue ;
+		
+		if ( event.callback )
+		{
+			event.callback( event.interrupt , event ) ;
+			delete event.callback ;
+		}
+		
+		event.emitter.emit( 'interrupt' , event.interrupt ) ;
+	}
+	else if ( event.listenersDone >= event.listeners && event.callback )
+	{
+		event.callback( undefined , event ) ;
+		delete event.callback ;
+	}
+} ;
 
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
 
-  listeners = this._events[type];
 
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else if (listeners) {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
+// A unique event ID
+var nextEventId = 0 ;
 
-  return this;
-};
 
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
 
-EventEmitter.prototype.listenerCount = function(type) {
-  if (this._events) {
-    var evlistener = this._events[type];
+/*
+	emit( [nice] , eventName , [arg1] , [arg2] , [...] , [emitCallback] )
+*/
+NextGenEvents.prototype.emit = function emit()
+{
+	var i , iMax , count = 0 ,
+		event , listener , context , currentNice ,
+		listeners , removedListeners = [] ;
+	
+	event = {
+		emitter: this ,
+		id: nextEventId ++ ,
+		name: null ,
+		args: null ,
+		nice: null ,
+		interrupt: null ,
+		listeners: null ,
+		listenersDone: 0 ,
+		callback: null ,
+	} ;
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	
+	// Arguments handling
+	if ( typeof arguments[ 0 ] === 'number' )
+	{
+		event.nice = Math.floor( arguments[ 0 ] ) ;
+		event.name = arguments[ 1 ] ;
+		if ( ! event.name || typeof event.name !== 'string' ) { throw new TypeError( ".emit(): when argument #0 is a number, argument #1 should be a non-empty string" ) ; }
+		
+		if ( typeof arguments[ arguments.length - 1 ] === 'function' )
+		{
+			event.callback = arguments[ arguments.length - 1 ] ;
+			event.args = Array.prototype.slice.call( arguments , 2 , -1 ) ;
+		}
+		else
+		{
+			event.args = Array.prototype.slice.call( arguments , 2 ) ;
+		}
+	}
+	else
+	{
+		event.nice = this.__ngev.nice ;
+		event.name = arguments[ 0 ] ;
+		if ( ! event.name || typeof event.name !== 'string' ) { throw new TypeError( ".emit(): argument #0 should be an number or a non-empty string" ) ; }
+		event.args = Array.prototype.slice.call( arguments , 1 ) ;
+		
+		if ( typeof arguments[ arguments.length - 1 ] === 'function' )
+		{
+			event.callback = arguments[ arguments.length - 1 ] ;
+			event.args = Array.prototype.slice.call( arguments , 1 , -1 ) ;
+		}
+		else
+		{
+			event.args = Array.prototype.slice.call( arguments , 1 ) ;
+		}
+	}
+	
+	
+	if ( ! this.__ngev.events[ event.name ] ) { this.__ngev.events[ event.name ] = [] ; }
+	
+	// Increment this.__ngev.recursion
+	event.listeners = this.__ngev.events[ event.name ].length ;
+	this.__ngev.recursion ++ ;
+	
+	// Trouble arise when a listener is removed from another listener, while we are still in the loop.
+	// So we have to COPY the listener array right now!
+	listeners = this.__ngev.events[ event.name ].slice() ;
+	
+	for ( i = 0 , iMax = listeners.length ; i < iMax ; i ++ )
+	{
+		count ++ ;
+		listener = listeners[ i ] ;
+		context = listener.context && this.__ngev.contexts[ listener.context ] ;
+		
+		// If the listener context is disabled...
+		if ( context && context.status === NextGenEvents.CONTEXT_DISABLED ) { continue ; }
+		
+		// The nice value for this listener...
+		if ( context ) { currentNice = Math.max( event.nice , listener.nice , context.nice ) ; }
+		else { currentNice = Math.max( event.nice , listener.nice ) ; }
+		
+		
+		if ( listener.once )
+		{
+			// We should remove the current listener RIGHT NOW because of recursive .emit() issues:
+			// one listener may eventually fire this very same event synchronously during the current loop.
+			this.__ngev.events[ event.name ] = this.__ngev.events[ event.name ].filter(
+				NextGenEvents.filterOutCallback.bind( undefined , listener )
+			) ;
+			
+			removedListeners.push( listener ) ;
+		}
+		
+		if ( context && ( context.status === NextGenEvents.CONTEXT_QUEUED || ! context.ready ) )
+		{
+			// Almost all works should be done by .emit(), and little few should be done by .processQueue()
+			context.queue.push( { event: event , listener: listener , nice: currentNice } ) ;
+		}
+		else
+		{
+			try {
+				if ( currentNice < 0 )
+				{
+					if ( this.__ngev.recursion >= - currentNice )
+					{
+						setImmediate( NextGenEvents.listenerWrapper.bind( this , listener , event , context ) ) ;
+					}
+					else
+					{
+						NextGenEvents.listenerWrapper.call( this , listener , event , context ) ;
+					}
+				}
+				else
+				{
+					setTimeout( NextGenEvents.listenerWrapper.bind( this , listener , event , context ) , currentNice ) ;
+				}
+			}
+			catch ( error ) {
+				// Catch error, just to decrement this.__ngev.recursion, re-throw after that...
+				this.__ngev.recursion -- ;
+				throw error ;
+			}
+		}
+	}
+	
+	// Decrement recursion
+	this.__ngev.recursion -- ;
+	
+	// Emit 'removeListener' after calling listeners
+	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	{
+		this.emit( 'removeListener' , removedListeners ) ;
+	}
+	
+	
+	// 'error' event is a special case: it should be listened for, or it will throw an error
+	if ( ! count )
+	{
+		if ( event.name === 'error' )
+		{
+			if ( arguments[ 1 ] ) { throw arguments[ 1 ] ; }
+			else { throw Error( "Uncaught, unspecified 'error' event." ) ; }
+		}
+		
+		if ( event.callback )
+		{
+			event.callback( undefined , event ) ;
+			delete event.callback ;
+		}
+	}
+	
+	return event ;
+} ;
 
-    if (isFunction(evlistener))
-      return 1;
-    else if (evlistener)
-      return evlistener.length;
-  }
-  return 0;
-};
 
-EventEmitter.listenerCount = function(emitter, type) {
-  return emitter.listenerCount(type);
-};
 
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
+NextGenEvents.prototype.listeners = function listeners( eventName )
+{
+	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".listeners(): argument #0 should be a non-empty string" ) ; }
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	
+	// Do not return the array, shallow copy it
+	return this.__ngev.events[ eventName ].slice() ;
+} ;
 
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
 
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
 
-function isUndefined(arg) {
-  return arg === void 0;
-}
+NextGenEvents.listenerCount = function( emitter , eventName )
+{
+	if ( ! emitter || ! ( emitter instanceof NextGenEvents ) ) { throw new TypeError( ".listenerCount(): argument #0 should be an instance of NextGenEvents" ) ; }
+	return emitter.listenerCount( eventName ) ;
+} ;
+
+
+
+NextGenEvents.prototype.listenerCount = function( eventName )
+{
+	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".listenerCount(): argument #1 should be a non-empty string" ) ; }
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	
+	return this.__ngev.events[ eventName ].length ;
+} ;
+
+
+
+NextGenEvents.prototype.setNice = function setNice( nice )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	//if ( typeof nice !== 'number' ) { throw new TypeError( ".setNice(): argument #0 should be a number" ) ; }
+	
+	this.__ngev.nice = Math.floor( +nice || 0 ) ;
+} ;
+
+
+
+NextGenEvents.prototype.setInterruptible = function setInterruptible( value )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	//if ( typeof nice !== 'number' ) { throw new TypeError( ".setNice(): argument #0 should be a number" ) ; }
+	
+	this.__ngev.interruptible = !! value ;
+} ;
+
+
+
+// There is no such thing in NextGenEvents, however, we need to be compatible with node.js events at best
+NextGenEvents.prototype.setMaxListeners = function() {} ;
+
+// Sometime useful as a no-op callback...
+NextGenEvents.noop = function() {} ;
+
+
+
+
+
+			/* Next Gen feature: contexts! */
+
+
+
+NextGenEvents.CONTEXT_ENABLED = 0 ;
+NextGenEvents.CONTEXT_DISABLED = 1 ;
+NextGenEvents.CONTEXT_QUEUED = 2 ;
+
+
+
+NextGenEvents.prototype.addListenerContext = function addListenerContext( contextName , options )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".addListenerContext(): argument #0 should be a non-empty string" ) ; }
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	if ( ! this.__ngev.contexts[ contextName ] )
+	{
+		// A context IS an event emitter too!
+		this.__ngev.contexts[ contextName ] = Object.create( NextGenEvents.prototype ) ;
+		this.__ngev.contexts[ contextName ].nice = NextGenEvents.SYNC ;
+		this.__ngev.contexts[ contextName ].ready = true ;
+		this.__ngev.contexts[ contextName ].status = NextGenEvents.CONTEXT_ENABLED ;
+		this.__ngev.contexts[ contextName ].serial = false ;
+		this.__ngev.contexts[ contextName ].queue = [] ;
+	}
+	
+	if ( options.nice !== undefined ) { this.__ngev.contexts[ contextName ].nice = Math.floor( options.nice ) ; }
+	if ( options.status !== undefined ) { this.__ngev.contexts[ contextName ].status = options.status ; }
+	if ( options.serial !== undefined ) { this.__ngev.contexts[ contextName ].serial = !! options.serial ; }
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.disableListenerContext = function disableListenerContext( contextName )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".disableListenerContext(): argument #0 should be a non-empty string" ) ; }
+	if ( ! this.__ngev.contexts[ contextName ] ) { this.addListenerContext( contextName ) ; }
+	
+	this.__ngev.contexts[ contextName ].status = NextGenEvents.CONTEXT_DISABLED ;
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.enableListenerContext = function enableListenerContext( contextName )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".enableListenerContext(): argument #0 should be a non-empty string" ) ; }
+	if ( ! this.__ngev.contexts[ contextName ] ) { this.addListenerContext( contextName ) ; }
+	
+	this.__ngev.contexts[ contextName ].status = NextGenEvents.CONTEXT_ENABLED ;
+	
+	if ( this.__ngev.contexts[ contextName ].queue.length > 0 ) { NextGenEvents.processQueue.call( this , contextName ) ; }
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.queueListenerContext = function queueListenerContext( contextName )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".queueListenerContext(): argument #0 should be a non-empty string" ) ; }
+	if ( ! this.__ngev.contexts[ contextName ] ) { this.addListenerContext( contextName ) ; }
+	
+	this.__ngev.contexts[ contextName ].status = NextGenEvents.CONTEXT_QUEUED ;
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.serializeListenerContext = function serializeListenerContext( contextName , value )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".serializeListenerContext(): argument #0 should be a non-empty string" ) ; }
+	if ( ! this.__ngev.contexts[ contextName ] ) { this.addListenerContext( contextName ) ; }
+	
+	this.__ngev.contexts[ contextName ].serial = value === undefined ? true : !! value ;
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.setListenerContextNice = function setListenerContextNice( contextName , nice )
+{
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".setListenerContextNice(): argument #0 should be a non-empty string" ) ; }
+	if ( ! this.__ngev.contexts[ contextName ] ) { this.addListenerContext( contextName ) ; }
+	
+	this.__ngev.contexts[ contextName ].nice = Math.floor( nice ) ;
+	
+	return this ;
+} ;
+
+
+
+NextGenEvents.prototype.destroyListenerContext = function destroyListenerContext( contextName )
+{
+	var i , length , eventName , newListeners , removedListeners = [] ;
+	
+	if ( ! contextName || typeof contextName !== 'string' ) { throw new TypeError( ".disableListenerContext(): argument #0 should be a non-empty string" ) ; }
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	
+	// We don't care if a context actually exists, all listeners tied to that contextName will be removed
+	
+	for ( eventName in this.__ngev.events )
+	{
+		newListeners = null ;
+		length = this.__ngev.events[ eventName ].length ;
+		
+		for ( i = 0 ; i < length ; i ++ )
+		{
+			if ( this.__ngev.events[ eventName ][ i ].context === contextName )
+			{
+				newListeners = [] ;
+				removedListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+			}
+			else if ( newListeners )
+			{
+				newListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+			}
+		}
+		
+		if ( newListeners ) { this.__ngev.events[ eventName ] = newListeners ; }
+	}
+	
+	if ( this.__ngev.contexts[ contextName ] ) { delete this.__ngev.contexts[ contextName ] ; }
+	
+	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	{
+		this.emit( 'removeListener' , removedListeners ) ;
+	}
+	
+	return this ;
+} ;
+
+
+
+// To be used with .call(), it should not pollute the prototype
+NextGenEvents.processQueue = function processQueue( contextName , isCompletionCallback )
+{
+	var context , job ;
+	
+	// The context doesn't exist anymore, so just abort now
+	if ( ! this.__ngev.contexts[ contextName ] ) { return ; }
+	
+	context = this.__ngev.contexts[ contextName ] ;
+	
+	if ( isCompletionCallback ) { context.ready = true ; }
+	
+	// Should work on serialization here
+	
+	//console.log( ">>> " , context ) ;
+	
+	// Increment recursion
+	this.__ngev.recursion ++ ;
+	
+	while ( context.ready && context.queue.length )
+	{
+		job = context.queue.shift() ;
+		
+		// This event has been interrupted, drop it now!
+		if ( job.event.interrupt ) { continue ; }
+		
+		try {
+			if ( job.nice < 0 )
+			{
+				if ( this.__ngev.recursion >= - job.nice )
+				{
+					setImmediate( NextGenEvents.listenerWrapper.bind( this , job.listener , job.event , context ) ) ;
+				}
+				else
+				{
+					NextGenEvents.listenerWrapper.call( this , job.listener , job.event , context ) ;
+				}
+			}
+			else
+			{
+				setTimeout( NextGenEvents.listenerWrapper.bind( this , job.listener , job.event , context ) , job.nice ) ;
+			}
+		}
+		catch ( error ) {
+			// Catch error, just to decrement this.__ngev.recursion, re-throw after that...
+			this.__ngev.recursion -- ;
+			throw error ;
+		}
+	}
+	
+	// Decrement recursion
+	this.__ngev.recursion -- ;
+} ;
+
+
+
 
 },{}],5:[function(require,module,exports){
 /*

@@ -138,32 +138,6 @@ function syncJob( stats , id , options , result , callback )
 
 
 
-function asyncEventTest( nice , finish )
-{
-	var order = [] ;
-	var emitter = new async.EventEmitter( nice ) ;
-	
-	emitter.on( 'event' , function() {
-		order.push( 'listener' ) ;
-	} ) ;
-	
-	emitter.asyncEmit( 'event' ) ;
-	
-	process.nextTick( function() { order.push( 'nextTick' ) ; } ) ;
-	setImmediate( function() { order.push( 'setImmediate' ) ; } ) ;
-	setTimeout( function() { order.push( 'setTimeout5' ) ; } , 5 ) ;
-	setTimeout( function() { order.push( 'setTimeout20' ) ; } , 20 ) ;
-	
-	// Finish
-	setTimeout( function() {
-		finish( order ) ;
-	} , 40 ) ;
-	
-	order.push( 'flow' ) ;
-}
-
-
-
 
 
 			/* Tests */
@@ -3592,96 +3566,25 @@ describe( "Misc tests" , function() {
 
 
 
-describe( "Async EventEmitter" , function() {
-	
-	it( "should emit synchronously, with a synchronous flow (nice=-2)" , function( done ) {
-		asyncEventTest( -2 , function( order ) {
-			expect( order ).to.eql( [ 'listener' , 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "should emit asynchronously, with an asynchronous flow, almost as fast as possible (nice=-1 -> setImmediate)" , function( done ) {
-		asyncEventTest( -1 , function( order ) {
-			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "should emit asynchronously, with an asynchronous flow, with minimal delay (nice=0 -> setTimeout 0ms)" , function( done ) {
-		asyncEventTest( 0 , function( order ) {
-			try {
-				expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'listener' , 'setTimeout5' , 'setTimeout20' ] ) ;
-			}
-			catch( error ) {
-				// Sometime setImmediate() is unpredictable and is slower than setTimeout(fn,0)
-				// It is a bug of V8, not a bug of the async lib
-				expect( order ).to.eql( [ 'flow' , 'nextTick' , 'listener' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' ] ) ;
-			}
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "should emit asynchronously, with an asynchronous flow, with a 10ms delay (nice=1 -> setTimeout 10ms)" , function( done ) {
-		asyncEventTest( 1 , function( order ) {
-			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'listener' , 'setTimeout20' ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-	
-	it( "should emit asynchronously, with an asynchronous flow, with a 30ms delay (nice=3 -> setTimeout 30ms)" , function( done ) {
-		asyncEventTest( 3 , function( order ) {
-			expect( order ).to.eql( [ 'flow' , 'nextTick' , 'setImmediate' , 'setTimeout5' , 'setTimeout20' , 'listener' ] ) ;
-			done() ;
-		} ) ;
-	} ) ;
-} ) ;
-
-
-
 describe( "'Maximum call stack size exceeded' prevention" , function() {
 	
-	if ( process.browser )
-	{
-		// Firefox stack size is smaller than V8/Node.js
-		it( "nice -12 should call setImmediate() once every 110 recursive synchronous calls" , function( done ) {
-			
-			//this.timeout( 5000 ) ;
-			
-			var i , array = [] ;
-			
-			for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
-			
-			async.foreach( array , function( element , k , foreachCallback ) {
-				//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
-				foreachCallback() ;
-			} )
-			.nice( -12 )
-			.exec( function() {
-				done() ;
-			} ) ;
+	it( "nice -20 (the new default) should call setImmediate() once every 19 recursive synchronous calls" , function( done ) {
+		
+		//this.timeout( 5000 ) ;
+		
+		var i , array = [] ;
+		
+		for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
+		
+		async.foreach( array , function( element , k , foreachCallback ) {
+			//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
+			foreachCallback() ;
+		} )
+		.nice( -20 )
+		.exec( function() {
+			done() ;
 		} ) ;
-	}
-	else
-	{
-		it( "nice -20 (the new default) should call setImmediate() once every 190 recursive synchronous calls" , function( done ) {
-			
-			//this.timeout( 5000 ) ;
-			
-			var i , array = [] ;
-			
-			for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
-			
-			async.foreach( array , function( element , k , foreachCallback ) {
-				//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
-				foreachCallback() ;
-			} )
-			.nice( -20 )
-			.exec( function() {
-				done() ;
-			} ) ;
-		} ) ;
-	}
+	} ) ;
 } ) ;
 
 
