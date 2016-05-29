@@ -47,8 +47,18 @@
 
 
 
-var async = require( '../lib/async.js' ) ;
 var expect = require( 'expect.js' ) ;
+
+var async ;
+
+if ( process.browser )
+{
+	async = require( '../lib/browser.js' ) ;
+}
+else
+{
+	async = require( '../lib/async.js' ) ;
+}
 
 
 
@@ -3631,23 +3641,47 @@ describe( "Async EventEmitter" , function() {
 
 describe( "'Maximum call stack size exceeded' prevention" , function() {
 	
-	it( "nice -20 (the new default) should call setImmediate() once every 190 recursive synchronous calls" , function( done ) {
-		
-		//this.timeout( 5000 ) ;
-		
-		var i , array = [] ;
-		
-		for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
-		
-		async.foreach( array , function( element , k , foreachCallback ) {
-			//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
-			foreachCallback() ;
-		} )
-		.nice( -20 )
-		.exec( function() {
-			done() ;
+	if ( process.browser )
+	{
+		// Firefox stack size is smaller than V8/Node.js
+		it( "nice -12 should call setImmediate() once every 110 recursive synchronous calls" , function( done ) {
+			
+			//this.timeout( 5000 ) ;
+			
+			var i , array = [] ;
+			
+			for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
+			
+			async.foreach( array , function( element , k , foreachCallback ) {
+				//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
+				foreachCallback() ;
+			} )
+			.nice( -12 )
+			.exec( function() {
+				done() ;
+			} ) ;
 		} ) ;
-	} ) ;
+	}
+	else
+	{
+		it( "nice -20 (the new default) should call setImmediate() once every 190 recursive synchronous calls" , function( done ) {
+			
+			//this.timeout( 5000 ) ;
+			
+			var i , array = [] ;
+			
+			for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
+			
+			async.foreach( array , function( element , k , foreachCallback ) {
+				//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
+				foreachCallback() ;
+			} )
+			.nice( -20 )
+			.exec( function() {
+				done() ;
+			} ) ;
+		} ) ;
+	}
 } ) ;
 
 

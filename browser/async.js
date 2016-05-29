@@ -25,12 +25,20 @@
 
 "use strict" ;
 
+/* global window */
 
+
+
+if ( ! window.setImmediate )
+{
+	window.setImmediate = function( callback ) { return setTimeout( callback , 0 ) ; } ;
+}
 
 // Load async.js, export it, and set isBrowser to true
 module.exports = require( './core.js' ) ;
 module.exports.wrapper = require( './wrapper.js' ) ;
 module.exports.isBrowser = true ;
+
 
 },{"./core.js":2,"./wrapper.js":3}],2:[function(require,module,exports){
 /*

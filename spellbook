@@ -207,7 +207,7 @@ formula
 		lib/wrapper.js
 	
 	scroll
-		${browserify} lib/browser.js -i process -s async -o browser/async.js
+		${browserify} lib/browser.js -s async -o browser/async.js
 
 # Build the browser minified lib
 :browser/async.min.js
