@@ -168,7 +168,7 @@ module.exports = async ;
 async.AsyncError = function AsyncError( message )
 {
 	Error.call( this ) ;
-	Error.captureStackTrace( this , this.constructor ) ;
+	Error.captureStackTrace && Error.captureStackTrace( this , this.constructor ) ;
 	this.message = message ;
 } ;
 
@@ -7385,7 +7385,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 				var timeout , result ;
 				
 				stats.startCounter[ 1 ] ++ ;
-				timeout = 50 ;
+				timeout = 75 ;
 				
 				switch ( stats.startCounter[ 1 ] )
 				{
@@ -7411,7 +7411,7 @@ describe( "Mixing async.Plan.prototype.retry() & async.Plan.prototype.timeout()"
 			} ,
 			[ asyncJob , stats , 2 , 5 , {} , [ undefined , 'result' ] ]
 		] )
-		.timeout( 20 )
+		.timeout( 30 )
 		.retry( 5 )
 		.exec( function( error , results ) {
 			expect( error ).not.to.be.an( Error ) ;
@@ -8075,7 +8075,7 @@ describe( "'Maximum call stack size exceeded' prevention" , function() {
 	
 	it( "nice -20 (the new default) should call setImmediate() once every 19 recursive synchronous calls" , function( done ) {
 		
-		//this.timeout( 5000 ) ;
+		this.timeout( 3000 ) ;
 		
 		var i , array = [] ;
 		

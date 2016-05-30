@@ -2,8 +2,12 @@
 v2
 --
 
-Removed async.eventEmitter: the lib now use the [NextGen Event](https://www.npmjs.com/package/nextgen-events) module as its
-event emitter.
+Breaking change:
+
+* async.EventEmitter was removed: the lib now use the [NextGen Event](https://www.npmjs.com/package/nextgen-events)
+  module as its event emitter.
+  If your code was using async.EventEmitter, please consider switching to NextGen Event.
+  It has everything async.EventEmitter had, and more.
 
 
 v1.0.1
