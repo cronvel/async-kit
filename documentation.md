@@ -3,10 +3,8 @@
 
 A simple and powerful async abstraction layer lib to easily write Node.js code.
 
-This is the new name for the former **CSK Async** package.
-
 * License: MIT
-* Platform: Node.js (stable), browsers (beta)
+* Platform: Node.js and modern browsers
 
 While inspired in some way by [caolan/async](https://github.com/caolan/async), Async Kit uses a completely different approach.
 
