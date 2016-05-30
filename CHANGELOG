@@ -1,4 +1,11 @@
 
+v2
+--
+
+Removed async.eventEmitter: the lib now use the [NextGen Event](https://www.npmjs.com/package/nextgen-events) module as its
+event emitter.
+
+
 v1.0.1
 ------
 
@@ -8,7 +15,7 @@ Browser support is better (still not finished yet)
 v0.6.10
 -------
 
-browser lib
+Browser lib
 
 
 v0.6.9
@@ -26,7 +33,7 @@ Documentation error fixed
 v0.6.7
 ------
 
-dependencies
+Dependencies
 
 
 

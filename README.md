@@ -94,7 +94,6 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 ### Misc
 
 * [Async exit](#ref.async.exit)
-* [Async event emitter class](#ref.async.eventEmitter)
 
 
 
@@ -279,25 +278,6 @@ of having a general callback triggered when everything is asynchronously done.
 
 	
 
-# Make & Spellcast
-
-As of 0.4.12, [Spellcast](https://www.npmjs.org/package/spellcast) is used instead of `make`.
-
-Also, a `Makefile` automatically generated is available, since `make` is widely used.
-Invoking `make` simply ensure that Spellcast is installed locally and then invoke it using the same rule.
-
-You can install Spellcast on your system with this: `npm install spellcast -g`
-
-To make it work: `make` or `make summon` or `spellcast summon`
-
-To run tests: `make test` or `spellcast test`
-
-To rebuild the documentation: `make README.md` or `spellcast README.md`
-
-To clean everything that can be automatically regenerated: `make clean` or `spellcast clean`
-
-
-
 # Reference
 
 * [*Do* family factories](#ref.do.factories)
@@ -365,12 +345,6 @@ To clean everything that can be automatically regenerated: `make clean` or `spel
 	* [.execContext](#ref.async.JobContext.execContext)
 	* [.abort()](#ref.async.JobContext.abort)
 	* [Event: 'timeout'](#ref.async.JobContext.event.finish)
-* [Class async.eventEmitter](#ref.async.eventEmitter)
-	* [.emit()](#ref.async.eventEmitter.emit)
-	* [.syncEmit()](#ref.async.eventEmitter.syncEmit)
-	* [.asyncEmit()](#ref.async.eventEmitter.asyncEmit)
-	* [.nice()](#ref.async.eventEmitter.nice)
-	* [.defaultEmitIsAsync()](#ref.async.eventEmitter.defaultEmitIsAsync)
 * [Misc utilities](#ref.misc)
 	* [async.exit](#ref.async.exit)
 
@@ -1348,25 +1322,27 @@ This set up how the job's scheduler behaves.
 
 It depends on the *niceness* value:
 * *<=-2* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
-  everything will be synchronous and will be executed in one code flow for at most *N* recursion, where *N=1O* for *nice=-2*,
-  *N=2O* for *nice=-3*, *N=3O* for *nice=-4*, and so on... When the maximum recursion counter is reached, the next job will
+  everything will be synchronous and will be executed in one code flow for at most *N* recursion, where *N=1* for *nice=-2*,
+  *N=2* for *nice=-3*, *N=3* for *nice=-4*, and so on... When the maximum recursion counter is reached, the next job will
   use `setImmediate()` internally. This prevent from the *Maximum call stack size exceeded* error when callbacks are synchronous,
   and give some breath for I/O when dealing with CPU-bound tasks. As long as things are synchronous, there will be no
   difference between `async.series()` or `async.parallel()`. 
 * *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
   (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
 * *>=0* is for asynchronous scheduling, it uses `setTimeout()` internally. This scheduling allows I/O to be performed
-  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
-  means that the scheduler will delay further action for 100ms
+  and much more. The *niceness* value is used as the delay for `setTimeout()`, so using `.nice(10)`
+  means that the scheduler will delay further action for 10ms
   (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
 
-By default, if `.nice()` is not called, the nice value is -20 (i.e. synchronous for at most 190 recursions).
+See [NextGen Event nice feature](https://www.npmjs.com/package/nextgen-events#ref.note.nice) for references.
+
+By default, if `.nice()` is not called, the nice value is -20 (i.e. synchronous for at most 19 recursions).
 
 Full synchronous scheduling may cause *Maximum call stack size exceeded* issues if loop, `.retry()` or just an huge job's
 list is involved, because everything use nested callback the way we would have done it, those nested callback are just
 abstracted away by the lib, but still remains behind the scene.
 That's why **starting at v0.6.0**, there isn't full synchronous scheduling anymore: once in a while, an asynchronous call
-will be triggered. Do not drop the nice value below -20, which provide at most 190 recursions.
+will be triggered. Do not drop the nice value below -20, which provide at most 19 recursions.
 
 Asynchronous scheduling uses the javascript's *event loop*, so there is no more infinite nested callback possible.
 It can scale better for big job's list, loop and `.retry()`...
@@ -1902,90 +1878,6 @@ This can happen when using the [`.timeout()`](#ref.async.Plan.timeout) method of
 
 
 
-<a name="ref.async.eventEmitter"></a>
-## Class async.eventEmitter
-
-This is a subclass of the core Node.js `events.eventEmitter` class.
-
-It features asynchronous event emitting.
-
-
-
-<a name="ref.async.eventEmitter.emit"></a>
-### .emit( event, [arg1], [arg2], [...] )
-
-* event `mixed` event to throw
-* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
-
-By default, this is a copy of the `.emit()` method of core Node.js `events.eventEmitter`.
-
-However, this can be replaced by [`.asyncEmit()`](#ref.async.eventEmitter.asyncEmit) if
-[`.defaultEmitIsAsync()`](#ref.async.eventEmitter.defaultEmitIsAsync) is used.
-
-
-
-<a name="ref.async.eventEmitter.syncEmit"></a>
-### .syncEmit( event, [arg1], [arg2], [...] )
-
-* event `mixed` event to throw
-* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
-
-This is a copy of the `.emit()` method of core Node.js `events.eventEmitter`.
-
-
-
-<a name="ref.async.eventEmitter.asyncEmit"></a>
-### .asyncEmit( event, [arg1], [arg2], [...] )
-
-* event `mixed` event to throw
-* [arg1], [arg2], [...] `mixed` arguments to pass to listeners
-
-This method emits events asynchronously.
-
-Arguments work just the same way as `.emit()` method of core Node.js `events.eventEmitter`.
-
-The [*nice*](#ref.async.eventEmitter.nice) value controle the *asyncness*.
-
-
-
-<a name="ref.async.eventEmitter.nice"></a>
-### .nice( niceness )
-
-* niceness `Number` between `-Infinity` and `Infinity`
-
-This try to mimic the unix command `nice` and `renice`.
-This set up how the *asyncness* behaves.
-
-It depends on the *niceness* value:
-* *<=-2* is for synchronous scheduling: the scheduler process as fast as possible, if jobs provided by user are synchronous,
-  everything will be synchronous and will be executed in one code flow for at most *N* recursion, where *N=1O* for *nice=-2*,
-  *N=2O* for *nice=-3*, *N=3O* for *nice=-4*, and so on... When the maximum recursion counter is reached, the next job will
-  use `setImmediate()` internally. This prevent from the *Maximum call stack size exceeded* error when callbacks are synchronous,
-  and give some breath for I/O when dealing with CPU-bound tasks. As long as things are synchronous, there will be no
-  difference between `async.series()` or `async.parallel()`. 
-* *-1* is for asynchronous scheduling, it uses `setImmediate()` internally. This scheduling allows I/O to be performed
-  (see [setImmediate()](http://nodejs.org/api/timers.html#timers_setimmediate_callback_arg) for details).
-* *>=0* is for asynchronous scheduling, it uses `setTimeout()` internally. This scheduling allows I/O to be performed
-  and much more. The *niceness* value multiplied by 10 is used as the delay for `setTimeout()`, so using `.nice(10)`
-  means that the scheduler will delay further action for 100ms
-  (see [setTimeout()](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg) for details).
-
-
-
-<a name="ref.async.eventEmitter.defaultEmitIsAsync"></a>
-### .defaultEmitIsAsync( isAsync )
-
-* isAsync `boolean`, if omited: true
-
-If *isAsync* is `true`, the `.emit()` method is a copy of `.asyncEmit()`, else it is a copy of `.syncEmit()`.
-
-Can be useful if we plan to change a whole bunch of code relying on core Node.js `events.eventEmitter`.
-
-Otherwise, use directly `.asyncEmit()` or `.syncEmit()`.
-
-
-
-<a name="ref.misc"></a>
 ## Misc utilities
 
 <a name="ref.async.exit"></a>
