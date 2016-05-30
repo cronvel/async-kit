@@ -129,7 +129,7 @@ module.exports = async ;
 async.AsyncError = function AsyncError( message )
 {
 	Error.call( this ) ;
-	Error.captureStackTrace( this , this.constructor ) ;
+	Error.captureStackTrace && Error.captureStackTrace( this , this.constructor ) ;	// jshint ignore:line
 	this.message = message ;
 } ;
 
