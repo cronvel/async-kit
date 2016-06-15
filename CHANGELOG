@@ -1,4 +1,10 @@
 
+v2.1.0
+------
+
+async.setSafeTimeout() and async.clearSafeTimeout()
+
+
 v2.0.1
 ------
 

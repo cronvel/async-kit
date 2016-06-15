@@ -1,4 +1,5 @@
-(A) document async.callTimeout() @doc
-(A) document jobCallback.jobContext @doc
-(A) document this.abortLoop() @doc
-(A) document async.wrapper.timeout @doc
+(B) document async.callTimeout() @doc
+(B) document jobCallback.jobContext @doc
+(B) document this.abortLoop() @doc
+(B) document async.wrapper.timeout @doc
+(A) implement safeTimeout in async.Plan

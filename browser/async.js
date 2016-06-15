@@ -172,6 +172,7 @@ var planCommonProperties = {
 	jobsKeys: { value: [] , writable: true , enumerable: true } ,
 	jobsUsing: { value: undefined , writable: true , enumerable: true } ,
 	jobsTimeout: { value: undefined , writable: true , enumerable: true } ,
+	useSafeTimeout: { value: false , writable: true , enumerable: true } ,
 	returnLastJobOnly: { value: false , writable: true , enumerable: true } ,
 	defaultAggregate: { value: undefined , writable: true , enumerable: true } ,
 	returnAggregate: { value: false , writable: true , enumerable: true } ,
@@ -682,6 +683,14 @@ async.Plan.prototype.timeout = function timeout( jobsTimeout )
 		else { this.jobsTimeout = undefined ; }
 	}
 	return this ;
+} ;
+
+
+
+// Set the 'safeTimeout' mode for all internal timeout
+async.Plan.prototype.safeTimeout = function safeTimeout( useSafeTimeout )
+{
+	if ( ! this.locked ) { this.useSafeTimeout = useSafeTimeout === undefined ? true : !! useSafeTimeout ; }
 } ;
 
 

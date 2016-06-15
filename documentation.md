@@ -1976,7 +1976,7 @@ function fn( callback_ )
 }
 ```
 
-What if CPU-bound/synchronous task should be done after calling fn, e.g. loading synchronously a lot of configuration files?
+What if CPU-bound/synchronous task should be done after calling `fn()`, e.g. loading synchronously a lot of configuration files?
 If performing those tasks takes more than 100ms, a regular `setTimeout()` would trigger the callback after 100ms whatever happened,
 but *instead* `async.setSafeTimeout()` try to give to `doSomethingAsync()` 100ms to perform its duty.
 In other words: the timeout start after the event loop take the control back.
