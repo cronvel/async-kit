@@ -92,6 +92,7 @@ When every jobs are finished, the `exec()`'s callback is called, the *results* a
 ### Misc
 
 * [Async exit](#ref.async.exit)
+* [Safe Timeout](#ref.async.setSafeTimeout)
 
 
 
@@ -345,6 +346,8 @@ of having a general callback triggered when everything is asynchronously done.
 	* [Event: 'timeout'](#ref.async.JobContext.event.finish)
 * [Misc utilities](#ref.misc)
 	* [async.exit](#ref.async.exit)
+	* [async.setSafeTimeout](#ref.async.setSafeTimeout)
+	* [async.clearSafeTimeout](#ref.async.clearSafeTimeout)
 
 
 
@@ -1943,6 +1946,51 @@ Short task finished
 
 Note how the `setTimeout`'s function is not executed in the second event handler: this handler does not accept a callback,
 hence the process will exit as soon as the first handler is done: after 100ms.
+
+
+
+<a name="ref.async.setSafeTimeout"></a>
+### async.setSafeTimeout( fn , timeout )
+
+* fn `function` the function to execute after the timeout
+* timeout `number` the time before running the function
+
+It returns an opaque value representing the timer.
+
+This is almost the same than `setTimeout()`.
+This is great for true timeout function, like this:
+
+```
+function fn( callback_ )
+{
+	var called = false ;
+	
+	var callback = function() {
+		if ( called ) { return ; }
+		called = true ;
+		callback.apply( this , arguments ) ;
+	}
+	
+	doSomethingAsync( callback ) ;
+	async.setSafeTimeout( callback.bind( new Error( 'Time out!' , 100 ) ) ) ;
+}
+```
+
+What if CPU-bound/synchronous task should be done after calling fn, e.g. loading synchronously a lot of configuration files?
+If performing those tasks takes more than 100ms, a regular `setTimeout()` would trigger the callback after 100ms whatever happened,
+but *instead* `async.setSafeTimeout()` try to give to `doSomethingAsync()` 100ms to perform its duty.
+In other words: the timeout start after the event loop take the control back.
+It also try to not timeout something that has finished its job, but has its callback queued after the timeout callback.
+
+
+
+<a name="ref.async.clearSafeTimeout"></a>
+### async.clearSafeTimeout( timer )
+
+* timer: an opaque value representing a timer
+
+Like `clearTimeout()` but for timer created using `async.setSafeTimeout()`.
+Note that it can clear `setTimeout()` timers too.
 
 
 

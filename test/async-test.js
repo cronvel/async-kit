@@ -3562,6 +3562,23 @@ describe( "Misc tests" , function() {
 			done() ;
 		} ) ;
 	} ) ;
+	
+	it( "safeTimeout() should call its function after the given time" , function( done ) {
+		
+		var ok = false ;
+		var error = new Error( "Should have been cleared" ) ;
+		
+		var t1 = async.setSafeTimeout( function() { throw error ; } , 50 ) ;
+		var t2 = async.setSafeTimeout( function() { throw error ; } , 50 ) ;
+		var t3 = async.setSafeTimeout( function() {
+			if ( ! ok ) { throw new Error( 'Regular timeout should trigger before' ) ; }
+			done() ;
+		} , 100 ) ;
+		setTimeout( function() { ok = true ; } , 100 ) ;
+		
+		async.clearSafeTimeout( t1 ) ;
+		setTimeout( function() { async.clearSafeTimeout( t2 ) ; } , 10 ) ;
+	} ) ;
 } ) ;
 
 
