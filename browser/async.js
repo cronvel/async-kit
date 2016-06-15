@@ -41,8 +41,11 @@ module.exports = require( './core.js' ) ;
 module.exports.wrapper = require( './wrapper.js' ) ;
 module.exports.isBrowser = true ;
 
+var safeTimeout = require( './safeTimeout.js' ) ;
+module.exports.setSafeTimeout = safeTimeout.setSafeTimeout ;
+module.exports.clearSafeTimeout = safeTimeout.clearSafeTimeout ;
 
-},{"./core.js":2,"./wrapper.js":3}],2:[function(require,module,exports){
+},{"./core.js":2,"./safeTimeout.js":3,"./wrapper.js":4}],2:[function(require,module,exports){
 /*
 	Async Kit
 	
@@ -1967,7 +1970,75 @@ function execLogicFinal( execContext , result )
 
 
 
-},{"nextgen-events":4,"tree-kit/lib/extend.js":5}],3:[function(require,module,exports){
+},{"nextgen-events":5,"tree-kit/lib/extend.js":6}],3:[function(require,module,exports){
+/*
+	Async Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
+	
+	The MIT License (MIT)
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+/*
+	Safe Timeout.
+	
+	A timeout that ensure a task get the time to perform its action.
+*/
+
+exports.setSafeTimeout = function setSafeTimeout( fn , timeout )
+{
+	var timer = { isSafeTimeout: true } ;
+	
+	timer.timer = setTimeout( function() {
+		timer.timer = setTimeout( function() {
+			timer.timer = setTimeout( function() {
+				timer.timer = setTimeout( fn , 0 ) ;
+			} , timeout / 2 ) ;
+		} , timeout / 2 ) ;
+	} , 0 ) ;
+	
+	return timer ;
+} ;
+
+
+
+exports.clearSafeTimeout = function clearSafeTimeout( timer )
+{
+	if ( timer && typeof timer === 'object' && timer.isSafeTimeout )
+	{
+		clearTimeout( timer.timer ) ;
+	}
+	else
+	{
+		clearTimeout( timer ) ;
+	}
+} ;
+
+
+
+},{}],4:[function(require,module,exports){
 /*
 	Async Kit
 	
@@ -2034,7 +2105,7 @@ wrapper.timeout = function timeout( fn , timeout_ , fnThis )
 
 
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*
 	The Cedric's Swiss Knife (CSK) - CSK NextGen Events
 	
@@ -2761,7 +2832,7 @@ NextGenEvents.processQueue = function processQueue( contextName , isCompletionCa
 
 
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*
 	The Cedric's Swiss Knife (CSK) - CSK object tree toolbox
 
