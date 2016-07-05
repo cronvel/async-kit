@@ -1322,113 +1322,122 @@ async.ExecContext.prototype.getJobsStatus = function getJobsStatus()
 
 function execDoInit( config , fromExecContext )
 {
-	var i , isArray = Array.isArray( this.jobsData ) ;
+	var i , execContext , isArray = Array.isArray( this.jobsData ) ;
 	
-	// Create instanceof ExecContext
-	var execContext = Object.create( async.ExecContext.prototype , {
-		plan: { value: this } ,
-		aggregate: { value: ( 'aggregate' in config  ? config.aggregate : this.defaultAggregate ) , writable: true , enumerable: true } ,
-		results: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
-		result: { value: undefined , writable: true , enumerable: true } , // Conditionnal version
-		jobsTimeoutTimers: { value: ( isArray ? [] : {} ) , writable: true } ,
-		jobsStatus: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
-		retriesTimers: { value: ( isArray ? [] : {} ) , writable: true } ,
-		retriesCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
-		tryUserResponseCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
-		tryResponseCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
-		iterator: { value: 0 , writable: true , enumerable: true } ,
-		pending: { value: 0 , writable: true , enumerable: true } ,
-		resolved: { value: 0 , writable: true , enumerable: true } ,
-		ok: { value: 0 , writable: true , enumerable: true } ,
-		failed: { value: 0 , writable: true , enumerable: true } ,
-		status: { value: undefined , writable: true , enumerable: true } ,
-		error: { value: undefined , writable: true , enumerable: true } ,
-		statusTriggerJobsKey: { value: undefined , writable: true , enumerable: true } ,
-		whileStatus: { value: undefined , writable: true } ,
-			// true if current execContext has looped in another execContext (one loop per execContext possible)
-			// false if this execContext will never loop, undefined if this isn't settled
-		whileChecked: { value: false , writable: true }
-	} ) ;
-	
-	// Add some properties depending on inherited ExecContext or not
-	if ( ! fromExecContext )
+	if ( fromExecContext && fromExecContext.whileIterator === -1 )
 	{
-		// This is the top-level/first ExecContext
-		Object.defineProperties( execContext , {
-			root: { value: execContext , enumerable: true } ,
-			jobsData: {
-				value: ( isArray ? this.jobsData.slice(0) : treeExtend( null , {} , this.jobsData ) ) ,
-				enumerable: true
-			} ,
-			jobsKeys: { value: this.jobsKeys.slice(0) , enumerable: true } ,
-			execInputs: { value: config.inputs , enumerable: true } ,
-			execCallbacks: { value: config.callbacks } ,
-			whileIterator: { value: 0 , enumerable: true , writable: true }
-		} ) ;
+		// This is a async.while().do() construct, reuse the parent context
+		execContext = fromExecContext ;
+		execContext.whileIterator = 0 ;
 	}
 	else
 	{
-		// This is a loop, and this ExecContext is derived from the first one
-		Object.defineProperties( execContext , {
-			root: { value: fromExecContext.root , enumerable: true } ,
-			jobsData: { value: fromExecContext.jobsData , enumerable: true } ,
-			jobsKeys: { value: fromExecContext.jobsKeys , enumerable: true } ,
-			execInputs: { value: fromExecContext.execInputs , enumerable: true } ,
-			execCallbacks: { value: fromExecContext.execCallbacks } ,
-			whileIterator: { value: fromExecContext.whileIterator + 1 , enumerable: true , writable: true }
+		// Create instanceof ExecContext
+		execContext = Object.create( async.ExecContext.prototype , {
+			plan: { value: this } ,
+			aggregate: { value: ( 'aggregate' in config  ? config.aggregate : this.defaultAggregate ) , writable: true , enumerable: true } ,
+			results: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
+			result: { value: undefined , writable: true , enumerable: true } , // Conditionnal version
+			jobsTimeoutTimers: { value: ( isArray ? [] : {} ) , writable: true } ,
+			jobsStatus: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
+			retriesTimers: { value: ( isArray ? [] : {} ) , writable: true } ,
+			retriesCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
+			tryUserResponseCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
+			tryResponseCounter: { value: ( isArray ? [] : {} ) , writable: true , enumerable: true } ,
+			iterator: { value: 0 , writable: true , enumerable: true } ,
+			pending: { value: 0 , writable: true , enumerable: true } ,
+			resolved: { value: 0 , writable: true , enumerable: true } ,
+			ok: { value: 0 , writable: true , enumerable: true } ,
+			failed: { value: 0 , writable: true , enumerable: true } ,
+			status: { value: undefined , writable: true , enumerable: true } ,
+			error: { value: undefined , writable: true , enumerable: true } ,
+			statusTriggerJobsKey: { value: undefined , writable: true , enumerable: true } ,
+			whileStatus: { value: undefined , writable: true } ,
+				// true if current execContext has looped in another execContext (one loop per execContext possible)
+				// false if this execContext will never loop, undefined if this isn't settled
+			whileChecked: { value: false , writable: true }
 		} ) ;
-	}
-	
-	// Add more properties depending on previous properties
-	Object.defineProperties( execContext , {
-		waiting: { value: execContext.jobsKeys.length , writable: true , enumerable: true }
-	} ) ;
-	
-	// Init the jobsStatus
-	for ( i = 0 ; i < execContext.jobsKeys.length ; i ++ )
-	{
-		execContext.jobsStatus[ execContext.jobsKeys[ i ] ] = {
-			status: 'waiting' ,
-			errors: [] ,
-			tried: 0
-		} ;
-	}
-	
-	// Set up the nice value
-	execContext.setNice( this.asyncEventNice ) ;
-	
-	
-	// Initialize event listeners, only the first time
-	if ( fromExecContext === undefined )
-	{
-		// Register execFinal to the 'resolved' event
-		execContext.root.on( 'resolved' , this.execFinal.bind( this , execContext ) ) ;
 		
-		
-		// Register whileAction to the 'while' event and exec to the 'nextLoop' event
-		// Here, simple callback is mandatory
-		if ( typeof this.whileAction === 'function' )
+		// Add some properties depending on inherited ExecContext or not
+		if ( ! fromExecContext )
 		{
-			execContext.root.on( 'while' , this.whileAction.bind( this ) ) ;
-			execContext.root.on( 'nextLoop' , this.execLoop.bind( this ) ) ;
+			// This is the top-level/first ExecContext
+			Object.defineProperties( execContext , {
+				root: { value: execContext , enumerable: true } ,
+				jobsData: {
+					value: ( isArray ? this.jobsData.slice(0) : treeExtend( null , {} , this.jobsData ) ) ,
+					enumerable: true
+				} ,
+				jobsKeys: { value: this.jobsKeys.slice(0) , enumerable: true } ,
+				execInputs: { value: config.inputs , enumerable: true } ,
+				execCallbacks: { value: config.callbacks } ,
+				whileIterator: { value: 0 , enumerable: true , writable: true }
+			} ) ;
 		}
 		else
 		{
-			this.whileAction = undefined ; // falsy value: do not trigger while code
-			execContext.whileStatus = false ; // settle while status to false
+			// This is a loop, and this ExecContext is derived from the first one
+			Object.defineProperties( execContext , {
+				root: { value: fromExecContext.root , enumerable: true } ,
+				jobsData: { value: fromExecContext.jobsData , enumerable: true } ,
+				jobsKeys: { value: fromExecContext.jobsKeys , enumerable: true } ,
+				execInputs: { value: fromExecContext.execInputs , enumerable: true } ,
+				execCallbacks: { value: fromExecContext.execCallbacks } ,
+				whileIterator: { value: fromExecContext.whileIterator + 1 , enumerable: true , writable: true }
+			} ) ;
 		}
 		
+		// Add more properties depending on previous properties
+		Object.defineProperties( execContext , {
+			waiting: { value: execContext.jobsKeys.length , writable: true , enumerable: true }
+		} ) ;
 		
-		// Register execNext to the next event
-		execContext.root.on( 'next' , this.execNext.bind( this ) ) ;
-		
-		
-		// If we are in a async.while().do() scheme, start whileAction before doing anything
-		if ( this.whileAction && this.whileActionBefore )
+		// Init the jobsStatus
+		for ( i = 0 ; i < execContext.jobsKeys.length ; i ++ )
 		{
-			execContext.whileIterator = -1 ;
-			execContext.root.emit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) , null ) ;
-			return this ;
+			execContext.jobsStatus[ execContext.jobsKeys[ i ] ] = {
+				status: 'waiting' ,
+				errors: [] ,
+				tried: 0
+			} ;
+		}
+		
+		// Set up the nice value
+		execContext.setNice( this.asyncEventNice ) ;
+		
+		
+		// Initialize event listeners, only the first time
+		if ( fromExecContext === undefined )
+		{
+			// Register execFinal to the 'resolved' event
+			execContext.root.on( 'resolved' , this.execFinal.bind( this , execContext ) ) ;
+			
+			
+			// Register whileAction to the 'while' event and exec to the 'nextLoop' event
+			// Here, simple callback is mandatory
+			if ( typeof this.whileAction === 'function' )
+			{
+				execContext.root.on( 'while' , this.whileAction.bind( this ) ) ;
+				execContext.root.on( 'nextLoop' , this.execLoop.bind( this ) ) ;
+			}
+			else
+			{
+				this.whileAction = undefined ; // falsy value: do not trigger while code
+				execContext.whileStatus = false ; // settle while status to false
+			}
+			
+			
+			// Register execNext to the next event
+			execContext.root.on( 'next' , this.execNext.bind( this ) ) ;
+			
+			
+			// If we are in a async.while().do() scheme, start whileAction before doing anything
+			if ( this.whileAction && this.whileActionBefore )
+			{
+				execContext.whileIterator = -1 ;
+				execContext.root.emit( 'while' , execContext.error , execContext.results , this.execLoopCallback.bind( this , execContext ) , null ) ;
+				return this ;
+			}
 		}
 	}
 	
@@ -2107,22 +2116,22 @@ wrapper.timeout = function timeout( fn , timeout_ , fnThis )
 
 },{}],5:[function(require,module,exports){
 /*
-	The Cedric's Swiss Knife (CSK) - CSK NextGen Events
+	Next Gen Events
 	
-	Copyright (c) 2015 Cédric Ronvel 
+	Copyright (c) 2015 - 2016 Cédric Ronvel
 	
 	The MIT License (MIT)
-
+	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
+	
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
+	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2230,29 +2239,18 @@ NextGenEvents.prototype.addListener = function addListener( eventName , fn , opt
 	return this ;
 } ;
 
-
-
 NextGenEvents.prototype.on = NextGenEvents.prototype.addListener ;
 
 
 
 // Shortcut
-NextGenEvents.prototype.once = function once( eventName , options )
+NextGenEvents.prototype.once = function once( eventName , fn , options )
 {
-	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".once(): argument #0 should be a non-empty string" ) ; }
+	if ( fn && typeof fn === 'object' ) { fn.once = true ; }
+	else if ( options && typeof options === 'object' ) { options.once = true ; }
+	else { options = { once: true } ; }
 	
-	if ( typeof options === 'function' )
-	{
-		options = { id: options , fn: options } ;
-	}
-	else if ( ! options || typeof options !== 'object' || typeof options.fn !== 'function' )
-	{
-		throw new TypeError( ".once(): argument #1 should be a function or an object with a 'fn' property which value is a function" ) ;
-	}
-	
-	options.once = true ;
-	
-	return this.addListener( eventName , options ) ;
+	return this.addListener( eventName , fn , options ) ;
 } ;
 
 
@@ -2290,8 +2288,6 @@ NextGenEvents.prototype.removeListener = function removeListener( eventName , id
 	
 	return this ;
 } ;
-
-
 
 NextGenEvents.prototype.off = NextGenEvents.prototype.removeListener ;
 
@@ -2831,25 +2827,31 @@ NextGenEvents.processQueue = function processQueue( contextName , isCompletionCa
 
 
 
+// Backup for the AsyncTryCatch
+NextGenEvents.on = NextGenEvents.prototype.on ;
+NextGenEvents.once = NextGenEvents.prototype.once ;
+NextGenEvents.off = NextGenEvents.prototype.off ;
+
+
 
 },{}],6:[function(require,module,exports){
 /*
-	The Cedric's Swiss Knife (CSK) - CSK object tree toolbox
-
-	Copyright (c) 2014, 2015 Cédric Ronvel 
+	Tree Kit
+	
+	Copyright (c) 2014 - 2016 Cédric Ronvel
 	
 	The MIT License (MIT)
-
+	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
 	in the Software without restriction, including without limitation the rights
 	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 	copies of the Software, and to permit persons to whom the Software is
 	furnished to do so, subject to the following conditions:
-
+	
 	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
-
+	
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
