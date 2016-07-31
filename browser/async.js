@@ -1979,7 +1979,7 @@ function execLogicFinal( execContext , result )
 
 
 
-},{"nextgen-events":5,"tree-kit/lib/extend.js":6}],3:[function(require,module,exports){
+},{"nextgen-events":5,"tree-kit/lib/extend.js":7}],3:[function(require,module,exports){
 /*
 	Async Kit
 	
@@ -2151,8 +2151,6 @@ module.exports = NextGenEvents ;
 
 
 
-
-
 			/* Basic features, more or less compatible with Node.js */
 
 
@@ -2163,19 +2161,30 @@ NextGenEvents.SYNC = -Infinity ;
 // It has an eventEmitter as 'this' anyway (always called using call()).
 NextGenEvents.init = function init()
 {
-	Object.defineProperty( this , '__ngev' , { value: {
-		nice: NextGenEvents.SYNC ,
-		interruptible: false ,
-		recursion: 0 ,
-		contexts: {} ,
-		events: {
-			// Special events
-			error: [] ,
-			interrupt: [] ,
-			newListener: [] ,
-			removeListener: []
+	Object.defineProperty( this , '__ngev' , {
+		configurable: true ,
+		value: {
+			nice: NextGenEvents.SYNC ,
+			interruptible: false ,
+			recursion: 0 ,
+			contexts: {} ,
+			
+			// States by events
+			states: {} ,
+			
+			// State groups by events
+			stateGroups: {} ,
+			
+			// Listeners by events
+			listeners: {
+				// Special events
+				error: [] ,
+				interrupt: [] ,
+				newListener: [] ,
+				removeListener: []
+			}
 		}
-	} } ) ;
+	} ) ;
 } ;
 
 
@@ -2188,25 +2197,20 @@ NextGenEvents.filterOutCallback = function( what , currentElement ) { return wha
 // .addListener( eventName , [fn] , [options] )
 NextGenEvents.prototype.addListener = function addListener( eventName , fn , options )
 {
-	var listener = {} ;
+	var listener = {} , newListenerListeners ;
 	
 	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
-	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	if ( ! this.__ngev.listeners[ eventName ] ) { this.__ngev.listeners[ eventName ] = [] ; }
 	
 	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".addListener(): argument #0 should be a non-empty string" ) ; }
-	
-	if ( typeof fn !== 'function' )
-	{
-		options = fn ;
-		fn = undefined ;
-	}
-	
+	if ( typeof fn !== 'function' ) { options = fn ; fn = undefined ; }
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
 	
 	listener.fn = fn || options.fn ;
-	listener.id = typeof options.id === 'string' ? options.id : listener.fn ;
+	listener.id = options.id !== undefined ? options.id : listener.fn ;
 	listener.once = !! options.once ;
 	listener.async = !! options.async ;
+	listener.eventObject = !! options.eventObject ;
 	listener.nice = options.nice !== undefined ? Math.floor( options.nice ) : NextGenEvents.SYNC ;
 	listener.context = typeof options.context === 'string' ? options.context : null ;
 	
@@ -2225,16 +2229,32 @@ NextGenEvents.prototype.addListener = function addListener( eventName , fn , opt
 	// So the event's name can be retrieved in the listener itself.
 	listener.event = eventName ;
 	
-	// We should emit 'newListener' first, before adding it to the listeners,
-	// to avoid recursion in the case that eventName === 'newListener'
-	if ( this.__ngev.events.newListener.length )
+	if ( this.__ngev.listeners.newListener.length )
 	{
-		// Return an array, because .addListener() may support multiple event addition at once
+		// Extra care should be taken with the 'newListener' event, we should avoid recursion
+		// in the case that eventName === 'newListener', but inside a 'newListener' listener,
+		// .listenerCount() should report correctly
+		newListenerListeners = this.__ngev.listeners.newListener.slice() ;
+		
+		this.__ngev.listeners[ eventName ].push( listener ) ;
+		
+		// Return an array, because one day, .addListener() may support multiple event addition at once,
 		// e.g.: .addListener( { request: onRequest, close: onClose, error: onError } ) ;
-		this.emit( 'newListener' , [ listener ] ) ;
+		NextGenEvents.emitEvent( {
+			emitter: this ,
+			name: 'newListener' ,
+			args: [ [ listener ] ] ,
+			listeners: newListenerListeners
+		} ) ;
+		
+		if ( this.__ngev.states[ eventName ] ) { NextGenEvents.emitToOneListener( this.__ngev.states[ eventName ] , listener ) ; }
+		
+		return this ;
 	}
 	
-	this.__ngev.events[ eventName ].push( listener ) ;
+	this.__ngev.listeners[ eventName ].push( listener ) ;
+	
+	if ( this.__ngev.states[ eventName ] ) { NextGenEvents.emitToOneListener( this.__ngev.states[ eventName ] , listener ) ; }
 	
 	return this ;
 } ;
@@ -2244,6 +2264,7 @@ NextGenEvents.prototype.on = NextGenEvents.prototype.addListener ;
 
 
 // Shortcut
+// .once( eventName , [fn] , [options] )
 NextGenEvents.prototype.once = function once( eventName , fn , options )
 {
 	if ( fn && typeof fn === 'object' ) { fn.once = true ; }
@@ -2262,26 +2283,26 @@ NextGenEvents.prototype.removeListener = function removeListener( eventName , id
 	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".removeListener(): argument #0 should be a non-empty string" ) ; }
 	
 	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
-	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	if ( ! this.__ngev.listeners[ eventName ] ) { this.__ngev.listeners[ eventName ] = [] ; }
 	
-	length = this.__ngev.events[ eventName ].length ;
+	length = this.__ngev.listeners[ eventName ].length ;
 	
 	// It's probably faster to create a new array of listeners
 	for ( i = 0 ; i < length ; i ++ )
 	{
-		if ( this.__ngev.events[ eventName ][ i ].id === id )
+		if ( this.__ngev.listeners[ eventName ][ i ].id === id )
 		{
-			removedListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+			removedListeners.push( this.__ngev.listeners[ eventName ][ i ] ) ;
 		}
 		else
 		{
-			newListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+			newListeners.push( this.__ngev.listeners[ eventName ][ i ] ) ;
 		}
 	}
 	
-	this.__ngev.events[ eventName ] = newListeners ;
+	this.__ngev.listeners[ eventName ] = newListeners ;
 	
-	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	if ( removedListeners.length && this.__ngev.listeners.removeListener.length )
 	{
 		this.emit( 'removeListener' , removedListeners ) ;
 	}
@@ -2305,12 +2326,12 @@ NextGenEvents.prototype.removeAllListeners = function removeAllListeners( eventN
 		
 		if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".removeAllListener(): argument #0 should be undefined or a non-empty string" ) ; }
 		
-		if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+		if ( ! this.__ngev.listeners[ eventName ] ) { this.__ngev.listeners[ eventName ] = [] ; }
 		
-		removedListeners = this.__ngev.events[ eventName ] ;
-		this.__ngev.events[ eventName ] = [] ;
+		removedListeners = this.__ngev.listeners[ eventName ] ;
+		this.__ngev.listeners[ eventName ] = [] ;
 		
-		if ( removedListeners.length && this.__ngev.events.removeListener.length )
+		if ( removedListeners.length && this.__ngev.listeners.removeListener.length )
 		{
 			this.emit( 'removeListener' , removedListeners ) ;
 		}
@@ -2319,7 +2340,7 @@ NextGenEvents.prototype.removeAllListeners = function removeAllListeners( eventN
 	{
 		// Remove all listeners for any events
 		// 'removeListener' listeners cannot be triggered: they are already deleted
-		this.__ngev.events = {} ;
+		this.__ngev.listeners = {} ;
 	}
 	
 	return this ;
@@ -2329,7 +2350,7 @@ NextGenEvents.prototype.removeAllListeners = function removeAllListeners( eventN
 
 NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , context )
 {
-	var returnValue , serial ;
+	var returnValue , serial , listenerCallback ;
 	
 	if ( event.interrupt ) { return ; }
 	
@@ -2342,7 +2363,7 @@ NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , con
 			context.ready = ! serial ;
 		}
 		
-		returnValue = listener.fn.apply( undefined , event.args.concat( function( arg ) {
+		listenerCallback = function( arg ) {
 			
 			event.listenersDone ++ ;
 			
@@ -2359,7 +2380,7 @@ NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , con
 				
 				event.emitter.emit( 'interrupt' , event.interrupt ) ;
 			}
-			else if ( event.listenersDone >= event.listeners && event.callback )
+			else if ( event.listenersDone >= event.listeners.length && event.callback )
 			{
 				event.callback( undefined , event ) ;
 				delete event.callback ;
@@ -2368,11 +2389,16 @@ NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , con
 			// Process the queue if serialized
 			if ( serial ) { NextGenEvents.processQueue.call( event.emitter , listener.context , true ) ; }
 			
-		} ) ) ;
+		} ;
+		
+		if ( listener.eventObject ) { listener.fn( event , listenerCallback ) ; }
+		else { returnValue = listener.fn.apply( undefined , event.args.concat( listenerCallback ) ) ; }
 	}
 	else
 	{
-		returnValue = listener.fn.apply( undefined , event.args ) ;
+		if ( listener.eventObject ) { listener.fn( event ) ; }
+		else { returnValue = listener.fn.apply( undefined , event.args ) ; }
+		
 		event.listenersDone ++ ;
 	}
 	
@@ -2390,7 +2416,7 @@ NextGenEvents.listenerWrapper = function listenerWrapper( listener , event , con
 		
 		event.emitter.emit( 'interrupt' , event.interrupt ) ;
 	}
-	else if ( event.listenersDone >= event.listeners && event.callback )
+	else if ( event.listenersDone >= event.listeners.length && event.callback )
 	{
 		event.callback( undefined , event ) ;
 		delete event.callback ;
@@ -2409,23 +2435,9 @@ var nextEventId = 0 ;
 */
 NextGenEvents.prototype.emit = function emit()
 {
-	var i , iMax , count = 0 ,
-		event , listener , context , currentNice ,
-		listeners , removedListeners = [] ;
+	var event ;
 	
-	event = {
-		emitter: this ,
-		id: nextEventId ++ ,
-		name: null ,
-		args: null ,
-		nice: null ,
-		interrupt: null ,
-		listeners: null ,
-		listenersDone: 0 ,
-		callback: null ,
-	} ;
-	
-	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	event = { emitter: this } ;
 	
 	// Arguments handling
 	if ( typeof arguments[ 0 ] === 'number' )
@@ -2446,7 +2458,7 @@ NextGenEvents.prototype.emit = function emit()
 	}
 	else
 	{
-		event.nice = this.__ngev.nice ;
+		//event.nice = this.__ngev.nice ;
 		event.name = arguments[ 0 ] ;
 		if ( ! event.name || typeof event.name !== 'string' ) { throw new TypeError( ".emit(): argument #0 should be an number or a non-empty string" ) ; }
 		event.args = Array.prototype.slice.call( arguments , 1 ) ;
@@ -2462,81 +2474,68 @@ NextGenEvents.prototype.emit = function emit()
 		}
 	}
 	
+	return NextGenEvents.emitEvent( event ) ;
+} ;
+
+
+
+/*
+	At this stage, event should have properties for the event:
+		* emitter: the event emitter
+		* name: the event name
+		* args: array, the arguments of the event
+		* nice: (optional) nice value
+		* callback: (optional) a callback for emit
+		* listeners: (optional) override the listeners array stored in __ngev
+*/
+NextGenEvents.emitEvent = function emitEvent( event )
+{
+	var self = event.emitter ,
+		i , iMax , count = 0 , removedListeners ;
 	
-	if ( ! this.__ngev.events[ event.name ] ) { this.__ngev.events[ event.name ] = [] ; }
+	if ( ! self.__ngev ) { NextGenEvents.init.call( self ) ; }
 	
-	// Increment this.__ngev.recursion
-	event.listeners = this.__ngev.events[ event.name ].length ;
-	this.__ngev.recursion ++ ;
+	if ( ! self.__ngev.listeners[ event.name ] ) { self.__ngev.listeners[ event.name ] = [] ; }
+	
+	event.id = nextEventId ++ ;
+	event.listenersDone = 0 ;
+	event.once = !! event.once ;
+	
+	if ( event.nice === undefined || event.nice === null ) { event.nice = self.__ngev.nice ; }
 	
 	// Trouble arise when a listener is removed from another listener, while we are still in the loop.
 	// So we have to COPY the listener array right now!
-	listeners = this.__ngev.events[ event.name ].slice() ;
+	if ( ! event.listeners ) { event.listeners = self.__ngev.listeners[ event.name ].slice() ; }
 	
-	for ( i = 0 , iMax = listeners.length ; i < iMax ; i ++ )
+	// This is a state event, register it now!
+	if ( self.__ngev.states[ event.name ] !== undefined )
+	{
+		// Unset all states of that group
+		self.__ngev.stateGroups[ event.name ].forEach( function( eventName ) {
+			self.__ngev.states[ eventName ] = null ;
+		} ) ;
+		
+		self.__ngev.states[ event.name ] = event ;
+	}
+	
+	// Increment self.__ngev.recursion
+	self.__ngev.recursion ++ ;
+	removedListeners = [] ;
+	
+	// Emit the event to all listeners!
+	for ( i = 0 , iMax = event.listeners.length ; i < iMax ; i ++ )
 	{
 		count ++ ;
-		listener = listeners[ i ] ;
-		context = listener.context && this.__ngev.contexts[ listener.context ] ;
-		
-		// If the listener context is disabled...
-		if ( context && context.status === NextGenEvents.CONTEXT_DISABLED ) { continue ; }
-		
-		// The nice value for this listener...
-		if ( context ) { currentNice = Math.max( event.nice , listener.nice , context.nice ) ; }
-		else { currentNice = Math.max( event.nice , listener.nice ) ; }
-		
-		
-		if ( listener.once )
-		{
-			// We should remove the current listener RIGHT NOW because of recursive .emit() issues:
-			// one listener may eventually fire this very same event synchronously during the current loop.
-			this.__ngev.events[ event.name ] = this.__ngev.events[ event.name ].filter(
-				NextGenEvents.filterOutCallback.bind( undefined , listener )
-			) ;
-			
-			removedListeners.push( listener ) ;
-		}
-		
-		if ( context && ( context.status === NextGenEvents.CONTEXT_QUEUED || ! context.ready ) )
-		{
-			// Almost all works should be done by .emit(), and little few should be done by .processQueue()
-			context.queue.push( { event: event , listener: listener , nice: currentNice } ) ;
-		}
-		else
-		{
-			try {
-				if ( currentNice < 0 )
-				{
-					if ( this.__ngev.recursion >= - currentNice )
-					{
-						setImmediate( NextGenEvents.listenerWrapper.bind( this , listener , event , context ) ) ;
-					}
-					else
-					{
-						NextGenEvents.listenerWrapper.call( this , listener , event , context ) ;
-					}
-				}
-				else
-				{
-					setTimeout( NextGenEvents.listenerWrapper.bind( this , listener , event , context ) , currentNice ) ;
-				}
-			}
-			catch ( error ) {
-				// Catch error, just to decrement this.__ngev.recursion, re-throw after that...
-				this.__ngev.recursion -- ;
-				throw error ;
-			}
-		}
+		NextGenEvents.emitToOneListener( event , event.listeners[ i ] , removedListeners ) ;
 	}
 	
 	// Decrement recursion
-	this.__ngev.recursion -- ;
+	self.__ngev.recursion -- ;
 	
 	// Emit 'removeListener' after calling listeners
-	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	if ( removedListeners.length && self.__ngev.listeners.removeListener.length )
 	{
-		this.emit( 'removeListener' , removedListeners ) ;
+		self.emit( 'removeListener' , removedListeners ) ;
 	}
 	
 	
@@ -2545,7 +2544,7 @@ NextGenEvents.prototype.emit = function emit()
 	{
 		if ( event.name === 'error' )
 		{
-			if ( arguments[ 1 ] ) { throw arguments[ 1 ] ; }
+			if ( event.args[ 0 ] ) { throw event.args[ 0 ] ; }
 			else { throw Error( "Uncaught, unspecified 'error' event." ) ; }
 		}
 		
@@ -2561,15 +2560,84 @@ NextGenEvents.prototype.emit = function emit()
 
 
 
+// If removedListeners is not given, then one-time listener emit the 'removeListener' event,
+// if given: that's the caller business to do it
+NextGenEvents.emitToOneListener = function emitToOneListener( event , listener , removedListeners )
+{	
+	var self = event.emitter ,
+		context , currentNice , emitRemoveListener = false ;
+	
+	context = listener.context && self.__ngev.contexts[ listener.context ] ;
+	
+	// If the listener context is disabled...
+	if ( context && context.status === NextGenEvents.CONTEXT_DISABLED ) { return ; }
+	
+	// The nice value for this listener...
+	if ( context ) { currentNice = Math.max( event.nice , listener.nice , context.nice ) ; }
+	else { currentNice = Math.max( event.nice , listener.nice ) ; }
+	
+	
+	if ( listener.once )
+	{
+		// We should remove the current listener RIGHT NOW because of recursive .emit() issues:
+		// one listener may eventually fire this very same event synchronously during the current loop.
+		self.__ngev.listeners[ event.name ] = self.__ngev.listeners[ event.name ].filter(
+			NextGenEvents.filterOutCallback.bind( undefined , listener )
+		) ;
+		
+		if ( removedListeners ) { removedListeners.push( listener ) ; }
+		else { emitRemoveListener = true ; }
+	}
+	
+	if ( context && ( context.status === NextGenEvents.CONTEXT_QUEUED || ! context.ready ) )
+	{
+		// Almost all works should be done by .emit(), and little few should be done by .processQueue()
+		context.queue.push( { event: event , listener: listener , nice: currentNice } ) ;
+	}
+	else
+	{
+		try {
+			if ( currentNice < 0 )
+			{
+				if ( self.__ngev.recursion >= - currentNice )
+				{
+					setImmediate( NextGenEvents.listenerWrapper.bind( self , listener , event , context ) ) ;
+				}
+				else
+				{
+					NextGenEvents.listenerWrapper.call( self , listener , event , context ) ;
+				}
+			}
+			else
+			{
+				setTimeout( NextGenEvents.listenerWrapper.bind( self , listener , event , context ) , currentNice ) ;
+			}
+		}
+		catch ( error ) {
+			// Catch error, just to decrement self.__ngev.recursion, re-throw after that...
+			self.__ngev.recursion -- ;
+			throw error ;
+		}
+	}
+	
+	// Emit 'removeListener' after calling the listener
+	if ( emitRemoveListener && self.__ngev.listeners.removeListener.length )
+	{
+		self.emit( 'removeListener' , [ listener ] ) ;
+	}
+} ;
+
+
+
 NextGenEvents.prototype.listeners = function listeners( eventName )
 {
 	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".listeners(): argument #0 should be a non-empty string" ) ; }
 	
 	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
-	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	if ( ! this.__ngev.listeners[ eventName ] ) { this.__ngev.listeners[ eventName ] = [] ; }
 	
 	// Do not return the array, shallow copy it
-	return this.__ngev.events[ eventName ].slice() ;
+	return this.__ngev.listeners[ eventName ].slice() ;
 } ;
 
 
@@ -2587,9 +2655,9 @@ NextGenEvents.prototype.listenerCount = function( eventName )
 	if ( ! eventName || typeof eventName !== 'string' ) { throw new TypeError( ".listenerCount(): argument #1 should be a non-empty string" ) ; }
 	
 	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
-	if ( ! this.__ngev.events[ eventName ] ) { this.__ngev.events[ eventName ] = [] ; }
+	if ( ! this.__ngev.listeners[ eventName ] ) { this.__ngev.listeners[ eventName ] = [] ; }
 	
-	return this.__ngev.events[ eventName ].length ;
+	return this.__ngev.listeners[ eventName ].length ;
 } ;
 
 
@@ -2614,11 +2682,237 @@ NextGenEvents.prototype.setInterruptible = function setInterruptible( value )
 
 
 
+// Make two objects sharing the same event bus
+NextGenEvents.share = function( source , target )
+{
+	if ( ! ( source instanceof NextGenEvents ) || ! ( target instanceof NextGenEvents ) )
+	{
+		throw new TypeError( 'NextGenEvents.share() arguments should be instances of NextGenEvents' ) ;
+	}
+	
+	if ( ! source.__ngev ) { NextGenEvents.init.call( source ) ; }
+	
+	Object.defineProperty( target , '__ngev' , {
+		configurable: true ,
+		value: source.__ngev
+	} ) ;
+} ;
+
+
+
 // There is no such thing in NextGenEvents, however, we need to be compatible with node.js events at best
 NextGenEvents.prototype.setMaxListeners = function() {} ;
 
 // Sometime useful as a no-op callback...
 NextGenEvents.noop = function() {} ;
+
+
+
+
+
+			/* Next Gen feature: states! */
+
+
+
+// .defineStates( exclusiveState1 , [exclusiveState2] , [exclusiveState3] , ... )
+NextGenEvents.prototype.defineStates = function defineStates()
+{
+	var self = this ,
+		states = Array.prototype.slice.call( arguments ) ;
+	
+	if ( ! this.__ngev ) { NextGenEvents.init.call( this ) ; }
+	
+	states.forEach( function( state ) {
+		self.__ngev.states[ state ] = null ;
+		self.__ngev.stateGroups[ state ] = states ;
+	} ) ;
+} ;
+
+
+
+NextGenEvents.prototype.hasState = function hasState( state )
+{
+	return !! this.__ngev.states[ state ] ;
+} ;
+
+
+
+NextGenEvents.prototype.getAllStates = function getAllStates()
+{
+	var self = this ;
+	return Object.keys( this.__ngev.states ).filter( function( e ) { return self.__ngev.states[ e ] ; } ) ;
+} ;
+
+
+
+
+
+			/* Next Gen feature: groups! */
+
+
+
+NextGenEvents.groupAddListener = function groupAddListener( emitters , eventName , fn , options )
+{
+	// Manage arguments
+	if ( typeof fn !== 'function' ) { options = fn ; fn = undefined ; }
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	fn = fn || options.fn ;
+	delete options.fn ;
+	
+	// Preserve the listener ID, so groupRemoveListener() will work as expected
+	options.id = options.id || fn ;
+	
+	emitters.forEach( function( emitter ) {
+		emitter.addListener( eventName , fn.bind( undefined , emitter ) , options ) ;
+	} ) ;
+} ;
+
+NextGenEvents.groupOn = NextGenEvents.groupAddListener ;
+
+
+
+// Once per emitter
+NextGenEvents.groupOnce = function groupOnce( emitters , eventName , fn , options )
+{
+	if ( fn && typeof fn === 'object' ) { fn.once = true ; }
+	else if ( options && typeof options === 'object' ) { options.once = true ; }
+	else { options = { once: true } ; }
+	
+	return this.groupAddListener( emitters , eventName , fn , options ) ;
+} ;
+
+
+
+// Globally once, only one event could be emitted, by the first emitter to emit
+NextGenEvents.groupGlobalOnce = function groupGlobalOnce( emitters , eventName , fn , options )
+{
+	var fnWrapper , triggered = false ;
+	
+	// Manage arguments
+	if ( typeof fn !== 'function' ) { options = fn ; fn = undefined ; }
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	fn = fn || options.fn ;
+	delete options.fn ;
+	
+	// Preserve the listener ID, so groupRemoveListener() will work as expected
+	options.id = options.id || fn ;
+	
+	fnWrapper = function() {
+		if ( triggered ) { return ; }
+		triggered = true ;
+		NextGenEvents.groupRemoveListener( emitters , eventName , options.id ) ;
+		fn.apply( undefined , arguments ) ;
+	} ;
+	
+	emitters.forEach( function( emitter ) {
+		emitter.once( eventName , fnWrapper.bind( undefined , emitter ) , options ) ;
+	} ) ;
+} ;
+
+
+
+// Globally once, only one event could be emitted, by the last emitter to emit
+NextGenEvents.groupGlobalOnceAll = function groupGlobalOnceAll( emitters , eventName , fn , options )
+{
+	var fnWrapper , triggered = false , count = emitters.length ;
+	
+	// Manage arguments
+	if ( typeof fn !== 'function' ) { options = fn ; fn = undefined ; }
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	
+	fn = fn || options.fn ;
+	delete options.fn ;
+	
+	// Preserve the listener ID, so groupRemoveListener() will work as expected
+	options.id = options.id || fn ;
+	
+	fnWrapper = function() {
+		if ( triggered ) { return ; }
+		if ( -- count ) { return ; }
+		
+		// So this is the last emitter...
+		
+		triggered = true ;
+		// No need to remove listeners: there are already removed anyway
+		//NextGenEvents.groupRemoveListener( emitters , eventName , options.id ) ;
+		fn.apply( undefined , arguments ) ;
+	} ;
+	
+	emitters.forEach( function( emitter ) {
+		emitter.once( eventName , fnWrapper.bind( undefined , emitter ) , options ) ;
+	} ) ;
+} ;
+
+
+
+NextGenEvents.groupRemoveListener = function groupRemoveListener( emitters , eventName , id )
+{
+	emitters.forEach( function( emitter ) {
+		emitter.removeListener( eventName , id ) ;
+	} ) ;
+} ;
+
+NextGenEvents.groupOff = NextGenEvents.groupRemoveListener ;
+
+
+
+NextGenEvents.groupEmit = function groupEmit( emitters )
+{
+	var eventName , nice , argStart = 2 , argEnd , args , count = emitters.length ,
+		callback , callbackWrapper , callbackTriggered = false ;
+	
+	if ( typeof arguments[ arguments.length - 1 ] === 'function' )
+	{
+		argEnd = -1 ;
+		callback = arguments[ arguments.length - 1 ] ;
+		
+		callbackWrapper = function( interruption ) {
+			if ( callbackTriggered ) { return ; }
+			
+			if ( interruption )
+			{
+				callbackTriggered = true ;
+				callback( interruption ) ;
+			}
+			else if ( ! -- count )
+			{
+				callbackTriggered = true ;
+				callback() ;
+			}
+		} ;
+	}
+	
+	if ( typeof arguments[ 1 ] === 'number' )
+	{
+		argStart = 3 ;
+		nice = typeof arguments[ 1 ] ;
+	}
+	
+	eventName = arguments[ argStart - 1 ] ;
+	args = Array.prototype.slice.call( arguments , argStart , argEnd ) ;
+	
+	emitters.forEach( function( emitter ) {
+		NextGenEvents.emitEvent( {
+			emitter: emitter ,
+			name: eventName ,
+			args: args ,
+			callback: callbackWrapper
+		} ) ;
+	} ) ;
+} ;
+
+
+
+NextGenEvents.groupDefineStates = function groupDefineStates( emitters )
+{
+	var args = Array.prototype.slice.call( arguments , 1 ) ;
+	
+	emitters.forEach( function( emitter ) {
+		emitter.defineStates.apply( emitter , args ) ;
+	} ) ;
+} ;
 
 
 
@@ -2738,30 +3032,30 @@ NextGenEvents.prototype.destroyListenerContext = function destroyListenerContext
 	
 	// We don't care if a context actually exists, all listeners tied to that contextName will be removed
 	
-	for ( eventName in this.__ngev.events )
+	for ( eventName in this.__ngev.listeners )
 	{
 		newListeners = null ;
-		length = this.__ngev.events[ eventName ].length ;
+		length = this.__ngev.listeners[ eventName ].length ;
 		
 		for ( i = 0 ; i < length ; i ++ )
 		{
-			if ( this.__ngev.events[ eventName ][ i ].context === contextName )
+			if ( this.__ngev.listeners[ eventName ][ i ].context === contextName )
 			{
 				newListeners = [] ;
-				removedListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+				removedListeners.push( this.__ngev.listeners[ eventName ][ i ] ) ;
 			}
 			else if ( newListeners )
 			{
-				newListeners.push( this.__ngev.events[ eventName ][ i ] ) ;
+				newListeners.push( this.__ngev.listeners[ eventName ][ i ] ) ;
 			}
 		}
 		
-		if ( newListeners ) { this.__ngev.events[ eventName ] = newListeners ; }
+		if ( newListeners ) { this.__ngev.listeners[ eventName ] = newListeners ; }
 	}
 	
 	if ( this.__ngev.contexts[ contextName ] ) { delete this.__ngev.contexts[ contextName ] ; }
 	
-	if ( removedListeners.length && this.__ngev.events.removeListener.length )
+	if ( removedListeners.length && this.__ngev.listeners.removeListener.length )
 	{
 		this.emit( 'removeListener' , removedListeners ) ;
 	}
@@ -2834,7 +3128,614 @@ NextGenEvents.off = NextGenEvents.prototype.off ;
 
 
 
-},{}],6:[function(require,module,exports){
+// Load Proxy AT THE END (circular require)
+NextGenEvents.Proxy = require( './Proxy.js' ) ;
+
+
+},{"./Proxy.js":6}],6:[function(require,module,exports){
+/*
+	Next Gen Events
+	
+	Copyright (c) 2015 - 2016 Cédric Ronvel
+	
+	The MIT License (MIT)
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
+"use strict" ;
+
+
+
+// Create the object && export it
+function Proxy() { return Proxy.create() ; }
+module.exports = Proxy ;
+
+var NextGenEvents = require( './NextGenEvents.js' ) ;
+var MESSAGE_TYPE = 'NextGenEvents/message' ;
+
+function noop() {}
+
+
+
+Proxy.create = function create()
+{
+	var self = Object.create( Proxy.prototype , {
+		localServices: { value: {} , enumerable: true } ,
+		remoteServices: { value: {} , enumerable: true } ,
+		nextAckId: { value: 1 , writable: true , enumerable: true } ,
+	} ) ;
+	
+	return self ;
+} ;
+
+
+
+// Add a local service accessible remotely
+Proxy.prototype.addLocalService = function addLocalService( id , emitter , options )
+{
+	this.localServices[ id ] = LocalService.create( this , id , emitter , options ) ;
+	return this.localServices[ id ] ;
+} ;
+
+
+
+// Add a remote service accessible locally
+Proxy.prototype.addRemoteService = function addRemoteService( id )
+{
+	this.remoteServices[ id ] = RemoteService.create( this , id ) ;
+	return this.remoteServices[ id ] ;
+} ;
+
+
+
+// Destroy the proxy
+Proxy.prototype.destroy = function destroy()
+{
+	var self = this ;
+	
+	Object.keys( this.localServices ).forEach( function( id ) {
+		self.localServices[ id ].destroy() ;
+		delete self.localServices[ id ] ;
+	} ) ;
+	
+	Object.keys( this.remoteServices ).forEach( function( id ) {
+		self.remoteServices[ id ].destroy() ;
+		delete self.remoteServices[ id ] ;
+	} ) ;
+	
+	this.receive = this.send = noop ;
+} ;
+
+
+
+// Push an event message.
+Proxy.prototype.push = function push( message )
+{
+	if (
+		message.__type !== MESSAGE_TYPE ||
+		! message.service || typeof message.service !== 'string' ||
+		! message.event || typeof message.event !== 'string' ||
+		! message.method
+	)
+	{
+		return ;
+	}
+	
+	switch ( message.method )
+	{
+		// Those methods target a remote service
+		case 'event' :
+			return this.remoteServices[ message.service ] && this.remoteServices[ message.service ].receiveEvent( message ) ;
+		case 'ackEmit' :
+			return this.remoteServices[ message.service ] && this.remoteServices[ message.service ].receiveAckEmit( message ) ;
+			
+		// Those methods target a local service
+		case 'emit' :
+			return this.localServices[ message.service ] && this.localServices[ message.service ].receiveEmit( message ) ;
+		case 'listen' :
+			return this.localServices[ message.service ] && this.localServices[ message.service ].receiveListen( message ) ;
+		case 'ignore' :
+			return this.localServices[ message.service ] && this.localServices[ message.service ].receiveIgnore( message ) ;
+		case 'ackEvent' :
+			return this.localServices[ message.service ] && this.localServices[ message.service ].receiveAckEvent( message ) ;
+			
+		default:
+		 	return ;
+	}
+} ;
+
+
+
+// This is the method to receive and decode data from the other side of the communication channel, most of time another proxy.
+// In most case, this should be overwritten.
+Proxy.prototype.receive = function receive( raw )
+{
+	this.push( raw ) ;
+} ;
+
+
+
+// This is the method used to send data to the other side of the communication channel, most of time another proxy.
+// This MUST be overwritten in any case.
+Proxy.prototype.send = function send()
+{
+	throw new Error( 'The send() method of the Proxy MUST be extended/overwritten' ) ;
+} ;
+
+
+
+			/* Local Service */
+
+
+
+function LocalService( proxy , id , emitter , options ) { return LocalService.create( proxy , id , emitter , options ) ; }
+Proxy.LocalService = LocalService ;
+
+
+
+LocalService.create = function create( proxy , id , emitter , options )
+{
+	var self = Object.create( LocalService.prototype , {
+		proxy: { value: proxy , enumerable: true } ,
+		id: { value: id , enumerable: true } ,
+		emitter: { value: emitter , writable: true , enumerable: true } ,
+		internalEvents: { value: Object.create( NextGenEvents.prototype ) , writable: true , enumerable: true } ,
+		events: { value: {} , enumerable: true } ,
+		canListen: { value: !! options.listen , writable: true , enumerable: true } ,
+		canEmit: { value: !! options.emit , writable: true , enumerable: true } ,
+		canAck: { value: !! options.ack , writable: true , enumerable: true } ,
+		canRpc: { value: !! options.rpc , writable: true , enumerable: true } ,
+		destroyed: { value: false , writable: true , enumerable: true } ,
+	} ) ;
+	
+	return self ;
+} ;
+
+
+
+// Destroy a service
+LocalService.prototype.destroy = function destroy()
+{
+	var self = this ;
+	
+	Object.keys( this.events ).forEach( function( eventName ) {
+		self.emitter.off( eventName , self.events[ eventName ] ) ;
+		delete self.events[ eventName ] ;
+	} ) ;
+	
+	this.emitter = null ;
+	this.destroyed = true ;
+} ;
+
+
+
+// Remote want to emit on the local service
+LocalService.prototype.receiveEmit = function receiveEmit( message )
+{
+	if ( this.destroyed || ! this.canEmit || ( message.ack && ! this.canAck ) ) { return ; }
+	
+	var self = this ;
+	
+	var event = {
+		emitter: this.emitter ,
+		name: message.event ,
+		args: message.args || [] 
+	} ;
+	
+	if ( message.ack )
+	{
+		event.callback = function ack( interruption ) {
+			
+			self.proxy.send( {
+				__type: MESSAGE_TYPE ,
+				service: self.id ,
+				method: 'ackEmit' ,
+				ack: message.ack ,
+				event: message.event ,
+				interruption: interruption
+			} ) ;
+		} ;
+	}
+	
+	NextGenEvents.emitEvent( event ) ;
+} ;
+
+
+
+// Remote want to listen to an event of the local service
+LocalService.prototype.receiveListen = function receiveListen( message )
+{
+	if ( this.destroyed || ! this.canListen || ( message.ack && ! this.canAck ) ) { return ; }
+	
+	if ( message.ack )
+	{
+		if ( this.events[ message.event ] )
+		{
+			if ( this.events[ message.event ].ack ) { return ; }
+			
+			// There is already an event, but not featuring ack, remove that listener now
+			this.emitter.off( message.event , this.events[ message.event ] ) ;
+		}
+		
+		this.events[ message.event ] = LocalService.forwardWithAck.bind( this ) ;
+		this.events[ message.event ].ack = true ;
+		this.emitter.on( message.event , this.events[ message.event ] , { eventObject: true , async: true } ) ;
+	}
+	else
+	{
+		if ( this.events[ message.event ] )
+		{
+			if ( ! this.events[ message.event ].ack ) { return ; }
+			
+			// Remote want to downgrade:
+			// there is already an event, but featuring ack so we remove that listener now
+			this.emitter.off( message.event , this.events[ message.event ] ) ;
+		}
+		
+		this.events[ message.event ] = LocalService.forward.bind( this ) ;
+		this.events[ message.event ].ack = false ;
+		this.emitter.on( message.event , this.events[ message.event ] , { eventObject: true } ) ;
+	}
+} ;
+
+
+
+// Remote do not want to listen to that event of the local service anymore
+LocalService.prototype.receiveIgnore = function receiveIgnore( message )
+{
+	if ( this.destroyed || ! this.canListen ) { return ; }
+	
+	if ( ! this.events[ message.event ] ) { return ; }
+	
+	this.emitter.off( message.event , this.events[ message.event ] ) ;
+	this.events[ message.event ] = null ;
+} ;
+
+
+
+// 
+LocalService.prototype.receiveAckEvent = function receiveAckEvent( message )
+{
+	if (
+		this.destroyed || ! this.canListen || ! this.canAck || ! message.ack ||
+		! this.events[ message.event ] || ! this.events[ message.event ].ack
+	)
+	{
+		return ;
+	}
+	
+	this.internalEvents.emit( 'ack' , message ) ;
+} ;
+
+
+
+// Send an event from the local service to remote
+LocalService.forward = function forward( event )
+{
+	if ( this.destroyed ) { return ; }
+	
+	this.proxy.send( {
+		__type: MESSAGE_TYPE ,
+		service: this.id ,
+		method: 'event' ,
+		event: event.name ,
+		args: event.args
+	} ) ;
+} ;
+
+LocalService.forward.ack = false ;
+
+
+
+// Send an event from the local service to remote, with ACK
+LocalService.forwardWithAck = function forwardWithAck( event , callback )
+{
+	if ( this.destroyed ) { return ; }
+	
+	var self = this ;
+	
+	if ( ! event.callback )
+	{
+		// There is no emit callback, no need to ack this one
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'event' ,
+			event: event.name ,
+			args: event.args
+		} ) ;
+		
+		callback() ;
+		return ;
+	}
+	
+	var triggered = false ;
+	var ackId = this.proxy.nextAckId ++ ;
+	
+	var onAck = function onAck( message ) {
+		if ( triggered || message.ack !== ackId ) { return ; }	// Not our ack...
+		//if ( message.event !== event ) { return ; }	// Do we care?
+		triggered = true ;
+		self.internalEvents.off( 'ack' , onAck ) ;
+		callback() ;
+	} ;
+	
+	this.internalEvents.on( 'ack' , onAck ) ;
+	
+	this.proxy.send( {
+		__type: MESSAGE_TYPE ,
+		service: this.id ,
+		method: 'event' ,
+		event: event.name ,
+		ack: ackId ,
+		args: event.args
+	} ) ;
+} ;
+
+LocalService.forwardWithAck.ack = true ;
+
+
+
+			/* Remote Service */
+
+
+
+function RemoteService( proxy , id ) { return RemoteService.create( proxy , id ) ; }
+//RemoteService.prototype = Object.create( NextGenEvents.prototype ) ;
+//RemoteService.prototype.constructor = RemoteService ;
+Proxy.RemoteService = RemoteService ;
+
+
+
+var EVENT_NO_ACK = 1 ;
+var EVENT_ACK = 2 ;
+
+
+
+RemoteService.create = function create( proxy , id )
+{
+	var self = Object.create( RemoteService.prototype , {
+		proxy: { value: proxy , enumerable: true } ,
+		id: { value: id , enumerable: true } ,
+		// This is the emitter where everything is routed to
+		emitter: { value: Object.create( NextGenEvents.prototype ) , writable: true , enumerable: true } ,
+		internalEvents: { value: Object.create( NextGenEvents.prototype ) , writable: true , enumerable: true } ,
+		events: { value: {} , enumerable: true } ,
+		destroyed: { value: false , writable: true , enumerable: true } ,
+		
+		/*	Useless for instance, unless some kind of service capabilities discovery mechanism exists
+		canListen: { value: !! options.listen , writable: true , enumerable: true } ,
+		canEmit: { value: !! options.emit , writable: true , enumerable: true } ,
+		canAck: { value: !! options.ack , writable: true , enumerable: true } ,
+		canRpc: { value: !! options.rpc , writable: true , enumerable: true } ,
+		*/
+	} ) ;
+	
+	return self ;
+} ;
+
+
+
+// Destroy a service
+RemoteService.prototype.destroy = function destroy()
+{
+	var self = this ;
+	this.emitter.removeAllListeners() ;
+	this.emitter = null ;
+	Object.keys( this.events ).forEach( function( eventName ) { delete self.events[ eventName ] ; } ) ;
+	this.destroyed = true ;
+} ;
+
+
+
+// Local code want to emit to remote service
+RemoteService.prototype.emit = function emit( eventName )
+{
+	if ( this.destroyed ) { return ; }
+	
+	var self = this , args , callback , ackId , triggered ;
+	
+	if ( typeof eventName === 'number' ) { throw new TypeError( 'Cannot emit with a nice value on a remote service' ) ; }
+	
+	if ( typeof arguments[ arguments.length - 1 ] !== 'function' )
+	{
+		args = Array.prototype.slice.call( arguments , 1 ) ;
+		
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'emit' ,
+			event: eventName ,
+			args: args
+		} ) ;
+		
+		return ;
+	}
+	
+	args = Array.prototype.slice.call( arguments , 1 , -1 ) ;
+	callback = arguments[ arguments.length - 1 ] ;
+	ackId = this.proxy.nextAckId ++ ;
+	triggered = false ;
+	
+	var onAck = function onAck( message ) {
+		if ( triggered || message.ack !== ackId ) { return ; }	// Not our ack...
+		//if ( message.event !== event ) { return ; }	// Do we care?
+		triggered = true ;
+		self.internalEvents.off( 'ack' , onAck ) ;
+		callback( message.interruption ) ;
+	} ;
+	
+	this.internalEvents.on( 'ack' , onAck ) ;
+	
+	this.proxy.send( {
+		__type: MESSAGE_TYPE ,
+		service: this.id ,
+		method: 'emit' ,
+		ack: ackId ,
+		event: eventName ,
+		args: args
+	} ) ;
+} ;
+
+
+
+// Local code want to listen to an event of remote service
+RemoteService.prototype.addListener = function addListener( eventName , fn , options )
+{
+	if ( this.destroyed ) { return ; }
+	
+	// Manage arguments the same way NextGenEvents#addListener() does
+	if ( typeof fn !== 'function' ) { options = fn ; fn = undefined ; }
+	if ( ! options || typeof options !== 'object' ) { options = {} ; }
+	options.fn = fn || options.fn ;
+	
+	this.emitter.addListener( eventName , options ) ;
+	
+	// No event was added...
+	if ( ! this.emitter.__ngev.listeners[ eventName ] || ! this.emitter.__ngev.listeners[ eventName ].length ) { return ; }
+	
+	// If the event is successfully listened to and was not remotely listened...
+	if ( options.async && this.events[ eventName ] !== EVENT_ACK )
+	{
+		// We need to listen to or upgrade this event
+		this.events[ eventName ] = EVENT_ACK ;
+		
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'listen' ,
+			ack: true ,
+			event: eventName
+		} ) ;
+	}
+	else if ( ! options.async && ! this.events[ eventName ] )
+	{
+		// We need to listen to this event
+		this.events[ eventName ] = EVENT_NO_ACK ;
+		
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'listen' ,
+			event: eventName
+		} ) ;
+	}
+} ;
+
+RemoteService.prototype.on = RemoteService.prototype.addListener ;
+
+// This is a shortcut to this.addListener()
+RemoteService.prototype.once = NextGenEvents.prototype.once ;
+
+
+
+// Local code want to ignore an event of remote service
+RemoteService.prototype.removeListener = function removeListener( eventName , id )
+{
+	if ( this.destroyed ) { return ; }
+	
+	this.emitter.removeListener( eventName , id ) ;
+	
+	// If no more listener are locally tied to with event and the event was remotely listened...
+	if (
+		( ! this.emitter.__ngev.listeners[ eventName ] || ! this.emitter.__ngev.listeners[ eventName ].length ) &&
+		this.events[ eventName ]
+	)
+	{
+		this.events[ eventName ] = 0 ;
+		
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'ignore' ,
+			event: eventName
+		} ) ;
+	}
+} ;
+
+RemoteService.prototype.off = RemoteService.prototype.removeListener ;
+
+
+
+// A remote service sent an event we are listening to, emit on the service representing the remote
+RemoteService.prototype.receiveEvent = function receiveEvent( message )
+{
+	var self = this ;
+	
+	if ( this.destroyed || ! this.events[ message.event ] ) { return ; }
+	
+	var event = {
+		emitter: this.emitter ,
+		name: message.event ,
+		args: message.args || [] 
+	} ;
+	
+	if ( message.ack )
+	{
+		event.callback = function ack() {
+			
+			self.proxy.send( {
+				__type: MESSAGE_TYPE ,
+				service: self.id ,
+				method: 'ackEvent' ,
+				ack: message.ack ,
+				event: message.event
+			} ) ;
+		} ;
+	}
+	
+	NextGenEvents.emitEvent( event ) ;
+	
+	var eventName = event.name ;
+	
+	// Here we should catch if the event is still listened to ('once' type listeners)
+	//if ( this.events[ eventName ]	) // not needed, already checked at the begining of the function
+	if ( ! this.emitter.__ngev.listeners[ eventName ] || ! this.emitter.__ngev.listeners[ eventName ].length )
+	{
+		this.events[ eventName ] = 0 ;
+		
+		this.proxy.send( {
+			__type: MESSAGE_TYPE ,
+			service: this.id ,
+			method: 'ignore' ,
+			event: eventName
+		} ) ;
+	}
+} ;
+
+
+
+// 
+RemoteService.prototype.receiveAckEmit = function receiveAckEmit( message )
+{
+	if ( this.destroyed || ! message.ack || this.events[ message.event ] !== EVENT_ACK )
+	{
+		return ;
+	}
+	
+	this.internalEvents.emit( 'ack' , message ) ;
+} ;
+
+
+
+},{"./NextGenEvents.js":5}],7:[function(require,module,exports){
 /*
 	Tree Kit
 	
@@ -2883,7 +3784,7 @@ NextGenEvents.off = NextGenEvents.prototype.off ;
 		* nofunc: skip functions
 		* deepFunc: in conjunction with 'deep', this will process sources functions like objects rather than
 			copying/referencing them directly into the source, thus, the result will not be a function, it forces 'deep'
-		* proto: try to clone objects with the right prototype, using Object.create() or mutating it with __proto__,
+		* proto: try to clone objects with the right prototype, using Object.create() or mutating it with Object.setPrototypeOf(),
 			it forces option 'own'.
 		* inherit: rather than mutating target prototype for source prototype like the 'proto' option does, here it is
 			the source itself that IS the prototype for the target. Force option 'own' and disable 'proto'.
@@ -2896,88 +3797,110 @@ NextGenEvents.off = NextGenEvents.prototype.off ;
 				for object whose prototype is listed
 			* whitelist: the opposite of blacklist
 */
-function extend( runtime , options , target )
+function extend( options , target )
 {
-	var i , j , jmax , source , sourceKeys , sourceKey , sourceValue ,
-		value , sourceDescriptor , targetKey , targetPointer , path ,
-		indexOfSource = -1 , newTarget = false , length = arguments.length ;
+	//console.log( "\nextend():\n" , arguments ) ;
+	var i , source , newTarget = false , length = arguments.length ;
+	
+	if ( length < 3 ) { return target ; }
+	
+	var sources = Array.prototype.slice.call( arguments , 2 ) ;
+	length = sources.length ;
 	
 	if ( ! options || typeof options !== 'object' ) { options = {} ; }
 	
-	// Things applied only for the first call, not for recursive call
-	if ( ! runtime )
+	var runtime = { depth: 0 , prefix: '' } ;
+	
+	if ( ! options.maxDepth && options.deep && ! options.circular ) { options.maxDepth = 100 ; }
+	
+	if ( options.deepFunc ) { options.deep = true ; }
+	
+	if ( options.deepFilter && typeof options.deepFilter === 'object' )
 	{
-		runtime = { depth: 0 , prefix: '' } ;
-		
-		if ( ! options.maxDepth && options.deep && ! options.circular ) { options.maxDepth = 100 ; }
-		
-		if ( options.deepFunc ) { options.deep = true ; }
-		
-		if ( options.deepFilter && typeof options.deepFilter === 'object' )
-		{
-			if ( options.deepFilter.whitelist && ( ! Array.isArray( options.deepFilter.whitelist ) || ! options.deepFilter.whitelist.length ) ) { delete options.deepFilter.whitelist ; }
-			if ( options.deepFilter.blacklist && ( ! Array.isArray( options.deepFilter.blacklist ) || ! options.deepFilter.blacklist.length ) ) { delete options.deepFilter.blacklist ; }
-			if ( ! options.deepFilter.whitelist && ! options.deepFilter.blacklist ) { delete options.deepFilter ; }
-		}
-		
-		// 'flat' option force 'deep'
-		if ( options.flat )
-		{
-			options.deep = true ;
-			options.proto = false ;
-			options.inherit = false ;
-			options.unflat = false ;
-			if ( typeof options.flat !== 'string' ) { options.flat = '.' ; }
-		}
-		
-		if ( options.unflat )
-		{
-			options.deep = false ;
-			options.proto = false ;
-			options.inherit = false ;
-			options.flat = false ;
-			if ( typeof options.unflat !== 'string' ) { options.unflat = '.' ; }
-		}
-		
-		// If the prototype is applied, only owned properties should be copied
-		if ( options.inherit ) { options.own = true ; options.proto = false ; }
-		else if ( options.proto ) { options.own = true ; }
-		
-		if ( ! target || ( typeof target !== 'object' && typeof target !== 'function' ) )
-		{
-			newTarget = true ;
-		}
-		
-		if ( ! options.skipRoot && ( options.inherit || options.proto ) )
-		{
-			for ( i = length - 1 ; i >= 3 ; i -- )
-			{
-				source = arguments[ i ] ;
-				if ( source && ( typeof source === 'object' || typeof source === 'function' ) )
-				{
-					if ( options.inherit )
-					{
-						if ( newTarget ) { target = Object.create( source ) ; }
-						else { target.__proto__ = source ; }	// jshint ignore:line
-					}
-					else if ( options.proto )
-					{
-						if ( newTarget ) { target = Object.create( source.__proto__ ) ; }	// jshint ignore:line
-						else { target.__proto__ = source.__proto__ ; }	// jshint ignore:line
-					}
-					
-					break ;
-				}
-			}
-		}
-		else if ( newTarget )
-		{
-			target = {} ;
-		}
-		
-		runtime.references = { sources: [] , targets: [] } ;
+		if ( options.deepFilter.whitelist && ( ! Array.isArray( options.deepFilter.whitelist ) || ! options.deepFilter.whitelist.length ) ) { delete options.deepFilter.whitelist ; }
+		if ( options.deepFilter.blacklist && ( ! Array.isArray( options.deepFilter.blacklist ) || ! options.deepFilter.blacklist.length ) ) { delete options.deepFilter.blacklist ; }
+		if ( ! options.deepFilter.whitelist && ! options.deepFilter.blacklist ) { delete options.deepFilter ; }
 	}
 	
+	// 'flat' option force 'deep'
+	if ( options.flat )
+	{
+		options.deep = true ;
+		options.proto = false ;
+		options.inherit = false ;
+		options.unflat = false ;
+		if ( typeof options.flat !== 'string' ) { options.flat = '.' ; }
+	}
+	
+	if ( options.unflat )
+	{
+		options.deep = false ;
+		options.proto = false ;
+		options.inherit = false ;
+		options.flat = false ;
+		if ( typeof options.unflat !== 'string' ) { options.unflat = '.' ; }
+	}
+	
+	// If the prototype is applied, only owned properties should be copied
+	if ( options.inherit ) { options.own = true ; options.proto = false ; }
+	else if ( options.proto ) { options.own = true ; }
+	
+	if ( ! target || ( typeof target !== 'object' && typeof target !== 'function' ) )
+	{
+		newTarget = true ;
+	}
+	
+	if ( ! options.skipRoot && ( options.inherit || options.proto ) )
+	{
+		for ( i = length - 1 ; i >= 0 ; i -- )
+		{
+			source = sources[ i ] ;
+			if ( source && ( typeof source === 'object' || typeof source === 'function' ) )
+			{
+				if ( options.inherit )
+				{
+					if ( newTarget ) { target = Object.create( source ) ; }
+					else { Object.setPrototypeOf( target , source ) ; }
+				}
+				else if ( options.proto )
+				{
+					if ( newTarget ) { target = Object.create( Object.getPrototypeOf( source ) ) ; }
+					else { Object.setPrototypeOf( target , Object.getPrototypeOf( source ) ) ; }
+				}
+				
+				break ;
+			}
+		}
+	}
+	else if ( newTarget )
+	{
+		target = {} ;
+	}
+	
+	runtime.references = { sources: [] , targets: [] } ;
+	
+	for ( i = 0 ; i < length ; i ++ )
+	{
+		source = sources[ i ] ;
+		if ( ! source || ( typeof source !== 'object' && typeof source !== 'function' ) ) { continue ; }
+		extendOne( runtime , options , target , source ) ;
+	}
+	
+	return target ;
+}
+
+module.exports = extend ;
+
+
+
+function extendOne( runtime , options , target , source )
+{
+	//console.log( "\nextendOne():\n" , arguments ) ;
+	//process.exit() ;
+	
+	var j , jmax , sourceKeys , sourceKey , sourceValue , sourceValueProto ,
+		value , sourceDescriptor , targetKey , targetPointer , path ,
+		indexOfSource = -1 ;
 	
 	// Max depth check
 	if ( options.maxDepth && runtime.depth > options.maxDepth )
@@ -2985,185 +3908,172 @@ function extend( runtime , options , target )
 		throw new Error( '[tree] extend(): max depth reached(' + options.maxDepth + ')' ) ;
 	}
 	
-	
-	// Real extend processing part
-	for ( i = 3 ; i < length ; i ++ )
+		
+	if ( options.circular )
 	{
-		source = arguments[ i ] ;
-		if ( ! source || ( typeof source !== 'object' && typeof source !== 'function' ) ) { continue ; }
+		runtime.references.sources.push( source ) ;
+		runtime.references.targets.push( target ) ;
+	}
+	
+	if ( options.own )
+	{
+		if ( options.nonEnum ) { sourceKeys = Object.getOwnPropertyNames( source ) ; }
+		else { sourceKeys = Object.keys( source ) ; }
+	}
+	else { sourceKeys = source ; }
+	
+	for ( sourceKey in sourceKeys )
+	{
+		if ( options.own ) { sourceKey = sourceKeys[ sourceKey ] ; }
 		
-		if ( options.circular )
+		// If descriptor is on, get it now
+		if ( options.descriptor )
 		{
-			runtime.references.sources.push( source ) ;
-			runtime.references.targets.push( target ) ;
+			sourceDescriptor = Object.getOwnPropertyDescriptor( source , sourceKey ) ;
+			sourceValue = sourceDescriptor.value ;
+		}
+		else
+		{
+			// We have to trigger an eventual getter only once
+			sourceValue = source[ sourceKey ] ;
 		}
 		
-		if ( options.own )
-		{
-			if ( options.nonEnum ) { sourceKeys = Object.getOwnPropertyNames( source ) ; }
-			else { sourceKeys = Object.keys( source ) ; }
-		}
-		else { sourceKeys = source ; }
+		targetPointer = target ;
+		targetKey = runtime.prefix + sourceKey ;
 		
-		for ( sourceKey in sourceKeys )
+		// Do not copy if property is a function and we don't want them
+		if ( options.nofunc && typeof sourceValue === 'function' ) { continue; }
+		
+		// 'unflat' mode computing
+		if ( options.unflat && runtime.depth === 0 )
 		{
-			if ( options.own ) { sourceKey = sourceKeys[ sourceKey ] ; }
+			path = sourceKey.split( options.unflat ) ;
+			jmax = path.length - 1 ;
 			
-			// If descriptor is on, get it now
-			if ( options.descriptor )
+			if ( jmax )
 			{
-				sourceDescriptor = Object.getOwnPropertyDescriptor( source , sourceKey ) ;
-				sourceValue = sourceDescriptor.value ;
+				for ( j = 0 ; j < jmax ; j ++ )
+				{
+					if ( ! targetPointer[ path[ j ] ] ||
+						( typeof targetPointer[ path[ j ] ] !== 'object' &&
+							typeof targetPointer[ path[ j ] ] !== 'function' ) )
+					{
+						targetPointer[ path[ j ] ] = {} ;
+					}
+					
+					targetPointer = targetPointer[ path[ j ] ] ;
+				}
+				
+				targetKey = runtime.prefix + path[ jmax ] ;
+			}
+		}
+		
+		
+		if ( options.deep &&
+			sourceValue &&
+			( typeof sourceValue === 'object' || ( options.deepFunc && typeof sourceValue === 'function' ) ) &&
+			( ! options.descriptor || ! sourceDescriptor.get ) &&
+			// not a condition we just cache sourceValueProto now
+			( ( sourceValueProto = Object.getPrototypeOf( sourceValue ) ) || true ) &&
+			( ! options.deepFilter ||
+				( ( ! options.deepFilter.whitelist || options.deepFilter.whitelist.indexOf( sourceValueProto ) !== -1 ) &&
+					( ! options.deepFilter.blacklist || options.deepFilter.blacklist.indexOf( sourceValueProto ) === -1 ) ) ) )
+		{
+			if ( options.circular )
+			{
+				indexOfSource = runtime.references.sources.indexOf( sourceValue ) ;
+			}
+			
+			if ( options.flat )
+			{
+				// No circular references reconnection when in 'flat' mode
+				if ( indexOfSource >= 0 ) { continue ; }
+				
+				extendOne(
+					{ depth: runtime.depth + 1 , prefix: runtime.prefix + sourceKey + options.flat , references: runtime.references } ,
+					options , targetPointer , sourceValue
+				) ;
 			}
 			else
 			{
-				// We have to trigger an eventual getter only once
-				sourceValue = source[ sourceKey ] ;
-			}
-			
-			targetPointer = target ;
-			targetKey = runtime.prefix + sourceKey ;
-			
-			// Do not copy if property is a function and we don't want them
-			if ( options.nofunc && typeof sourceValue === 'function' ) { continue; }
-			
-			// 'unflat' mode computing
-			if ( options.unflat && runtime.depth === 0 )
-			{
-				path = sourceKey.split( options.unflat ) ;
-				jmax = path.length - 1 ;
-				
-				if ( jmax )
+				if ( indexOfSource >= 0 )
 				{
-					for ( j = 0 ; j < jmax ; j ++ )
+					// Circular references reconnection...
+					if ( options.descriptor )
 					{
-						if ( ! targetPointer[ path[ j ] ] ||
-							( typeof targetPointer[ path[ j ] ] !== 'object' &&
-								typeof targetPointer[ path[ j ] ] !== 'function' ) )
-						{
-							targetPointer[ path[ j ] ] = {} ;
-						}
-						
-						targetPointer = targetPointer[ path[ j ] ] ;
+						Object.defineProperty( targetPointer , targetKey , {
+							value: runtime.references.targets[ indexOfSource ] ,
+							enumerable: sourceDescriptor.enumerable ,
+							writable: sourceDescriptor.writable ,
+							configurable: sourceDescriptor.configurable
+						} ) ;
+					}
+					else
+					{
+						targetPointer[ targetKey ] = runtime.references.targets[ indexOfSource ] ;
 					}
 					
-					targetKey = runtime.prefix + path[ jmax ] ;
+					continue ;
 				}
-			}
-			
-			
-			if ( options.deep &&
-				sourceValue &&
-				( typeof sourceValue === 'object' || ( options.deepFunc && typeof sourceValue === 'function' ) ) &&
-				( ! options.descriptor || ! sourceDescriptor.get ) &&
-				( ! options.deepFilter ||
-					( ( ! options.deepFilter.whitelist || options.deepFilter.whitelist.indexOf( sourceValue.__proto__ ) !== -1 ) &&	// jshint ignore:line
-						( ! options.deepFilter.blacklist || options.deepFilter.blacklist.indexOf( sourceValue.__proto__ ) === -1 ) ) ) ) // jshint ignore:line
-			{
+				
+				if ( ! targetPointer[ targetKey ] || ! targetPointer.hasOwnProperty( targetKey ) || ( typeof targetPointer[ targetKey ] !== 'object' && typeof targetPointer[ targetKey ] !== 'function' ) )
+				{
+					if ( Array.isArray( sourceValue ) ) { value = [] ; }
+					else if ( options.proto ) { value = Object.create( sourceValueProto ) ; }	// jshint ignore:line
+					else if ( options.inherit ) { value = Object.create( sourceValue ) ; }
+					else { value = {} ; }
+					
+					if ( options.descriptor )
+					{
+						Object.defineProperty( targetPointer , targetKey , {
+							value: value ,
+							enumerable: sourceDescriptor.enumerable ,
+							writable: sourceDescriptor.writable ,
+							configurable: sourceDescriptor.configurable
+						} ) ;
+					}
+					else
+					{
+						targetPointer[ targetKey ] = value ;
+					}
+				}
+				else if ( options.proto && Object.getPrototypeOf( targetPointer[ targetKey ] ) !== sourceValueProto )
+				{
+					Object.setPrototypeOf( targetPointer[ targetKey ] , sourceValueProto ) ;
+				}
+				else if ( options.inherit && Object.getPrototypeOf( targetPointer[ targetKey ] ) !== sourceValue )
+				{
+					Object.setPrototypeOf( targetPointer[ targetKey ] , sourceValue ) ;
+				}
+				
 				if ( options.circular )
 				{
-					indexOfSource = runtime.references.sources.indexOf( sourceValue ) ;
+					runtime.references.sources.push( sourceValue ) ;
+					runtime.references.targets.push( targetPointer[ targetKey ] ) ;
 				}
 				
-				if ( options.flat )
-				{
-					// No circular references reconnection when in 'flat' mode
-					if ( indexOfSource >= 0 ) { continue ; }
-					
-					extend(
-						{ depth: runtime.depth + 1 , prefix: runtime.prefix + sourceKey + options.flat , references: runtime.references } ,
-						options , targetPointer , sourceValue
-					) ;
-				}
-				else
-				{
-					if ( indexOfSource >= 0 )
-					{
-						// Circular references reconnection...
-						if ( options.descriptor )
-						{
-							Object.defineProperty( targetPointer , targetKey , {
-								value: runtime.references.targets[ indexOfSource ] ,
-								enumerable: sourceDescriptor.enumerable ,
-								writable: sourceDescriptor.writable ,
-								configurable: sourceDescriptor.configurable
-							} ) ;
-						}
-						else
-						{
-							targetPointer[ targetKey ] = runtime.references.targets[ indexOfSource ] ;
-						}
-						
-						continue ;
-					}
-					
-					if ( ! targetPointer[ targetKey ] || ! targetPointer.hasOwnProperty( targetKey ) || ( typeof targetPointer[ targetKey ] !== 'object' && typeof targetPointer[ targetKey ] !== 'function' ) )
-					{
-						if ( Array.isArray( sourceValue ) ) { value = [] ; }
-						else if ( options.proto ) { value = Object.create( sourceValue.__proto__ ) ; }	// jshint ignore:line
-						else if ( options.inherit ) { value = Object.create( sourceValue ) ; }
-						else { value = {} ; }
-						
-						if ( options.descriptor )
-						{
-							Object.defineProperty( targetPointer , targetKey , {
-								value: value ,
-								enumerable: sourceDescriptor.enumerable ,
-								writable: sourceDescriptor.writable ,
-								configurable: sourceDescriptor.configurable
-							} ) ;
-						}
-						else
-						{
-							targetPointer[ targetKey ] = value ;
-						}
-					}
-					else if ( options.proto && targetPointer[ targetKey ].__proto__ !== sourceValue.__proto__ )	// jshint ignore:line
-					{
-						targetPointer[ targetKey ].__proto__ = sourceValue.__proto__ ;	// jshint ignore:line
-					}
-					else if ( options.inherit && targetPointer[ targetKey ].__proto__ !== sourceValue )	// jshint ignore:line
-					{
-						targetPointer[ targetKey ].__proto__ = sourceValue ;	// jshint ignore:line
-					}
-					
-					if ( options.circular )
-					{
-						runtime.references.sources.push( sourceValue ) ;
-						runtime.references.targets.push( targetPointer[ targetKey ] ) ;
-					}
-					
-					// Recursively extends sub-object
-					extend(
-						{ depth: runtime.depth + 1 , prefix: '' , references: runtime.references } ,
-						options , targetPointer[ targetKey ] , sourceValue
-					) ;
-				}
+				// Recursively extends sub-object
+				extendOne(
+					{ depth: runtime.depth + 1 , prefix: '' , references: runtime.references } ,
+					options , targetPointer[ targetKey ] , sourceValue
+				) ;
 			}
-			else if ( options.preserve && targetPointer[ targetKey ] !== undefined )
-			{
-				// Do not overwrite, and so do not delete source's properties that were not moved
-				continue ;
-			}
-			else if ( ! options.inherit )
-			{
-				if ( options.descriptor ) { Object.defineProperty( targetPointer , targetKey , sourceDescriptor ) ; }
-				else { targetPointer[ targetKey ] = sourceValue ; }
-			}
-			
-			// Delete owned property of the source object
-			if ( options.move ) { delete source[ sourceKey ] ; }
 		}
+		else if ( options.preserve && targetPointer[ targetKey ] !== undefined )
+		{
+			// Do not overwrite, and so do not delete source's properties that were not moved
+			continue ;
+		}
+		else if ( ! options.inherit )
+		{
+			if ( options.descriptor ) { Object.defineProperty( targetPointer , targetKey , sourceDescriptor ) ; }
+			else { targetPointer[ targetKey ] = sourceValue ; }
+		}
+		
+		// Delete owned property of the source object
+		if ( options.move ) { delete source[ sourceKey ] ; }
 	}
-	
-	return target ;
 }
-
-
-
-// The extend() method as publicly exposed
-module.exports = extend.bind( undefined , null ) ;
-
 
 
 },{}]},{},[1])(1)
