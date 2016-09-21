@@ -46,6 +46,7 @@ module.exports.setSafeTimeout = safeTimeout.setSafeTimeout ;
 module.exports.clearSafeTimeout = safeTimeout.clearSafeTimeout ;
 
 },{"./core.js":2,"./safeTimeout.js":3,"./wrapper.js":4}],2:[function(require,module,exports){
+(function (process,global){
 /*
 	Async Kit
 	
@@ -120,6 +121,18 @@ module.exports = async ;
 
 
 
+// Used to store important global variable, like the recursion counter (avoid stack overflow)
+if ( ! global.__ASYNC_KIT__ )
+{
+	global.__ASYNC_KIT__ = {
+		recursionCounter: 0 ,
+		// Fix that to Infinity by default, until this feature is stable enough
+		defaultMaxRecursion: Infinity
+	} ;
+}
+
+
+
 
 
 			//////////////////////////
@@ -171,6 +184,7 @@ var planCommonProperties = {
 	returnMapping1to1: { value: false , writable: true , enumerable: true , configurable: true } ,
 	
 	// Not configurable
+	maxRecursion: { value: Infinity , writable: true , enumerable: true } ,
 	jobsData: { value: {} , writable: true , enumerable: true } ,
 	jobsKeys: { value: [] , writable: true , enumerable: true } ,
 	jobsUsing: { value: undefined , writable: true , enumerable: true } ,
@@ -214,6 +228,8 @@ async.do = function _do( jobsData )
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
+	
 	asyncPlan.do( jobsData ) ;
 	
 	return asyncPlan ;
@@ -235,6 +251,8 @@ async.parallel = function parallel( jobsData )
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
+	
 	asyncPlan.do( jobsData ) ;
 	
 	return asyncPlan ;
@@ -255,6 +273,8 @@ async.series = function series( jobsData )
 		execLoopCallback: { value: execWhileCallback } ,
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
+	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	
@@ -281,6 +301,7 @@ async.race = function race( jobsData )
 	
 	// We only want the result of the first succeeding job
 	asyncPlan.returnLastJobOnly = true ;
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	
@@ -307,6 +328,7 @@ async.waterfall = function waterfall( jobsData )
 	
 	// We only want the result of the first succeeding job
 	asyncPlan.returnLastJobOnly = true ;
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	
@@ -329,6 +351,8 @@ async.foreach = async.forEach = function foreach( jobsData , iterator )
 		execLoopCallback: { value: execWhileCallback } ,
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
+	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	asyncPlan.iterator( iterator ) ;
@@ -355,6 +379,8 @@ async.map = function map( jobsData , iterator )
 		execLoopCallback: { value: execWhileCallback } ,
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
+	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	asyncPlan.iterator( iterator ) ;
@@ -395,6 +421,7 @@ async.reduce = function reduce( jobsData , defaultAggregate , iterator )
 		asyncPlan.execMappingSignature = '( aggregateArg, [finallyCallback] )' ;
 	}
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	asyncPlan.transmitAggregate = true ;
 	asyncPlan.returnAggregate = true ;
 	asyncPlan.defaultAggregate = defaultAggregate ;
@@ -424,6 +451,8 @@ async.while = function _while( whileAction )
 		execFinal: { value: execDoFinal.bind( asyncPlan ) }
 	} ) ;
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
+	
 	asyncPlan.while( whileAction ) ;
 	
 	return asyncPlan ;
@@ -446,6 +475,8 @@ async.and = function and( jobsData )
 		execLoopCallback: { value: execWhileCallback } ,
 		execFinal: { value: execLogicFinal.bind( asyncPlan ) }
 	} ) ;
+	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	asyncPlan.do( jobsData ) ;
 	
@@ -470,6 +501,8 @@ async.or = function or( jobsData )
 		execFinal: { value: execLogicFinal.bind( asyncPlan ) }
 	} ) ;
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
+	
 	asyncPlan.do( jobsData ) ;
 	
 	return asyncPlan ;
@@ -493,6 +526,8 @@ async.if = function _if( jobsData )
 		execFinal: { value: execLogicFinal.bind( asyncPlan ) }
 	} ) ;
 	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
+	
 	if ( jobsData ) { asyncPlan.do( jobsData ) ; }
 	
 	return asyncPlan ;
@@ -513,6 +548,8 @@ async.if.or = function ifOr( jobsData )
 		execLoopCallback: { value: execWhileCallback } ,
 		execFinal: { value: execLogicFinal.bind( asyncPlan ) }
 	} ) ;
+	
+	asyncPlan.maxRecursion = global.__ASYNC_KIT__.defaultMaxRecursion ;
 	
 	if ( jobsData ) { asyncPlan.do( jobsData ) ; }
 	
@@ -784,6 +821,16 @@ async.Plan.prototype.nice = function nice( asyncEventNice )
 	else if ( asyncEventNice === false ) { this.asyncEventNice = -20 ; }
 	else { this.asyncEventNice = asyncEventNice ; }
 	
+	return this ;
+} ;
+
+
+
+// Set the async'ness of the flow, even sync jobs can be turned async
+async.Plan.prototype.setMaxRecursion = function setMaxRecursion( maxRecursion )
+{
+	if ( this.locked ) { return this ; }
+	if ( maxRecursion >= 0 ) { this.maxRecursion = maxRecursion ; }
 	return this ;
 } ;
 
@@ -1473,7 +1520,15 @@ function execDoInit( config , fromExecContext )
 // Iterator/next
 function execDoNext( execContext )
 {
-	var indexOfKey , key , length = execContext.jobsKeys.length , startIndex , endIndex ;
+	// Stack overflow/recursion protection against synchronous jobs
+	if ( global.__ASYNC_KIT__.recursionCounter >= execContext.plan.maxRecursion )
+	{
+		//process.stdout.write( 'Alert: high recursion counter: ' + global.__ASYNC_KIT__.recursionCounter + '\n' ) ;
+		process.nextTick( execDoNext.bind( this , execContext ) ) ;
+		return ;
+	}
+	
+	var self = this , indexOfKey , key , length = execContext.jobsKeys.length , startIndex , endIndex ;
 	
 	startIndex = execContext.iterator ;
 	
@@ -1506,7 +1561,9 @@ function execDoNext( execContext )
 	// Defered execution of jobs
 	for ( indexOfKey = startIndex ; indexOfKey <= endIndex ; indexOfKey ++ )
 	{
+		global.__ASYNC_KIT__.recursionCounter ++ ;
 		this.execJob( execContext , execContext.jobsData[ execContext.jobsKeys[ indexOfKey ] ] , indexOfKey , 0 ) ;
+		global.__ASYNC_KIT__.recursionCounter -- ;
 	}
 }
 
@@ -1979,7 +2036,8 @@ function execLogicFinal( execContext , result )
 
 
 
-},{"nextgen-events":5,"tree-kit/lib/extend.js":7}],3:[function(require,module,exports){
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"_process":5,"nextgen-events":6,"tree-kit/lib/extend.js":8}],3:[function(require,module,exports){
 /*
 	Async Kit
 	
@@ -2115,6 +2173,127 @@ wrapper.timeout = function timeout( fn , timeout_ , fnThis )
 
 
 },{}],5:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+(function () {
+  try {
+    cachedSetTimeout = setTimeout;
+  } catch (e) {
+    cachedSetTimeout = function () {
+      throw new Error('setTimeout is not defined');
+    }
+  }
+  try {
+    cachedClearTimeout = clearTimeout;
+  } catch (e) {
+    cachedClearTimeout = function () {
+      throw new Error('clearTimeout is not defined');
+    }
+  }
+} ())
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = cachedSetTimeout.call(null, cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    cachedClearTimeout.call(null, timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        cachedSetTimeout.call(null, drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],6:[function(require,module,exports){
 /*
 	Next Gen Events
 	
@@ -3132,7 +3311,7 @@ NextGenEvents.off = NextGenEvents.prototype.off ;
 NextGenEvents.Proxy = require( './Proxy.js' ) ;
 
 
-},{"./Proxy.js":6}],6:[function(require,module,exports){
+},{"./Proxy.js":7}],7:[function(require,module,exports){
 /*
 	Next Gen Events
 	
@@ -3735,7 +3914,7 @@ RemoteService.prototype.receiveAckEmit = function receiveAckEmit( message )
 
 
 
-},{"./NextGenEvents.js":5}],7:[function(require,module,exports){
+},{"./NextGenEvents.js":6}],8:[function(require,module,exports){
 /*
 	Tree Kit
 	

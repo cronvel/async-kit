@@ -3602,6 +3602,25 @@ describe( "'Maximum call stack size exceeded' prevention" , function() {
 			done() ;
 		} ) ;
 	} ) ;
+	
+	it( ".setMaxRecursion() should limit the number of synchronous recursion, preventing stack overflow" , function( done ) {
+		
+		this.timeout( 3000 ) ;
+		
+		var i , array = [] ;
+		
+		for ( i = 0 ; i <= 10000 ; i ++ ) { array[ i ] = i ; }
+		
+		async.foreach( array , function( element , k , foreachCallback ) {
+			//if ( k % 100 === 0 ) { console.log( 'k:' , k ) ; }
+			foreachCallback() ;
+		} )
+		.nice( -Infinity )	// Set it to -Infinity, since -20 is the default and already prevent from stack overflow in normal cases
+		.setMaxRecursion( 50 )
+		.exec( function() {
+			done() ;
+		} ) ;
+	} ) ;
 } ) ;
 
 

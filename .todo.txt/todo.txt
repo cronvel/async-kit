@@ -3,3 +3,5 @@
 (B) document this.abortLoop() @doc
 (B) document async.wrapper.timeout @doc
 (A) implement safeTimeout in async.Plan
+(B) document .setMaxRecursion() @doc
+(B) set default max recursion to 100, when considered stable enough

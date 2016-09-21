@@ -1,4 +1,10 @@
 
+v2.2.0
+------
+
+New: .setMaxRecursion() -- the ultimate synchronous recursion prevention (recursion are counted globally for ALL async plan execution)
+
+
 v2.1.6
 ------
 
