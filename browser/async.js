@@ -608,7 +608,11 @@ async.Plan.prototype.do = function _do( jobsData )
 	else if ( typeof jobsData === 'function' )  { this.jobsData = [ jobsData ] ; this.returnLastJobOnly = true ; }
 	else { this.jobsData = {} ; }
 	
+	// Arrays and Objects are unified, Object.keys() does the job but...
 	this.jobsKeys = Object.keys( this.jobsData ) ;
+	
+	// ... we should avoid troubles with arrays that have enumerable properties
+	if ( Array.isArray( this.jobsData ) ) { this.jobsKeys.length = this.jobsData.length ; }
 	
 	return this ;
 } ;

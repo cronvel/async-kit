@@ -1,4 +1,10 @@
 
+v2.2.1
+------
+
+Fix the array of jobs, when it contains custom enumerable properties
+
+
 v2.2.0
 ------
 
