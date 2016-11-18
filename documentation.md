@@ -445,17 +445,17 @@ Example:
 async.waterfall( [
 	function( str , callback ) {
 		// str equals 'oh', passed by .exec()'s first argument
-		callback( undefined , str + ' my' ) ;
-		// undefined is the error argument, it is not transmitted to the next job by default
+		callback( null , str + ' my' ) ;
+		// null is the error argument, it is not transmitted to the next job by default
 	} ,
 	function( str , callback ) {
 		// str equals 'oh my', passed by the previous job
-		callback( undefined , str + ' wonderful' ) ;
-		// undefined is the error argument, it is not transmitted to the next job by default
+		callback( null , str + ' wonderful' ) ;
+		// null is the error argument, it is not transmitted to the next job by default
 	} ,
 	function( str , callback ) {
 		// str equals 'oh my wonderful', passed by the previous job
-		callback( undefined , str + ' result' ) ;
+		callback( null , str + ' result' ) ;
 	}
 ] )
 .exec( 'oh' , function( error , results ) {
@@ -473,16 +473,16 @@ async.waterfall( [
 		// str1 equals 'Hello', passed by .exec()'s first argument
 		// str2 equals 'world', passed by .exec()'s second argument
 		// str3 equals 'this', passed by .exec()'s third argument
-		callback( undefined , str1 + ' ' + str2 + ' ' + str3 + ' is' ) ;
+		callback( null , str1 + ' ' + str2 + ' ' + str3 + ' is' ) ;
 	} ,
 	function( str , callback ) {
 		// str equals 'Hello world, this is', passed by the previous job
-		callback( undefined , str + ' my' , 'wonderful' ) ;
+		callback( null , str + ' my' , 'wonderful' ) ;
 	} ,
 	function( str1 , str2 , callback ) {
 		// str1 equals 'Hello world, this is my', passed by the previous job
 		// str2 equals 'wonderful', passed by the previous job
-		callback( undefined , str1 + ' ' + str2 + ' result' ) ;
+		callback( null , str1 + ' ' + str2 + ' result' ) ;
 	}
 ] )
 .exec( 'Hello' , 'world,' , 'this' , function( error , results ) {
@@ -567,7 +567,7 @@ var myArray = [ 'my' , 'wonderful' , 'result' ] ;
 async.map( myArray , function( element , callback ) {
 	
 	setTimeout( function() {
-		callback( undefined , element.length ) ;
+		callback( null , element.length ) ;
 	} , 0 ) ;
 } )
 .exec( function( error , results ) {
@@ -620,7 +620,7 @@ var plan = async.reduce( myArray , function( aggregate , element , callback ) {
 	
 	setTimeout( function() {
 		// Asyncly calculate the sum of the length
-		callback( undefined , aggregate + element.length ) ;
+		callback( null , aggregate + element.length ) ;
 	} , 0 ) ;
 } )
 // No aggregatedValue is provided in the async.Plan creation,
@@ -953,17 +953,17 @@ Example with `.transmitError`:
 async.waterfall( [
 	function( str , callback ) {
 		// str equals 'oh', passed by .exec()'s first argument
-		callback( undefined , str + ' my' ) ;
+		callback( null , str + ' my' ) ;
 	} ,
 	function( lastError , str , callback ) {
-		// lastError equals undefined
+		// lastError equals null
 		// str equals 'oh my', passed by the previous job
 		callback( new Error() , str + ' wonderful' ) ;
 	} ,
 	function( lastError , str , callback ) {
 		// lastError is now an instance of Error
 		// str equals 'oh my wonderful', passed by the previous job
-		callback( undefined , str + ' result' ) ;
+		callback( null , str + ' result' ) ;
 	}
 ] )
 .transmitError( true )
@@ -1123,21 +1123,21 @@ If set to `true`, only the last job pass its result to [*finallyCallback*](#ref.
 Without `.lastJobOnly()` (the default in most factories):
 ```js
 async.series( [
-	function( callback ) { callback( undefined , 'my' ) ; } ,
-	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
-	function( callback ) { callback( undefined , 'result' ) ; }
+	function( callback ) { callback( null , 'my' ) ; } ,
+	function( callback ) { callback( null , 'wonderful' ) ; } ,
+	function( callback ) { callback( null , 'result' ) ; }
 ] )
 .exec( function( error , result ) {
-	// result equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
+	// result equals `[ [ null , 'my' ], [ null , 'wonderful' ], [ null , 'result' ] ]`
 } ) ;
 ```
 
 With `.lastJobOnly()` (default in `async.waterfall()` and `async.race()` factories):
 ```js
 async.series( [
-	function( callback ) { callback( undefined , 'my' ) ; } ,
-	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
-	function( callback ) { callback( undefined , 'result' ) ; }
+	function( callback ) { callback( null , 'my' ) ; } ,
+	function( callback ) { callback( null , 'wonderful' ) ; } ,
+	function( callback ) { callback( null , 'result' ) ; }
 ] )
 .lastJobOnly()
 .exec( function( error , result ) {
@@ -1166,21 +1166,21 @@ passed by the job's callback.
 Without `.mapping1to1()` (the default in most factories):
 ```js
 async.parallel( [
-	function( callback ) { callback( undefined , 'my' ) ; } ,
-	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
-	function( callback ) { callback( undefined , 'result' ) ; }
+	function( callback ) { callback( null , 'my' ) ; } ,
+	function( callback ) { callback( null , 'wonderful' ) ; } ,
+	function( callback ) { callback( null , 'result' ) ; }
 ] )
 .exec( function( error , results ) {
-	// results equals `[ [ undefined , 'my' ], [ undefined , 'wonderful' ], [ undefined , 'result' ] ]`
+	// results equals `[ [ null , 'my' ], [ null , 'wonderful' ], [ null , 'result' ] ]`
 } ) ;
 ```
 
 With `.mapping1to1()` (the default in `async.map()` factory):
 ```js
 async.parallel( [
-	function( callback ) { callback( undefined , 'my' ) ; } ,
-	function( callback ) { callback( undefined , 'wonderful' ) ; } ,
-	function( callback ) { callback( undefined , 'result' , 'extra argument that will be dropped' ) ; }
+	function( callback ) { callback( null , 'my' ) ; } ,
+	function( callback ) { callback( null , 'wonderful' ) ; } ,
+	function( callback ) { callback( null , 'result' , 'extra argument that will be dropped' ) ; }
 ] )
 .exec( function( error , results ) {
 	// results equals `[ 'my' , 'wonderful' , 'result' ]`
