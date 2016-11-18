@@ -1177,7 +1177,7 @@ async.parallel( [
 
 With `.mapping1to1()` (the default in `async.map()` factory):
 ```js
-async.parallel( [
+async.map( [
 	function( callback ) { callback( null , 'my' ) ; } ,
 	function( callback ) { callback( null , 'wonderful' ) ; } ,
 	function( callback ) { callback( null , 'result' , 'extra argument that will be dropped' ) ; }
