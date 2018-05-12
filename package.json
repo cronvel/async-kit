@@ -1,24 +1,22 @@
 {
   "name": "async-kit",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "A simple and powerful async abstraction lib for easily writing Node.js code.",
   "main": "lib/async.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "nextgen-events": "^0.9.0",
-    "tree-kit": "^0.5.26"
+    "nextgen-events": "^0.14.5",
+    "tree-kit": "^0.5.27"
   },
   "devDependencies": {
-    "browserify": "^13.1.0",
+    "browserify": "^16.2.2",
     "expect.js": "^0.3.1",
-    "jshint": "^2.9.2",
-    "mocha": "^2.5.3",
     "uglify-js": "^2.7.0"
   },
   "scripts": {
-    "test": "mocha -R dot"
+    "test": "tea-time -R dot"
   },
   "repository": {
     "type": "git",
